@@ -138,7 +138,7 @@ class CRUDMonthlyReport(CRUDLocalBase):
         await local_session.execute(
             stmt.on_conflict_do_update(
                 index_elements=self.model.get_constraint_by_name(
-                    'field-well_name-cid-date_stamp'
+                    'field-well_name-cid-dat_rep'
                 ),
                 set_=dict(
                     cid_all=stmt.excluded.cid_all,

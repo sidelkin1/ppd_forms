@@ -159,7 +159,7 @@ class CRUDWellProfile(CRUDLocalBase):
             delete(WellProfile).where(
                 tuple_(
                     WellProfile.uwi,
-                    WellProfile.date_stamp
+                    WellProfile.rec_date,
                 ).in_(
                     [(row.uwi, row.rec_date) for row in ofm_data],
                 )

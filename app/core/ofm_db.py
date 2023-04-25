@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import DeferredReflection
-from sqlalchemy.orm import DeclarativeMeta, declarative_base, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.core.config import settings
 
-Base: type[DeclarativeMeta] = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Reflected(DeferredReflection):

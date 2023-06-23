@@ -1,4 +1,5 @@
 from datetime import date
+from functools import reduce
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,8 @@ from app.models.ofm import DictG, WellHdr, WellStockHistExt
 
 
 class CRUDOfmBase:
+
+    MAX_NUMBER_OF_ORA = 3
 
     def select_description(
         self,
@@ -35,16 +38,16 @@ class CRUDOfmBase:
         ).scalar_subquery().correlate(model)
 
     def select_cids(self) -> ScalarSelect:
-        subq_cid1 = self.select_description(
-            WellStockHistExt, 'ora1', field_descr='sdes'
-        )
-        subq_cid2 = self.select_description(
-            WellStockHistExt, 'ora2', field_descr='sdes'
-        )
+        subqs = [self.select_description(
+            WellStockHistExt, f'ora{num}', field_descr='sdes'
+        ) for num in range(1, self.MAX_NUMBER_OF_ORA + 1)]
         # sourcery skip: use-fstring-for-concatenation
-        return func.decode(
-            subq_cid2, None, subq_cid1,
-            subq_cid1 + ' ' + subq_cid2,
+        return reduce(
+            lambda result, subq: func.decode(
+                subq, None, result,
+                subq + ' ' + result,
+            ),
+            subqs,
         )
 
 

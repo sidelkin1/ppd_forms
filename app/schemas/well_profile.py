@@ -12,7 +12,8 @@ class WellProfileDB(BaseModel):
     well_name: str
     well_type: Optional[str]
     rec_date: date
-    cid: str
+    cid_all: str
+    cid_layer: Optional[str]
     layer: Optional[str]
     top: float
     bottom: float

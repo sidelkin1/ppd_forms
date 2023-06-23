@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     app_description: str = 'Приложение для создания типовых отчетов ППД'
     local_database_url: str
     ofm_database_url: str
+    util_table_schema: str = 'utils'
+    delimiter: str = ','
 
     class Config:
         env_file = '.env'

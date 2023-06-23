@@ -2,7 +2,8 @@ from datetime import date
 from enum import Enum
 
 from fastapi.concurrency import run_in_threadpool
-from sqlalchemy import delete, func, insert, literal_column, select, union
+from sqlalchemy import (Date, delete, func, insert, literal_column, select,
+                        union)
 from sqlalchemy.dialects.sqlite import insert as upsert
 from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +12,7 @@ from sqlalchemy.sql.expression import ColumnClause, Select, Subquery
 
 from app.core.ofm_db import Base
 from app.crud.base import CRUDLocalBase, CRUDOfmBase
-from app.models.local import MonthlyReport
+from app.models.monthly_report import MonthlyReport
 from app.models.ofm import MonthlyInj, MonthlyProd, WellStockHistExt
 
 
@@ -52,7 +53,7 @@ class CRUDOfmRead(CRUDOfmBase):
             self.select_well_name(model, 'prod_uwi').label('well_name'),
             model.cid,
             self.select_cids().label('cid_all'),
-            model.dat_rep,
+            model.dat_rep.cast(Date),
             RateColumn.OIL_V(model, wmode),
             RateColumn.WATER_V(model, wmode),
             RateColumn.WATER(model, wmode),

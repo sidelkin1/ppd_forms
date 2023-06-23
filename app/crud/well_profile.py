@@ -1,8 +1,8 @@
 from datetime import date
 
 from fastapi.concurrency import run_in_threadpool
-from sqlalchemy import (between, delete, distinct, func, insert, or_, select,
-                        tuple_)
+from sqlalchemy import (Date, between, delete, distinct, func, insert, or_,
+                        select, tuple_)
 from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -11,10 +11,10 @@ from sqlalchemy.sql.functions import Function
 
 from app.core.ofm_db import Base
 from app.crud.base import CRUDLocalBase, CRUDOfmBase
-from app.models.local import WellProfile
 from app.models.ofm import (GeophysSt, GeophysStAbsorp, WellHdr,
                             WellLogResultLayers, WellLogResultSublayers,
                             WellOrapMd, WellPerforations, WellStockHistExt)
+from app.models.well_profile import WellProfile
 
 
 class CRUDOfmRead(CRUDOfmBase):
@@ -79,12 +79,14 @@ class CRUDOfmRead(CRUDOfmBase):
             *where_args,
         ).scalar_subquery().correlate(GeophysSt, GeophysStAbsorp)
 
-    def select_layers(self) -> ScalarSelect:
-        subq_lr1 = self.select_layer_perf(
+    def select_cid_layers(self) -> ScalarSelect:
+        return self.select_layer_perf(
             WellOrapMd, 'udmurtneft_n', 'dg_sdes', 'reservoir_id',
             WellOrapMd.uwi == GeophysSt.uwi,
         )
-        subq_lr2 = self.select_layer_perf(
+
+    def select_layers(self) -> ScalarSelect:
+        return self.select_layer_perf(
             WellLogResultLayers, 'udmurtneft_n', 'dg_des', 'layer_id',
             WellLogResultSublayers.uwi == GeophysSt.uwi,
             WellLogResultSublayers.uwi == WellLogResultLayers.uwi,
@@ -92,8 +94,12 @@ class CRUDOfmRead(CRUDOfmBase):
             WellLogResultSublayers.source == WellLogResultLayers.source,
             WellLogResultSublayers.interpreter.in_((1, 3)),
         )
-        # sourcery skip: use-fstring-for-concatenation
-        return subq_lr1 + ': ' + subq_lr2
+
+    def select_perfs(self) -> ScalarSelect:
+        return self.select_layer_perf(
+            WellPerforations, 'udmurtneft_n', 'dg_sdes', 'layer_id',
+            WellPerforations.uwi == GeophysSt.uwi,
+        )
 
     def get_ofm_data(
         self,
@@ -101,11 +107,6 @@ class CRUDOfmRead(CRUDOfmBase):
         date_to: date,
         session: Session,
     ) -> list[Row]:
-        subq_lr = self.select_layers()
-        subq_perf = self.select_layer_perf(
-            WellPerforations, 'udmurtneft_n', 'dg_sdes', 'layer_id',
-            WellPerforations.uwi == GeophysSt.uwi,
-        )
         stmt = select(
             self.select_description(WellHdr, 'field').label('field'),
             GeophysSt.uwi,
@@ -113,9 +114,13 @@ class CRUDOfmRead(CRUDOfmBase):
             self.select_description(
                 GeophysSt, 'prod_class'
             ).label('well_type'),
-            GeophysSt.rec_date,
+            GeophysSt.rec_date.cast(Date),
             self.select_cids().label('cid_all'),
-            func.decode(subq_lr, ': ', subq_perf, subq_lr).label('layer'),
+            func.coalesce(
+                self.select_cid_layers(),
+                self.select_perfs(),
+            ).label('cid_layer'),
+            self.select_layers().label('layer'),
             GeophysStAbsorp.top,
             GeophysStAbsorp.bottom,
             self.calc_abs_depth('top').label('abstop'),
@@ -124,11 +129,6 @@ class CRUDOfmRead(CRUDOfmBase):
             GeophysSt.tot_absorp,
             GeophysSt.liq_rate,
             GeophysStAbsorp.remarks,
-        ).select_from(
-            GeophysStAbsorp,
-            GeophysSt,
-            WellHdr,
-            WellStockHistExt,
         ).where(
             GeophysStAbsorp.id == GeophysSt.id,
             WellHdr.uwi == GeophysSt.uwi,
@@ -160,9 +160,9 @@ class CRUDWellProfile(CRUDLocalBase):
                 tuple_(
                     WellProfile.uwi,
                     WellProfile.rec_date,
-                ).in_(
-                    [(row.uwi, row.rec_date) for row in ofm_data],
-                )
+                ).in_([
+                    (row.uwi, row.rec_date) for row in ofm_data
+                ])
             )
         )
         await local_session.execute(

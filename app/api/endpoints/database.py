@@ -2,7 +2,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from app.api.mappings import LoadMode, TableName
+from app.api.enums import LoadMode, TableName
 from app.core.local_db import get_async_session as get_local_session
 from app.core.ofm_db import get_session as get_ofm_session
 from app.schemas.database import DateRange

@@ -11,21 +11,21 @@ from app.models.ofm import (GeophysSt, GeophysStAbsorp, WellHdr,
                             WellOrapMd, WellPerforations, WellStockHistExt)
 
 
-def get_db_func(schema: str, name: str) -> Function:
+def _get_db_func(schema: str, name: str) -> Function:
     return getattr(getattr(func, schema), name)
 
 
-def get_str_sum(
+def _get_str_sum(
     model: type[Base],
     schema: str,
     func_name: str,
     field: str,
 ) -> ColumnElement:
-    db_func = get_db_func(schema, func_name)
+    db_func = _get_db_func(schema, func_name)
     return func.ofm.str_sum(distinct(db_func(getattr(model, field))))
 
 
-def check_interval_intersections(model: type[Base]) -> ColumnElement:
+def _check_interval_intersections(model: type[Base]) -> ColumnElement:
     return or_(
         or_(
             between(model.top,
@@ -46,13 +46,13 @@ def check_interval_intersections(model: type[Base]) -> ColumnElement:
     )
 
 
-def calc_abs_depth(depth: str) -> ColumnElement:
+def _calc_abs_depth(depth: str) -> ColumnElement:
     md = getattr(GeophysStAbsorp, depth)
     tvd = func.udmurtneft_n.z_get_tvd(GeophysSt.uwi, md)
     return func.round(WellHdr.elevation - tvd, 1)
 
 
-def remove_well_branch() -> ColumnElement:
+def _remove_well_branch() -> ColumnElement:
     return func.decode(
         func.instr(GeophysSt.uwi, 'B'), 0,
         GeophysSt.uwi,
@@ -60,7 +60,7 @@ def remove_well_branch() -> ColumnElement:
     )
 
 
-def select_layer_perf(
+def _select_layer_perf(
     model: type[Base],
     schema: str,
     func_name: str,
@@ -68,22 +68,22 @@ def select_layer_perf(
     *where_args,
 ) -> ScalarSelect:
     return select(
-        get_str_sum(model, schema, func_name, field)
+        _get_str_sum(model, schema, func_name, field)
     ).where(
-        check_interval_intersections(model),
+        _check_interval_intersections(model),
         *where_args,
     ).scalar_subquery().correlate(GeophysSt, GeophysStAbsorp)
 
 
-def select_cid_layers() -> ScalarSelect:
-    return select_layer_perf(
+def _select_cid_layers() -> ScalarSelect:
+    return _select_layer_perf(
         WellOrapMd, 'udmurtneft_n', 'dg_sdes', 'reservoir_id',
         WellOrapMd.uwi == GeophysSt.uwi,
     )
 
 
-def select_layers() -> ScalarSelect:
-    return select_layer_perf(
+def _select_layers() -> ScalarSelect:
+    return _select_layer_perf(
         WellLogResultLayers, 'udmurtneft_n', 'dg_des', 'layer_id',
         WellLogResultSublayers.uwi == GeophysSt.uwi,
         WellLogResultSublayers.uwi == WellLogResultLayers.uwi,
@@ -93,8 +93,8 @@ def select_layers() -> ScalarSelect:
     )
 
 
-def select_perfs() -> ScalarSelect:
-    return select_layer_perf(
+def _select_perfs() -> ScalarSelect:
+    return _select_layer_perf(
         WellPerforations, 'udmurtneft_n', 'dg_sdes', 'layer_id',
         WellPerforations.uwi == GeophysSt.uwi,
     )
@@ -111,12 +111,15 @@ def select_well_profiles(
         select_description(GeophysSt, 'prod_class').label('well_type'),
         GeophysSt.rec_date.cast(Date),
         select_cids().label('cid_all'),
-        func.coalesce(select_cid_layers(), select_perfs()).label('cid_layer'),
-        select_layers().label('layer'),
+        func.coalesce(
+            _select_cid_layers(),
+            _select_perfs()
+        ).label('cid_layer'),
+        _select_layers().label('layer'),
         GeophysStAbsorp.top,
         GeophysStAbsorp.bottom,
-        calc_abs_depth('top').label('abstop'),
-        calc_abs_depth('bottom').label('absbotm'),
+        _calc_abs_depth('top').label('abstop'),
+        _calc_abs_depth('bottom').label('absbotm'),
         GeophysStAbsorp.diff_absorp,
         GeophysSt.tot_absorp,
         GeophysSt.liq_rate,
@@ -125,7 +128,7 @@ def select_well_profiles(
         GeophysStAbsorp.id == GeophysSt.id,
         WellHdr.uwi == GeophysSt.uwi,
         WellStockHistExt.status_date == func.trunc(GeophysSt.rec_date, 'mm'),
-        remove_well_branch() == WellStockHistExt.uwi,
+        _remove_well_branch() == WellStockHistExt.uwi,
         GeophysSt.rec_date >= date_from,
         GeophysSt.rec_date <= date_to,
     )

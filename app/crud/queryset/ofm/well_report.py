@@ -33,7 +33,7 @@ class RateColumn(str, Enum):
         return getattr(model, self.value)
 
 
-def select_separate_well_rates(
+def _select_separate_well_rates(
     model: type[Base],
     wmode: WellMode,
     date_from: date,
@@ -57,14 +57,14 @@ def select_separate_well_rates(
     )
 
 
-def select_union_rates(
+def _select_union_rates(
     date_from: date,
     date_to: date,
 ) -> Subquery:
-    subq_prod = select_separate_well_rates(
+    subq_prod = _select_separate_well_rates(
         MonthlyProd, WellMode.PRODUCTION, date_from, date_to
     )
-    subq_inj = select_separate_well_rates(
+    subq_inj = _select_separate_well_rates(
         MonthlyInj, WellMode.INJECTION, date_from, date_to
     )
     return union(subq_prod, subq_inj).subquery()
@@ -74,7 +74,7 @@ def select_well_rates(
     date_from: date,
     date_to: date,
 ) -> Select:
-    subq = select_union_rates(date_from, date_to)
+    subq = _select_union_rates(date_from, date_to)
     return select(
         subq.c.field,
         subq.c.well_name,

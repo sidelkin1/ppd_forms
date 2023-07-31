@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     ofm_database_url: str
     util_table_schema: str = 'utils'
     delimiter: str = ','
+    max_workers: int = 4
 
     class Config:
         env_file = '.env'

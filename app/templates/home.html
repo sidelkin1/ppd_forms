@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="starter-template">
+    <h1>Отчеты ППД</h1>
+    <hr><br>
+    <div>
+        <h3>Отчеты</h3>
+        <p>Начать выгрузку отчетов.</p>
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-primary" onclick="handleClick('2023-05-01', '2023-06-01')">Short</a>
+            <button type="button" class="btn btn-primary" onclick="handleClick('2023-01-01', '2023-06-01')">Medium</a>
+            <button type="button" class="btn btn-primary" onclick="handleClick('2022-01-01', '2023-06-01')">Long</a>
+        </div>
+    </div>
+  <br><br>
+  <div>
+        <h3>Статус выгрузки</h3>        
+        <br>
+        <table class="table">
+            <thead>
+                <tr>
+                <th>№ отчета</th>
+                <th>Состояние</th>
+                <th>Результат</th>
+                </tr>
+            </thead>
+            <tbody id="tasks">
+            </tbody>
+        </table>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,9 +1,14 @@
 from fastapi import APIRouter
 
 from app.api.endpoints.database import router as database_router
+from app.api.endpoints.home import router as home_router
 from app.api.endpoints.report import router as report_router
 
 main_router = APIRouter()
+main_router.include_router(
+    home_router,
+    tags=['home']
+)
 main_router.include_router(
     database_router,
     prefix='/database',

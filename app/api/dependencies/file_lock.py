@@ -38,13 +38,6 @@ async def get_result_path(
         lock_status.pop(path.stem, None)
 
 
-async def current_result_path(
-    path: Path = Depends(file_path_from_id),
-    can_delete: bool = False,
-) -> Optional[Path]:
-    lock = lock_status.get(path.stem, None)
-    if lock is not None and lock.locked():
-        path = None
-    yield path
-    if path is not None and can_delete:
-        path.unlink(missing_ok=True)
+async def result_is_locked(file_id: str) -> bool:
+    lock = lock_status.get(file_id, None)
+    return lock is not None and lock.locked()

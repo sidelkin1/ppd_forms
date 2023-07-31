@@ -1,12 +1,13 @@
+from concurrent.futures import ProcessPoolExecutor
 from datetime import date
 from pathlib import Path
 
 import pandas as pd
-from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.utils import run_in_process
 from app.crud.queryset.local.profile_report import select_profile_report
 from app.services.save_dataframe import save_to_csv
 
@@ -39,7 +40,7 @@ def calc_layer_rates(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_data(data: list[Row]):
+def process_data(data: list[Row]) -> pd.DataFrame:
     df = pd.DataFrame(data)
     df['layer'] = df['layer'].str.split(settings.delimiter)
     df = df.explode('layer')
@@ -53,10 +54,11 @@ async def create_report(
     path: Path,
     date_from: date,
     date_to: date,
-    session: AsyncSession
+    session: AsyncSession,
+    pool: ProcessPoolExecutor,
 ) -> None:
     result = await session.execute(
         select_profile_report(date_from, date_to)
     )
-    df = await run_in_threadpool(process_data, result.all())
+    df = await run_in_process(pool, process_data, result.all())
     await save_to_csv(df, path)

@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     util_table_schema: str = 'utils'
     delimiter: str = ','
     max_workers: int = 4
+    csv_encoding: str = 'cp1251'
+    csv_delimiter: str = ';'
 
     class Config:
         env_file = '.env'

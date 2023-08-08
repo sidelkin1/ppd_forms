@@ -10,6 +10,10 @@ from app.initial_data import init_mapper
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_mapper()
-    with ProcessPoolExecutor(max_workers=settings.max_workers) as pool:
-        app.state.pool_executor = pool
+    app.state.pool_executor = ProcessPoolExecutor(
+        max_workers=settings.max_workers
+    )
+    try:
         yield
+    finally:
+        app.state.pool_executor.shutdown()

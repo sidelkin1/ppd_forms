@@ -26,4 +26,4 @@ repos:
     rev: 6.0.0
     hooks:
     -   id: flake8
-        exclude: (alembic/versions/|__init__.py)
+        exclude: (alembic/versions/)

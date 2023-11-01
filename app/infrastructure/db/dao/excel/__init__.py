@@ -1,13 +1,5 @@
-from app.infrastructure.db.dao.excel.base import BaseDAO  # noqa
-from app.infrastructure.db.dao.excel.inj_well_database import (  # noqa
-    InjWellDatabaseDAO,
-)
-from app.infrastructure.db.dao.excel.neighborhood import (  # noqa
-    NeighborhoodDAO,
-)
-from app.infrastructure.db.dao.excel.new_strategy_inj import (  # noqa
-    NewStrategyInjDAO,
-)
-from app.infrastructure.db.dao.excel.new_strategy_oil import (  # noqa
-    NewStrategyOilDAO,
-)
+from .base import BaseDAO  # noqa
+from .inj_well_database import InjWellDatabaseDAO  # noqa
+from .neighborhood import NeighborhoodDAO  # noqa
+from .new_strategy_inj import NewStrategyInjDAO  # noqa
+from .new_strategy_oil import NewStrategyOilDAO  # noqa

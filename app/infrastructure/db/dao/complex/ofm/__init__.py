@@ -1,7 +1,3 @@
-from app.infrastructure.db.dao.complex.ofm.base import BaseDAO  # noqa
-from app.infrastructure.db.dao.complex.ofm.monthly_report import (  # noqa
-    MonthlyReportDAO,
-)
-from app.infrastructure.db.dao.complex.ofm.well_profile import (  # noqa
-    WellProfileDAO,
-)
+from .base import BaseDAO  # noqa
+from .monthly_report import MonthlyReportDAO  # noqa
+from .well_profile import WellProfileDAO  # noqa

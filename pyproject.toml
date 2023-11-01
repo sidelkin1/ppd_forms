@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "ppd-forms"
+version = "0.1.0"
+description = "Приложение для создания типовых отчетов ППД"
+authors = ["sidelkin <sidelkin@yandex.ru>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+python-dateutil = "^2.8.2"
+sqlalchemy = "^2.0.21"
+asyncpg = "^0.28.0"
+arq = "^0.25.0"
+taskipy = "^1.12.0"
+fastapi = "^0.103.1"
+websockets = "^11.0.3"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+pydantic = "^2.3.0"
+jinja2 = "^3.1.2"
+python-multipart = "^0.0.6"
+pydantic-settings = "^2.0.3"
+itsdangerous = "^2.1.2"
+oracledb = "^1.4.1"
+tenacity = "^8.2.3"
+pandas = "^2.1.1"
+aiocsv = "^1.2.4"
+aiofiles = "^23.2.1"
+openpyxl = "^3.1.2"
+alembic = "^1.12.0"
+
+[tool.poetry.group.dev.dependencies]
+absolufy-imports = "^0.3.1"
+pre-commit = "^3.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.taskipy.tasks]
+makemigrations = 'alembic revision --autogenerate -m "First migration"'
+migrate = "alembic upgrade head"
+initialize = "python -m app.initial_data"
+uvicorn = "uvicorn app.main:app --port 8000 --host 0"
+worker = "arq app.worker.WorkerSettings"
+ofm-pre-start = "python -m app.ofm_pre_start"

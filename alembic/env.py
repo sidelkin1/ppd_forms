@@ -1,22 +1,18 @@
 import asyncio
-import os
 from logging.config import fileConfig
 
-from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.core.base import Base
-
-load_dotenv('.env')
+from app.infrastructure.db.migrations.base import Base, settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option('sqlalchemy.url', os.environ['LOCAL_DATABASE_URL'])
+config.set_main_option("sqlalchemy.url", str(settings.local_database_url))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -53,7 +49,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        user_module_prefix="app.core.migration_types.",
+        user_module_prefix="app.infrastructure.db.migrations.types.",
     )
 
     with context.begin_transaction():
@@ -64,7 +60,7 @@ def do_run_migrations(connection: Connection) -> None:
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
-        user_module_prefix="app.core.migration_types.",
+        user_module_prefix="app.infrastructure.db.migrations.types.",
     )
 
     with context.begin_transaction():

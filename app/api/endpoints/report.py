@@ -1,62 +1,48 @@
-from pathlib import Path
-
-from fastapi import (APIRouter, BackgroundTasks, Depends, Request, Response,
-                     status)
+from fastapi import APIRouter, status
 from fastapi.responses import FileResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies.file_lock import (file_path_from_id, get_result_path,
-                                            result_is_locked)
-from app.api.validators import check_file_exists
-from app.core.local_db import get_async_session
-from app.schemas.database import DateRange
-from app.services.profile_report import create_report
+from app.api.dependencies.job import NewJobDep
+from app.api.dependencies.redis.provider import RedisDep
+from app.api.dependencies.tasks import TaskReportDep
+from app.api.dependencies.user import FilePathDep, UserDirDep
+from app.api.endpoints.websocket import websocket_endpoint
+from app.api.validators.validators import check_file_exists
+from app.core.models.dto import JobStamp
+from app.core.models.enums import ReportName
+from app.core.models.schemas import DateRange
 
 router = APIRouter()
 
 
-@router.post('/', status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{name}",
+    status_code=status.HTTP_201_CREATED,
+    response_model=JobStamp,
+    response_model_exclude_none=True,
+)
 async def generate_report(
-    update: DateRange,
-    background_tasks: BackgroundTasks,
-    request: Request,
-    path: Path = Depends(get_result_path),
-    session: AsyncSession = Depends(get_async_session),
+    name: ReportName,
+    date_range: DateRange,
+    task: TaskReportDep,
+    redis: RedisDep,
+    job_stamp: NewJobDep,
+    directory: UserDirDep,
 ):
-    background_tasks.add_task(
-        create_report,
-        path,
-        update.date_from,
-        update.date_to,
-        session,
-        request.app.state.pool_executor,
-    )
-    return {'file_id': path.stem}
+    await redis.enqueue_task(task, job_stamp)
+    return job_stamp
 
 
-@router.get('/{file_id}/status')
-async def get_report_status(
-    response: Response,
-    not_ready: bool = Depends(result_is_locked),
-):
-    if not_ready:
-        response.status_code = status.HTTP_202_ACCEPTED
-        return {'message': 'Отчет не готов!'}
-    return {'message': 'Отчет готов!'}
-
-
-@router.get('/{file_id}')
-async def download_report(
-    path: Path = Depends(file_path_from_id),
-):
+@router.get("/{file_id}")
+async def download_report(file_id: str, path: FilePathDep):
     check_file_exists(path)
-    return FileResponse(path, media_type='text/csv')
+    return FileResponse(path, media_type="text/csv")
 
 
-@router.delete('/{file_id}')
-async def delete_report(
-    path: Path = Depends(file_path_from_id),
-):
+@router.delete("/{file_id}")
+async def delete_report(file_id: str, path: FilePathDep):
     check_file_exists(path)
     path.unlink(missing_ok=True)
-    return {'message': 'Отчет удален!'}
+    return {"message": "Отчет удален!"}
+
+
+router.add_api_websocket_route("/ws", websocket_endpoint)

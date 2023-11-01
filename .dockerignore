@@ -1,0 +1,10 @@
+.vscode/
+.github/
+.*ignore
+README.md
+__pycache__
+.env*
+docker-compose*.yml
+Dockerfile
+venv/
+.pre-commit-config.yaml

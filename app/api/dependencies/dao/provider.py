@@ -1,0 +1,54 @@
+from pathlib import Path
+from typing import Annotated
+
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
+
+from app.infrastructure.db.dao.holder import HolderDAO
+
+
+def dao_provider() -> HolderDAO:
+    raise NotImplementedError
+
+
+class DbProvider:
+    def __init__(
+        self,
+        *,
+        local_pool: async_sessionmaker[AsyncSession] | None = None,
+        ofm_pool: sessionmaker[Session] | None = None,
+    ) -> None:
+        self.local_pool = local_pool
+        self.ofm_pool = ofm_pool
+
+    async def local_dao(self) -> HolderDAO:
+        async with self.local_pool() as session:
+            yield HolderDAO(local_session=session)
+
+    async def local_pool_dao(self) -> HolderDAO:
+        yield HolderDAO(local_pool=self.local_pool)
+
+    async def ofm_dao(self) -> HolderDAO:
+        with self.ofm_pool() as session:
+            yield HolderDAO(ofm_session=session)
+
+    async def ofm_local_dao(self) -> HolderDAO:
+        with self.ofm_pool() as ofm_session:
+            async with self.local_pool() as local_session:
+                yield HolderDAO(
+                    local_session=local_session, ofm_session=ofm_session
+                )
+
+    async def excel_local_dao(self, excel_path: Path) -> HolderDAO:
+        async with self.local_pool() as session:
+            yield HolderDAO(local_session=session, excel_path=excel_path)
+
+    async def dispose(self) -> HolderDAO:
+        if self.local_pool and (engine := self.local_pool.kw.get("bind")):
+            await engine.dispose()
+        if self.ofm_pool and (engine := self.ofm_pool.kw.get("bind")):
+            engine.dispose()
+
+
+HolderDep = Annotated[HolderDAO, Depends(dao_provider)]

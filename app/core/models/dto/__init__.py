@@ -1,0 +1,12 @@
+from app.core.models.dto.db.inj_well_database import InjWellDatabaseDB  # noqa
+from app.core.models.dto.db.monthly_report import MonthlyReportDB  # noqa
+from app.core.models.dto.db.neighborhood import NeighborhoodDB  # noqa
+from app.core.models.dto.db.new_strategy_inj import NewStrategyInjDB  # noqa
+from app.core.models.dto.db.new_strategy_oil import NewStrategyOilDB  # noqa
+from app.core.models.dto.db.replace import RegexReplaceDB  # noqa
+from app.core.models.dto.db.replace import SimpleReplaceDB
+from app.core.models.dto.db.well_profile import WellProfileDB  # noqa
+from app.core.models.dto.jobs.job_stamp import JobStamp  # noqa
+from app.core.models.dto.tasks.database import TaskDatabase  # noqa
+from app.core.models.dto.tasks.excel import TaskExcel  # noqa
+from app.core.models.dto.tasks.report import TaskReport  # noqa

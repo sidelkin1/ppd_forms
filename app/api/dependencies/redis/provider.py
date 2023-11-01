@@ -1,0 +1,22 @@
+from typing import Annotated
+
+from arq import ArqRedis
+from fastapi import Depends
+
+from app.infrastructure.arq.dao.redis import RedisDAO
+
+
+def redis_provider() -> RedisDAO:
+    raise NotImplementedError
+
+
+class RedisProvider:
+    def __init__(self, pool: ArqRedis) -> None:
+        self.pool = pool
+
+    async def dao(self):
+        async with self.pool() as redis:
+            yield RedisDAO(redis=redis)
+
+
+RedisDep = Annotated[RedisDAO, Depends(redis_provider)]

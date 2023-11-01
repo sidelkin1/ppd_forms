@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 
-templates = Jinja2Templates(directory='app/templates')
+from app.api.dependencies.user import UserIdDep
+
+templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 
-@router.get('/')
-def home(request: Request):
+@router.get("/")
+async def home(request: Request, user_id: UserIdDep):
     return templates.TemplateResponse(
-        'home.html',
-        context={'request': request}
+        "home.html", context={"request": request}
     )

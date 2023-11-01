@@ -1,46 +1,50 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, status
 
-from app.api.enums import LoadMode, TableName
-from app.core.local_db import get_async_session as get_local_session
-from app.core.ofm_db import get_session as get_ofm_session
-from app.schemas.database import DateRange
+from app.api.dependencies.dao.provider import HolderDep
+from app.api.dependencies.job import NewJobDep
+from app.api.dependencies.redis.provider import RedisDep
+from app.api.dependencies.tasks import TaskDatabaseDep
+from app.api.dependencies.user import UserDirDep
+from app.api.endpoints.websocket import websocket_endpoint
+from app.core.models.dto import JobStamp
+from app.core.models.enums import LoadMode, OfmTableName
+from app.core.models.schemas import DateRange
+from app.core.services.date_range import date_range
 
 router = APIRouter()
 
 
-@router.post('/profile/reload', deprecated=True)
-async def profile_reload():
+@router.post("/profile/reload", deprecated=True)
+async def reload_profile():
     raise HTTPException(
         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-        detail='Данная операция недопустима!',
+        detail="Данная операция недопустима!",
     )
 
 
-@router.post('/{table}/{mode}', status_code=status.HTTP_201_CREATED)
-async def start_database_load(
-        table: TableName,
-        mode: LoadMode,
-        update: DateRange,
-        background_tasks: BackgroundTasks,
-        local_session: AsyncSession = Depends(get_local_session),
-        ofm_session: Session = Depends(get_ofm_session),
+@router.post(
+    "/{table}/{mode}",
+    status_code=status.HTTP_201_CREATED,
+    response_model=JobStamp,
+    response_model_exclude_none=True,
+)
+async def load_database(
+    table: OfmTableName,
+    mode: LoadMode,
+    date_range: DateRange,
+    task: TaskDatabaseDep,
+    redis: RedisDep,
+    job_stamp: NewJobDep,
+    directory: UserDirDep,
 ):
-    background_tasks.add_task(
-        mode(table.crud),
-        update.date_from,
-        update.date_to,
-        local_session,
-        ofm_session,
-    )
-    return {'message': 'Запущен процесс выгрузки из БД'}
+    await redis.enqueue_task(task, job_stamp)
+    return job_stamp
 
 
-@router.get('/{table}')
-async def get_database_dates(
-    table: TableName,
-    session: AsyncSession = Depends(get_local_session),
-):
-    min_date, max_date = await table.crud.get_min_max_dates(session)
-    return {'min_date': min_date, 'max_date': max_date}
+@router.get("/{table}")
+async def get_dates(table: OfmTableName, holder: HolderDep):
+    min_date, max_date = await date_range(table, holder)
+    return {"min_date": min_date, "max_date": max_date}
+
+
+router.add_api_websocket_route("/ws", websocket_endpoint)

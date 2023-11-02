@@ -1,10 +1,11 @@
 from collections import UserDict
-from typing import Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class WorkRegistry(UserDict):
-    def add(self, route_url: str) -> Callable:
-        def decorator(func: Callable) -> Callable:
+    def add(self, route_url: str) -> Callable[..., Any]:
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             self.data[route_url] = func
             return func
 

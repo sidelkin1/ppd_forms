@@ -15,7 +15,7 @@ _dao_mapper = {
 
 
 async def date_range(
-    table: OfmTableName, holder: HolderDAO
+    table: ExcelTableName | OfmTableName, holder: HolderDAO
 ) -> tuple[date, date]:
     dao: MainTableDAO = getattr(holder, _dao_mapper[table])
     return await dao.date_range()

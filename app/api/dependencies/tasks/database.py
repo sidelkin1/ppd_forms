@@ -14,9 +14,7 @@ def task_database_provider() -> TaskDatabase:
 async def create_task_database(
     table: OfmTableName, mode: LoadMode, date_range: DateRange
 ) -> TaskDatabase:
-    return TaskDatabase(
-        table=table.value, mode=mode.value, **date_range.model_dump()
-    )
+    return TaskDatabase(table=table, mode=mode, **date_range.model_dump())
 
 
 TaskDatabaseDep = Annotated[TaskDatabase, Depends(task_database_provider)]

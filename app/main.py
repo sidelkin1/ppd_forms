@@ -34,7 +34,7 @@ def main() -> FastAPI:
     return app
 
 
-def run():
+def run() -> None:
     uvicorn.run("app.main:main", factory=True)
 
 

@@ -1,7 +1,8 @@
 import asyncio
 import functools
+from collections.abc import Callable
 from concurrent.futures.process import ProcessPoolExecutor
-from typing import Callable, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
 from app.core.config.settings import Settings
 

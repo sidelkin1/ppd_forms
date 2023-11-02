@@ -16,7 +16,7 @@ async def create_task_excel(
     mode: LoadMode,
     path: ExcelPath,
 ) -> TaskExcel:
-    return TaskExcel(table=table.value, mode=mode.value, file=path.file)
+    return TaskExcel(table=table, mode=mode, file=path.file)
 
 
 TaskExcelDep = Annotated[TaskExcel, Depends(task_excel_provider)]

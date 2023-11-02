@@ -20,7 +20,7 @@ class HolderDAO:
         local_pool: async_sessionmaker[AsyncSession] | None = None,
         local_session: AsyncSession | None = None,
         ofm_session: Session | None = None,
-        excel_path: Path = None,
+        excel_path: Path | None = None,
     ) -> None:
         self.local_pool = local_pool
         self.local_session = local_session
@@ -163,7 +163,7 @@ class HolderDAO:
 
     @property
     def inj_well_database_loader(self) -> loader.InjWellDatabaseLoader:
-        return loader.NewStrategyOilLoader(
+        return loader.InjWellDatabaseLoader(
             self.excel_inj_well_database, self.local_inj_well_database
         )
 

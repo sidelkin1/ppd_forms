@@ -32,6 +32,7 @@ alembic = "^1.12.0"
 [tool.poetry.group.dev.dependencies]
 absolufy-imports = "^0.3.1"
 pre-commit = "^3.4.0"
+mypy = "^1.6.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -44,3 +45,6 @@ initialize = "python -m app.initial_data"
 uvicorn = "uvicorn app.main:app --port 8000 --host 0"
 worker = "arq app.worker.WorkerSettings"
 ofm-pre-start = "python -m app.ofm_pre_start"
+
+[tool.mypy]
+exclude = "(alembic/versions/)"

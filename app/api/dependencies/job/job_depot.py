@@ -1,5 +1,6 @@
 from asyncio import Task, create_task
-from typing import Annotated, Callable
+from collections.abc import AsyncGenerator, Callable, Coroutine
+from typing import Annotated, ParamSpec, Self
 
 from arq.jobs import Job
 from fastapi import Depends
@@ -7,17 +8,19 @@ from fastapi import Depends
 from app.api.dependencies.redis.provider import RedisDep
 from app.infrastructure.arq.dao.redis import RedisDAO
 
+P = ParamSpec("P")
+
 
 class JobDepot:
-    def __init__(self, redis: RedisDAO):
+    def __init__(self, redis: RedisDAO) -> None:
         self.redis = redis
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         self._tasks: list[Task] = []
         self._jobs: list[Job] = []
         return self
 
-    async def __aexit__(self, exc_type, exc_value, traceback):
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         while self._tasks:
             self._tasks.pop().cancel()
         while self._jobs:
@@ -26,12 +29,16 @@ class JobDepot:
             except Exception:
                 print("Exception while aborting job")  # TODO log
 
-    def add_task(self, func: Callable, *args, **kwargs) -> Task:
+    def add_task(
+        self, func: Callable[P, Coroutine], *args: P.args, **kwargs: P.kwargs
+    ) -> Task:
         task = create_task(func(*args, **kwargs))
         self._tasks.append(task)
         return task
 
-    async def add_job(self, func: str, *args, **kwargs) -> Job:
+    async def add_job(
+        self, func: str, *args: P.args, **kwargs: P.kwargs
+    ) -> Job:
         job = await self.redis.enqueue_job(func, *args, **kwargs)
         self._jobs.append(job)
         return job
@@ -41,7 +48,7 @@ def job_depot_provider() -> JobDepot:
     raise NotImplementedError
 
 
-async def get_job_depot(redis: RedisDep):
+async def get_job_depot(redis: RedisDep) -> AsyncGenerator[JobDepot, None]:
     async with JobDepot(redis) as job_depot:
         yield job_depot
 

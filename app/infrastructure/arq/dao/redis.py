@@ -9,10 +9,10 @@ class RedisDAO:
     def __init__(self, redis: ArqRedis):
         self.redis = redis
 
-    async def enqueue_job(self, func: str, *args, **kwargs) -> Job:
+    async def enqueue_job(self, func: str, *args, **kwargs) -> Job | None:
         return await self.redis.enqueue_job(func, *args, **kwargs)
 
-    async def enqueue_task(self, task: BaseModel, job: JobStamp) -> Job:
+    async def enqueue_task(self, task: BaseModel, job: JobStamp) -> Job | None:
         return await self.redis.enqueue_job(
             "perform_work",
             task.model_dump(),

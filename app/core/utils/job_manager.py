@@ -60,7 +60,7 @@ class JobManager:
 
     async def send_job_stamp(
         self,
-        status: int | None = None,
+        status: JobStatus | None = None,
         message: str | None = None,
     ) -> None:
         if status is not None:

@@ -55,5 +55,5 @@ async def profile_report(
     pool: ProcessPoolManager,
 ) -> None:
     df = await dao.read_one(date_from=dto.date_from, date_to=dto.date_to)
-    df = await pool.run(pool, _process_data, df)
+    df = await pool.run(_process_data, df)
     await save_to_csv(df, path)

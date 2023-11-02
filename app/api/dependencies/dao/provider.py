@@ -1,3 +1,4 @@
+from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import Annotated
 
@@ -22,29 +23,31 @@ class DbProvider:
         self.local_pool = local_pool
         self.ofm_pool = ofm_pool
 
-    async def local_dao(self) -> HolderDAO:
+    async def local_dao(self) -> AsyncGenerator[HolderDAO, None]:
         async with self.local_pool() as session:
             yield HolderDAO(local_session=session)
 
-    async def local_pool_dao(self) -> HolderDAO:
+    async def local_pool_dao(self) -> AsyncGenerator[HolderDAO, None]:
         yield HolderDAO(local_pool=self.local_pool)
 
-    async def ofm_dao(self) -> HolderDAO:
+    async def ofm_dao(self) -> AsyncGenerator[HolderDAO, None]:
         with self.ofm_pool() as session:
             yield HolderDAO(ofm_session=session)
 
-    async def ofm_local_dao(self) -> HolderDAO:
+    async def ofm_local_dao(self) -> AsyncGenerator[HolderDAO, None]:
         with self.ofm_pool() as ofm_session:
             async with self.local_pool() as local_session:
                 yield HolderDAO(
                     local_session=local_session, ofm_session=ofm_session
                 )
 
-    async def excel_local_dao(self, excel_path: Path) -> HolderDAO:
+    async def excel_local_dao(
+        self, excel_path: Path
+    ) -> AsyncGenerator[HolderDAO, None]:
         async with self.local_pool() as session:
             yield HolderDAO(local_session=session, excel_path=excel_path)
 
-    async def dispose(self) -> HolderDAO:
+    async def dispose(self) -> None:
         if self.local_pool and (engine := self.local_pool.kw.get("bind")):
             await engine.dispose()
         if self.ofm_pool and (engine := self.ofm_pool.kw.get("bind")):

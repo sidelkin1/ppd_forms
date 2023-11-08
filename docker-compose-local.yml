@@ -35,30 +35,17 @@ services:
       - 6379:6379
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # web:
-  #   restart: always
-  #   ports:
-  #     - 8000:8000
-  #   build: ./
-  #   volumes:
-  #     - ./results:/app/results
-  #     - ./excel:/app/excel
-  #   environment:
-  #     - DB_HOST=db
-  #     - REDIS_HOST=redis
-  #   env_file:
-  #     - ./.env
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_started
-
-  worker:
-    # restart: always
-    build:
-      dockerfile: worker.Dockerfile
+  web:
+    restart: always
+    ports:
+      - 8000:8000
+    build: ./
     volumes:
       - ./results:/app/results
       - ./excel:/app/excel
@@ -71,7 +58,30 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000" ]
+      interval: 100s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    restart: always
+    build:
+      dockerfile: worker.Dockerfile
+    volumes:
+      - ./results:/app/results
+      - ./excel:/app/excel
+    environment:
+      - DB_HOST=db
+      - REDIS_HOST=redis
+    env_file:
+      - ./.env
+    depends_on:
+      web:
         condition: service_started
+      redis:
+        condition: service_healthy
 
 volumes:
   db_data:

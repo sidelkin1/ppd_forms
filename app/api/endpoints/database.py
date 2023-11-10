@@ -6,9 +6,9 @@ from app.api.dependencies.redis.provider import RedisDep
 from app.api.dependencies.tasks import TaskDatabaseDep
 from app.api.dependencies.user import UserDirDep
 from app.api.endpoints.websocket import websocket_endpoint
-from app.core.models.dto import JobStamp
+from app.core.models.dto import TaskDatabase
 from app.core.models.enums import LoadMode, OfmTableName
-from app.core.models.schemas import DateRange
+from app.core.models.schemas import DateRange, TaskResponse
 from app.core.services.date_range import date_range
 
 router = APIRouter()
@@ -25,7 +25,7 @@ async def reload_profile():
 @router.post(
     "/{table}/{mode}",
     status_code=status.HTTP_201_CREATED,
-    response_model=JobStamp,
+    response_model=TaskResponse[TaskDatabase],
     response_model_exclude_none=True,
 )
 async def load_database(
@@ -38,7 +38,7 @@ async def load_database(
     directory: UserDirDep,
 ):
     await redis.enqueue_task(task, job_stamp)
-    return job_stamp
+    return TaskResponse[TaskDatabase](task=task, job=job_stamp)
 
 
 @router.get("/{table}")

@@ -8,9 +8,9 @@ from app.api.dependencies.tasks import TaskExcelDep
 from app.api.dependencies.user import UserDirDep
 from app.api.endpoints.websocket import websocket_endpoint
 from app.core.config.settings import settings
-from app.core.models.dto import JobStamp
+from app.core.models.dto import TaskExcel
 from app.core.models.enums import ExcelTableName, LoadMode
-from app.core.models.schemas import ExcelPath
+from app.core.models.schemas import ExcelPath, TaskResponse
 from app.core.services.date_range import date_range
 
 router = APIRouter()
@@ -38,7 +38,7 @@ async def upload_file(file: UploadFile):
 @router.post(
     "/{table}/{mode}",
     status_code=status.HTTP_201_CREATED,
-    response_model=JobStamp,
+    response_model=TaskResponse[TaskExcel],
     response_model_exclude_none=True,
 )
 async def load_database(
@@ -51,7 +51,7 @@ async def load_database(
     directory: UserDirDep,
 ):
     await redis.enqueue_task(task, job_stamp)
-    return job_stamp
+    return TaskResponse[TaskExcel](task=task, job=job_stamp)
 
 
 @router.get("/{table}")

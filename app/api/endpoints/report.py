@@ -7,9 +7,9 @@ from app.api.dependencies.tasks import TaskReportDep
 from app.api.dependencies.user import FilePathDep, UserDirDep
 from app.api.endpoints.websocket import websocket_endpoint
 from app.api.validators.validators import check_file_exists
-from app.core.models.dto import JobStamp
+from app.core.models.dto import TaskReport
 from app.core.models.enums import ReportName
-from app.core.models.schemas import DateRange
+from app.core.models.schemas import DateRange, TaskResponse
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post(
     "/{name}",
     status_code=status.HTTP_201_CREATED,
-    response_model=JobStamp,
+    response_model=TaskResponse[TaskReport],
     response_model_exclude_none=True,
 )
 async def generate_report(
@@ -29,7 +29,7 @@ async def generate_report(
     directory: UserDirDep,
 ):
     await redis.enqueue_task(task, job_stamp)
-    return job_stamp
+    return TaskResponse[TaskReport](task=task, job=job_stamp)
 
 
 @router.get("/{file_id}")

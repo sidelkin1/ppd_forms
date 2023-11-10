@@ -7,6 +7,7 @@ from app.core.models.dto.db.replace import RegexReplaceDB  # noqa
 from app.core.models.dto.db.replace import SimpleReplaceDB  # noqa
 from app.core.models.dto.db.well_profile import WellProfileDB  # noqa
 from app.core.models.dto.jobs.job_stamp import JobStamp  # noqa
+from app.core.models.dto.tasks.base import TaskBase  # noqa
 from app.core.models.dto.tasks.database import TaskDatabase  # noqa
 from app.core.models.dto.tasks.excel import TaskExcel  # noqa
 from app.core.models.dto.tasks.report import TaskReport  # noqa

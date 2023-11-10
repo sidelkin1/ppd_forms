@@ -3,8 +3,7 @@ from typing import Any, cast
 
 from app.api.dependencies.dao.provider import DbProvider
 from app.core.config.settings import settings
-from app.core.models.dto import JobStamp
-from app.core.models.dto.tasks import task_holder
+from app.core.models.dto import JobStamp, TaskBase
 from app.core.services.entrypoints.arq import registry
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.factories.local import (
@@ -16,11 +15,9 @@ from app.initial_data import iniialize_mapper
 
 
 async def perform_work(
-    ctx: dict[str, Any], data: dict[str, Any], job_data: dict[str, Any]
+    ctx: dict[str, Any], task: TaskBase, job_stamp: JobStamp
 ) -> None:
-    job_stamp = JobStamp(**job_data)
-    dto = task_holder.to_dto(data)
-    await registry[dto.route_url](dto, job_stamp, ctx)
+    await registry[task.route_url](task, job_stamp, ctx)
 
 
 async def startup(ctx: dict[str, Any]) -> None:

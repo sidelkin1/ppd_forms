@@ -1,6 +1,6 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
-from pydantic import BaseModel, ConfigDict, computed_field
+from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
 from app.core.models.enums.task_id import TaskId
 
@@ -17,6 +17,13 @@ class TaskBase(BaseModel):
     @property
     def route_url(self) -> str:
         return ":".join(getattr(self, field) for field in self._route_fields)
+
+    @model_validator(mode="before")
+    @classmethod
+    def exclude_task_id(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            data.pop("task_id", None)
+        return data
 
     def __init_subclass__(cls, /, task_id, route_fields, **kwargs):
         super().__init_subclass__(**kwargs)

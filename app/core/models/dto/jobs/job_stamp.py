@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Any, Self
 from uuid import uuid4
 
 from arq.jobs import Job
@@ -9,11 +9,12 @@ from app.core.utils.result_path import result_name
 
 
 class JobStamp(BaseModel):
-    user_id: str | None = None
-    message: str | None = None
-    status: JobStatus = Field(default=JobStatus.created)
     job_id: str = Field(default_factory=lambda: uuid4().hex)
     file_id: str | None = Field(default_factory=result_name)
+    user_id: str | None = None
+    message: str | None = None
+    status: JobStatus = JobStatus.created
+    data: dict[str, Any] | None = None
 
     model_config = ConfigDict(extra="forbid")
 

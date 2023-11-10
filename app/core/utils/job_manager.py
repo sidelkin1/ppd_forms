@@ -23,10 +23,11 @@ class JobManager:
         websocket: WebSocket,
         job_depot: JobDepot,
         user_id: str,
+        data: dict[str, Any],
     ) -> None:
         self.websocket = websocket
         self.job_depot = job_depot
-        self.job_stamp = JobStamp(user_id=user_id)
+        self.job_stamp = JobStamp(user_id=user_id, data=data)
 
     async def __aenter__(self):
         await self.send_job_stamp()
@@ -71,15 +72,15 @@ class JobManager:
             self.job_stamp.model_dump_json(exclude_none=True)
         )
 
-    async def enqueue_job(self, data: dict[str, Any]) -> None:
-        if "task_id" not in data:
+    async def enqueue_job(self) -> None:
+        if "task_id" not in self.job_stamp.data:
             raise TaskIdNotFoundError(
                 status=JobStatus.data_error,
                 message="Нет обязательного поля `task_id`!",
             )
 
         try:
-            TaskId[data["task_id"]]
+            TaskId[self.job_stamp.data["task_id"]]
         except ValueError as error:
             raise TaskIdValueError(
                 status=JobStatus.data_error,
@@ -87,7 +88,7 @@ class JobManager:
             ) from error
 
         try:
-            dto = task_holder.to_dto(data)
+            task = task_holder.to_dto(self.job_stamp.data)
         except ValidationError as error:
             raise DataModelValidationError(
                 status=JobStatus.data_error,
@@ -95,10 +96,7 @@ class JobManager:
             ) from error
 
         job = await self.job_depot.add_job(
-            "perform_work",
-            dto.model_dump(),
-            self.job_stamp.model_dump(),
-            _job_id=self.job_stamp.job_id,
+            "perform_work", task, self.job_stamp, _job_id=self.job_stamp.job_id
         )
 
         try:

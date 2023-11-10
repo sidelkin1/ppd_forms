@@ -14,8 +14,8 @@ async def enqueue_job(
     user_id: str,
     data: dict[str, Any],
 ) -> None:
-    async with JobManager(websocket, job_depot, user_id) as manager:
-        await manager.enqueue_job(data)
+    async with JobManager(websocket, job_depot, user_id, data) as manager:
+        await manager.enqueue_job()
 
 
 async def websocket_endpoint(

@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.core.models.dto import TaskBase
+from app.core.models.dto.tasks.base import TaskBase
 from app.core.models.enums.task_id import TaskId
 
 

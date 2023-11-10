@@ -79,7 +79,7 @@ services:
       - ./.env
     depends_on:
       web:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_healthy
 

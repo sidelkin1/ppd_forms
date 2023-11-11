@@ -3,10 +3,10 @@ from fastapi import FastAPI
 from app.api.dependencies.dao.provider import DbProvider, dao_provider
 from app.api.dependencies.job import (
     create_job_stamp,
-    current_job_provider,
     get_job_depot,
-    get_job_stamp,
+    get_job_response,
     job_depot_provider,
+    job_response_provider,
     new_job_provider,
 )
 from app.api.dependencies.redis.provider import RedisProvider, redis_provider
@@ -36,7 +36,7 @@ def setup(app: FastAPI):
         pool=app.state.redis
     ).dao
 
-    app.dependency_overrides[current_job_provider] = get_job_stamp
+    app.dependency_overrides[job_response_provider] = get_job_response
     app.dependency_overrides[new_job_provider] = create_job_stamp
     app.dependency_overrides[job_depot_provider] = get_job_depot
 

@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 
-from app.api.dependencies.job.job_depot import JobDepot, JobDepotDep
+from app.api.dependencies.job.depot import JobDepot, JobDepotDep
 from app.api.dependencies.user import UserDirDep, UserIdDep
 from app.core.utils.job_manager import JobManager
 

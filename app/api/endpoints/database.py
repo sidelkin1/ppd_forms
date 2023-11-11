@@ -38,7 +38,7 @@ async def load_database(
     directory: UserDirDep,
 ):
     await redis.enqueue_task(task, job_stamp)
-    return TaskResponse[TaskDatabase](task=task, job=job_stamp)
+    return TaskResponse(task=task, job=job_stamp)
 
 
 @router.get("/{table}")

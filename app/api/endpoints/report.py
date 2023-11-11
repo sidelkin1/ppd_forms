@@ -29,7 +29,7 @@ async def generate_report(
     directory: UserDirDep,
 ):
     await redis.enqueue_task(task, job_stamp)
-    return TaskResponse[TaskReport](task=task, job=job_stamp)
+    return TaskResponse(task=task, job=job_stamp)
 
 
 @router.get("/{file_id}")

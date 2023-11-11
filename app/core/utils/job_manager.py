@@ -4,11 +4,11 @@ from fastapi import WebSocket, WebSocketDisconnect, WebSocketException
 from fastapi.websockets import WebSocketState
 from pydantic import ValidationError
 
-from app.api.dependencies.job.job_depot import JobDepot
-from app.core.models.dto.jobs.job_stamp import JobStamp
+from app.api.dependencies.job.depot import JobDepot
+from app.core.models.dto import JobStamp
 from app.core.models.dto.tasks import task_holder
 from app.core.models.enums import JobStatus, TaskId
-from app.core.models.schemas.task_response import TaskResponse
+from app.core.models.schemas import JobResponse
 from app.core.utils.exceptions import (
     DataModelValidationError,
     JobExecutionError,
@@ -28,9 +28,7 @@ class JobManager:
     ) -> None:
         self.websocket = websocket
         self.job_depot = job_depot
-        self.response = TaskResponse[dict[str, Any]](
-            task=data, job=JobStamp(user_id=user_id)
-        )
+        self.response = JobResponse(data=data, job=JobStamp(user_id=user_id))
 
     async def __aenter__(self):
         await self.send_response()
@@ -76,14 +74,14 @@ class JobManager:
         )
 
     async def enqueue_job(self) -> None:
-        if "task_id" not in self.response.task:
+        if "task_id" not in self.response.data:
             raise TaskIdNotFoundError(
                 status=JobStatus.data_error,
                 message="Нет обязательного поля `task_id`!",
             )
 
         try:
-            TaskId[self.response.task["task_id"]]
+            TaskId[self.response.data["task_id"]]
         except ValueError as error:
             raise TaskIdValueError(
                 status=JobStatus.data_error,
@@ -91,7 +89,7 @@ class JobManager:
             ) from error
 
         try:
-            task = task_holder.to_dto(self.response.task)
+            task = task_holder.to_dto(self.response.data)
         except ValidationError as error:
             raise DataModelValidationError(
                 status=JobStatus.data_error,

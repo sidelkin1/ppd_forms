@@ -2,7 +2,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
-from app.core.models.enums.task_id import TaskId
+from app.core.models.enums import TaskId
 
 
 class TaskBase(BaseModel):

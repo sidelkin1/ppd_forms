@@ -1,10 +1,8 @@
-from typing import Self
 from uuid import uuid4
 
-from arq.jobs import Job
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.core.models.enums.job_status import JobStatus
+from app.core.models.enums import JobStatus
 from app.core.utils.result_path import result_name
 
 
@@ -16,19 +14,3 @@ class JobStamp(BaseModel):
     status: JobStatus = JobStatus.created
 
     model_config = ConfigDict(extra="forbid")
-
-    @classmethod
-    async def from_job(cls, job: Job) -> Self:
-        status = JobStatus.from_arq(await job.status())
-        if status is JobStatus.not_found:
-            return cls(job_id=job.job_id, file_id=None, status=status)
-        info = await job.info()
-        obj = cls(**info.args[1])  # TODO more robust way
-        if status is JobStatus.in_progress:
-            obj.status = JobStatus.in_progress
-        elif info.success:
-            obj.status = JobStatus.completed
-        else:
-            obj.status = JobStatus.execution_error
-            obj.message = repr(info.result)
-        return obj

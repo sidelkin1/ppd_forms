@@ -5,7 +5,6 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis.provider import RedisDep
 from app.api.dependencies.tasks import TaskReportDep
 from app.api.dependencies.user import FilePathDep, UserDirDep
-from app.api.endpoints.websocket import websocket_endpoint
 from app.api.validators.validators import check_file_exists
 from app.core.models.dto import TaskReport
 from app.core.models.enums import ReportName
@@ -43,6 +42,3 @@ async def delete_report(file_id: str, path: FilePathDep):
     check_file_exists(path)
     path.unlink(missing_ok=True)
     return {"message": "Отчет удален!"}
-
-
-router.add_api_websocket_route("/ws", websocket_endpoint)

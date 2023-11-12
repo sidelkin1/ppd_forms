@@ -5,7 +5,6 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis.provider import RedisDep
 from app.api.dependencies.tasks import TaskDatabaseDep
 from app.api.dependencies.user import UserDirDep
-from app.api.endpoints.websocket import websocket_endpoint
 from app.core.models.dto import TaskDatabase
 from app.core.models.enums import LoadMode, OfmTableName
 from app.core.models.schemas import DateRange, TaskResponse
@@ -45,6 +44,3 @@ async def load_database(
 async def get_dates(table: OfmTableName, holder: HolderDep):
     min_date, max_date = await date_range(table, holder)
     return {"min_date": min_date, "max_date": max_date}
-
-
-router.add_api_websocket_route("/ws", websocket_endpoint)

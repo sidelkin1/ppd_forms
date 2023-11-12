@@ -6,7 +6,6 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis.provider import RedisDep
 from app.api.dependencies.tasks import TaskExcelDep
 from app.api.dependencies.user import UserDirDep
-from app.api.endpoints.websocket import websocket_endpoint
 from app.core.config.settings import settings
 from app.core.models.dto import TaskExcel
 from app.core.models.enums import ExcelTableName, LoadMode
@@ -58,6 +57,3 @@ async def load_database(
 async def get_dates(table: ExcelTableName, holder: HolderDep):
     min_date, max_date = await date_range(table, holder)
     return {"min_date": min_date, "max_date": max_date}
-
-
-router.add_api_websocket_route("/ws", websocket_endpoint)

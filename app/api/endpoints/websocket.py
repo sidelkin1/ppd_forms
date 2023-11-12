@@ -1,11 +1,13 @@
 import shutil
 from typing import Any
 
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.api.dependencies.job.depot import JobDepot, JobDepotDep
 from app.api.dependencies.user import UserDirDep, UserIdDep
 from app.core.utils.job_manager import JobManager
+
+router = APIRouter()
 
 
 async def enqueue_job(
@@ -18,6 +20,7 @@ async def enqueue_job(
         await manager.enqueue_job()
 
 
+@router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
     job_depot: JobDepotDep,

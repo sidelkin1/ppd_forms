@@ -70,7 +70,7 @@ class JobManager:
         if message is not None:
             self.response.job.message = message
         await self.websocket.send_json(
-            self.response.model_dump_json(exclude_none=True)
+            self.response.model_dump(exclude_none=True)
         )
 
     async def enqueue_job(self) -> None:

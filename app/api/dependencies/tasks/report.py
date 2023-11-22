@@ -14,7 +14,11 @@ def task_report_provider() -> TaskReport:
 async def create_task_report(
     name: ReportName, date_range: DateRange
 ) -> TaskReport:
-    return TaskReport(name=name, **date_range.model_dump())
+    return TaskReport(
+        name=name,
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
+    )
 
 
 TaskReportDep = Annotated[TaskReport, Depends(task_report_provider)]

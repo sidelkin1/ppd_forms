@@ -16,8 +16,7 @@ class JobStatus(str, Enum):
     created = "created"
     completed = "completed"
     in_progress = "in_progress"
-    data_error = "data_error"
-    execution_error = "execution_error"
+    error = "error"
     not_found = "not_found"
 
     @classmethod

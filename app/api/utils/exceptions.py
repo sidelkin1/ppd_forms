@@ -11,17 +11,13 @@ class JobStatusException(Exception):
         self.message = message
 
 
-class TaskIdNotFoundError(JobStatusException):
-    pass
-
-
-class TaskIdValueError(JobStatusException):
-    pass
-
-
-class DataModelValidationError(JobStatusException):
+class JobNotFoundError(JobStatusException):
     pass
 
 
 class JobExecutionError(JobStatusException):
+    pass
+
+
+class JobWebSocketError(Exception):
     pass

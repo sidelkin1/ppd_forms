@@ -1,12 +1,11 @@
-import aiofiles
-from fastapi import APIRouter, HTTPException, UploadFile, status
+from fastapi import APIRouter, UploadFile, status
 
 from app.api.dependencies.dao.provider import HolderDep
 from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis.provider import RedisDep
 from app.api.dependencies.tasks import TaskExcelDep
 from app.api.dependencies.user import UserDirDep
-from app.core.config.settings import settings
+from app.api.utils.upload_file import save_upload_file
 from app.core.models.dto import TaskExcel
 from app.core.models.enums import ExcelTableName, LoadMode
 from app.core.models.schemas import ExcelPath, TaskResponse
@@ -14,23 +13,10 @@ from app.core.services.date_range import date_range
 
 router = APIRouter()
 
-COPY_BUFSIZE = 1024 * 1024
 
-
-@router.post("/")
+@router.post("/", response_model=dict)
 async def upload_file(file: UploadFile):
-    path = settings.base_dir / "excel" / file.filename
-    try:
-        async with aiofiles.open(path, "wb") as f:
-            while contents := await file.read(COPY_BUFSIZE):
-                await f.write(contents)
-    except Exception:
-        return HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка при загрузке файла!",
-        )  # TODO log
-    finally:
-        await file.close()
+    await save_upload_file(file)
     return {"filename": file.filename}
 
 
@@ -53,7 +39,7 @@ async def load_database(
     return TaskResponse(task=task, job=job_stamp)
 
 
-@router.get("/{table}")
+@router.get("/{table}", response_model=dict)
 async def get_dates(table: ExcelTableName, holder: HolderDep):
     min_date, max_date = await date_range(table, holder)
     return {"min_date": min_date, "max_date": max_date}

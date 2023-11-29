@@ -5,7 +5,7 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis.provider import RedisDep
 from app.api.dependencies.tasks import TaskReportDep
 from app.api.dependencies.user import FilePathDep, UserDirDep
-from app.api.validators.validators import check_file_exists
+from app.api.utils.validators import check_file_exists
 from app.core.models.dto import TaskReport
 from app.core.models.enums import ReportName
 from app.core.models.schemas import DateRange, TaskResponse
@@ -37,7 +37,7 @@ async def download_report(file_id: str, path: FilePathDep):
     return FileResponse(path, media_type="text/csv")
 
 
-@router.delete("/{file_id}")
+@router.delete("/{file_id}", response_model=dict)
 async def delete_report(file_id: str, path: FilePathDep):
     check_file_exists(path)
     path.unlink(missing_ok=True)

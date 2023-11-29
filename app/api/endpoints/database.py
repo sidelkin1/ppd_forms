@@ -40,7 +40,7 @@ async def load_database(
     return TaskResponse(task=task, job=job_stamp)
 
 
-@router.get("/{table}")
+@router.get("/{table}", response_model=dict)
 async def get_dates(table: OfmTableName, holder: HolderDep):
     min_date, max_date = await date_range(table, holder)
     return {"min_date": min_date, "max_date": max_date}

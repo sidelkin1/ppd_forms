@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% from '/macros/forms.html' import date_range, upload_file %}
+{% from '/macros/accordion.html' import accordion_form %}
+
+{% block content %}
+
+    <div class="row">
+        {% for table in tables %}
+            <div class="col-sm-6">
+                <div class="card mb-3">
+                    <div class="card-header text-dark bg-warning">
+                        <div class="row">
+                            <div class="col-11">
+                                <h5>
+                                    {{ table.title }}
+                                </h5>
+                            </div>
+                            <div class="col-1 d-flex align-items-center">
+                                <div
+                                    class="spinner-border spinner-border-sm d-none"
+                                    id="{{ table.path }}Fetch"
+                                    role="status"
+                                >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            <span class="badge bg-dark" id="{{ table.path }}Dates"></span>
+                        </h6>
+                        <p class="card-text">{{ table.description }}</p>
+                        {% call(table) accordion_form(
+                            table,
+                            "Таблица успешно обновлена!",
+                            "Ошибка при обновлении таблицы!"
+                        ) %}
+                            {% if table.source == "database" %}
+                                {{ date_range(table.path, "Обновить", "updateTable") }}
+                            {% endif %}
+                            {% if table.source == "excel" %}
+                                {{ upload_file(table.path, "Обновить", "updateExcel") }}
+                            {% endif %}
+                        {% endcall %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block js %}
+
+    {% include '/tables/includes/pre_populate.html' %}
+    <script src="{{url_for('static', path='/core/assign.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/core/status.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/core/upload.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/tables/dates.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/tables/update.js')}}" type="text/javascript"></script>
+
+{% endblock %}

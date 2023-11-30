@@ -1,0 +1,5 @@
+{% macro progress(idName) -%}
+    <p class="loader" id="{{ idName }}" style="display: none"></p>
+    <p class="success" id="{{ idName }}" style="display: none">&#9989;</p>
+    <p class="failure" id="{{ idName }}" style="display: none">&#10060;</p>
+{%- endmacro %}

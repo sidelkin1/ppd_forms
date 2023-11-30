@@ -1,0 +1,35 @@
+{% macro spinner_button(name, text, func) -%}
+    <div class="input-group mb-1">
+        <button
+            type="button"
+            class="btn btn-primary"
+            id="{{ name }}Button"
+            onclick="{{ func }}('{{ name }}')"
+        >
+            <span
+                class="spinner-border spinner-border-sm d-none"
+                id="{{ name }}Status"
+                role="status"
+            >
+            </span>
+            {{ text }}
+        </button>
+    </div>
+{%- endmacro %}
+
+{% macro date_range(name, button_text, button_func) -%}
+    <div class="input-group mb-1">
+        <input type="date" class="form-control" id="{{ name }}Start" name="start"/>
+    </div>
+    <div class="input-group mb-1">
+        <input type="date" class="form-control" id="{{ name }}End" name="end"/>
+    </div>
+    {{ spinner_button(name, button_text, button_func) }}
+{%- endmacro %}
+
+{% macro upload_file(name, button_text, button_func) -%}
+    <div class="input-group mb-1">
+        <input type="file" class="form-control" id="{{ name }}File" name="file"/>
+    </div>
+    {{ spinner_button(name, button_text, button_func) }}
+{%- endmacro %}

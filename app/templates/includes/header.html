@@ -1,0 +1,25 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{{ url_for('home') }}">ОКЭСП</a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a
+                    class="nav-link
+                    {% if request.route.name == 'reports' %}active{% endif %}"
+                    href="{{ url_for('reports') }}"
+                >
+                    Отчеты
+                </a>
+            </li>
+            <li class="nav-item">
+                <a
+                    class="nav-link
+                    {% if request.route.name == 'tables' %}active{% endif %}"
+                    href="{{ url_for('tables') }}"
+                >
+                    Таблицы
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

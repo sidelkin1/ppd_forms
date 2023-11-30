@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% from '/macros/forms.html' import date_range %}
+{% from '/macros/accordion.html' import accordion_form %}
+
+{% block content %}
+
+    <div class="row">
+        {% for report in reports %}
+            <div class="col-sm-6">
+                <div class="card mb-6">
+                    <h5 class="card-header text-dark bg-warning">
+                        {{ report.title }}
+                    </h5>
+                    <div class="card-body">
+                        <p class="card-text">{{ report.description }}</p>
+                        {% call(report) accordion_form(
+                            report,
+                            "Отчет успешно сформирован!",
+                            "Ошибка при формировании отчета!",
+                            need_link=True
+                        ) %}
+                            {{ date_range(report.path, "Выгрузить", "loadReport") }}
+                        {% endcall %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script src="{{url_for('static', path='/core/assign.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/core/status.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/reports/load.js')}}" type="text/javascript"></script>
+
+{% endblock %}

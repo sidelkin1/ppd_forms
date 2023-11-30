@@ -1,0 +1,33 @@
+{% macro accordion_form(item, success_text, danger_text, need_link=False) -%}
+    <div class="accordion" id="{{ item.path }}Accordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button
+                    class="accordion-button collapsed"
+                    type="button" data-bs-toggle="collapse"
+                    data-bs-target="#{{ item.path }}Collapse"
+                >
+                    Форма для обновления
+                </button>
+            </h2>
+            <div
+                id="{{ item.path }}Collapse"
+                class="accordion-collapse collapse"
+                data-bs-parent="#{{ item.path }}Accordion"
+            >
+                <div class="accordion-body">
+                    {{ caller(item) }}
+                    <div class="alert alert-success d-none" id="{{ item.path }}Success" role="alert">
+                        {{ success_text }}
+                        {% if need_link %}
+                            <a href="#" class="alert-link" id="{{ item.path }}Link">Скачать</a>
+                        {% endif %}
+                    </div>
+                    <div class="alert alert-danger d-none" id="{{ item.path }}Danger" role="alert">
+                        {{ danger_text }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{%- endmacro %}

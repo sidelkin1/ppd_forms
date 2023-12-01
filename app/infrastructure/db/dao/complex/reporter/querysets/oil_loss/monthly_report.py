@@ -1,5 +1,5 @@
 from sqlalchemy import bindparam, func, literal_column, or_, select, union
-from sqlalchemy.sql.expression import Select, Subquery
+from sqlalchemy.sql.expression import CompoundSelect, Select, Subquery
 
 from app.infrastructure.db.models.local import MonthlyReport
 
@@ -81,5 +81,5 @@ def _select_last_report() -> Select:
     )
 
 
-def select_monthly_report() -> Select:
+def select_monthly_report() -> CompoundSelect:
     return union(_select_first_report(), _select_last_report())

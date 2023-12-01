@@ -185,5 +185,5 @@ class HolderDAO:
             self.ofm_well_profile, self.local_well_profile
         )
 
-    async def commit(self):
+    async def commit(self) -> None:
         await self.local_session.commit()

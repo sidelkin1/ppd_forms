@@ -18,7 +18,7 @@ async function updateTable(tableName) {
   };
   const result = await assignWork(tableName, url, data);
   if (result) {
-    checkStatus(tableName, result.job.job_id);
+    await checkStatus(tableName, result.job.job_id);
   }
 
   loader.classList.add("d-none");

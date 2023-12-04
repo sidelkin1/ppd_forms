@@ -19,10 +19,10 @@ async function loadReport(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    checkStatus(reportName, result.job.job_id);
+    link.href = `/report/${result.job.file_id}`;
+    await checkStatus(reportName, result.job.job_id);
   }
 
-  link.href = `/report/${result.job.file_id}`;
   loader.classList.add("d-none");
   button.classList.remove("disabled");
 }

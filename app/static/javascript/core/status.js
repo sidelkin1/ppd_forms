@@ -1,0 +1,25 @@
+async function checkStatus(name, jobID) {
+  const success = document.getElementById(`${name}Success`);
+  const alert = document.getElementById(`${name}Danger`);
+
+  let result;
+  const webSocketClient = new WebSocketClient();
+  try {
+    await webSocketClient.connect(`ws://127.0.0.1:8000/job/${jobID}/ws`);
+    const response = await webSocketClient.receive();
+    const data = JSON.parse(response);
+    if (data.job.status !== "completed") {
+      throw new Error(data.job.message);
+    }
+    success.classList.remove("d-none");
+    result = true;
+  } catch (error) {
+    console.error(error);
+    alert.classList.remove("d-none");
+    result = false;
+  } finally {
+    await webSocketClient.disconnect();
+  }
+
+  return result;
+}

@@ -20,6 +20,7 @@ async function updateTable(tableName) {
   if (result) {
     await checkStatus(tableName, result.job.job_id);
   }
+  await fetchDates(tableName, "database");
 
   loader.classList.add("d-none");
   button.classList.remove("disabled");
@@ -45,6 +46,7 @@ async function updateExcel(tableName) {
   if (result) {
     await checkStatus(tableName, result.job.job_id);
   }
+  await fetchDates(tableName, "excel");
 
   loader.classList.add("d-none");
   button.classList.remove("disabled");

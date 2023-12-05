@@ -10,7 +10,10 @@ async function fetchDates(path, source) {
       return;
     }
     const { min_date, max_date } = await response.json();
-    dates.textContent = min_date + " • " + max_date;
+    dates.textContent = [
+      new Date(min_date).toLocaleDateString(),
+      new Date(max_date).toLocaleDateString(),
+    ].join(" • ");
   } catch (error) {
     console.error(error);
   } finally {

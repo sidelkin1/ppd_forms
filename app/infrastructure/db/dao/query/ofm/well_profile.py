@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
 from app.core.models.dto import WellProfileDB
-from app.infrastructure.db.dao.complex.ofm.base import BaseDAO
-from app.infrastructure.db.dao.complex.ofm.querysets.well_profile import (
+from app.infrastructure.db.dao.query.ofm.base import BaseDAO
+from app.infrastructure.db.dao.query.ofm.querysets.well_profile import (
     select_well_profiles,
 )
 

@@ -1,16 +1,13 @@
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
-from app.infrastructure.db.dao import local
+from app.infrastructure.db.dao.local.main_table import MainTableDAO
 
 SourceDAO = TypeVar(
     "SourceDAO", bound=Any, covariant=True, contravariant=False
 )
 DestinationDAO = TypeVar(
-    "DestinationDAO",
-    bound=local.MainTableDAO,
-    covariant=True,
-    contravariant=False,
+    "DestinationDAO", bound=MainTableDAO, covariant=True, contravariant=False
 )
 
 

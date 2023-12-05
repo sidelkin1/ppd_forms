@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.infrastructure.db.dao.complex.reporter.base import BaseDAO
-from app.infrastructure.db.dao.complex.reporter.querysets.oil_loss import (
+from app.infrastructure.db.dao.query.reporter.base import BaseDAO
+from app.infrastructure.db.dao.query.reporter.querysets.oil_loss import (
     select_inj_well_database,
     select_monthly_report,
     select_neighborhood,

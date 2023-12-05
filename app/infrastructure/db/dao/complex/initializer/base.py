@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-from app.infrastructure.db.dao import csv, local
+from app.infrastructure.db.dao import local
+from app.infrastructure.file.dao import csv
 
 SourceDAO = TypeVar(
     "SourceDAO", bound=csv.BaseDAO, covariant=True, contravariant=False

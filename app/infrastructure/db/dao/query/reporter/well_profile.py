@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.infrastructure.db.dao.complex.reporter.base import BaseDAO
-from app.infrastructure.db.dao.complex.reporter.querysets.well_profile import (
+from app.infrastructure.db.dao.query.reporter.base import BaseDAO
+from app.infrastructure.db.dao.query.reporter.querysets.well_profile import (
     select_profile_report,
 )
 

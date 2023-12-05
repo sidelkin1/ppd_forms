@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from app.core.models.dto import WellProfileDB
-from app.infrastructure.db.dao.csv.base import BaseDAO
+from app.infrastructure.file.dao.csv.base import BaseDAO
 
 
 class WellProfileDAO(BaseDAO[WellProfileDB]):

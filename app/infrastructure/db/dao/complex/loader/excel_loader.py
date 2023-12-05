@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from typing import TypeVar
 
-from app.infrastructure.db.dao import excel
 from app.infrastructure.db.dao.complex.loader.base import (
     BaseLoader,
     DestinationDAO,
 )
+from app.infrastructure.file.dao.excel.base import BaseDAO
 
 SourceDAO = TypeVar(
-    "SourceDAO", bound=excel.BaseDAO, covariant=True, contravariant=False
+    "SourceDAO", bound=BaseDAO, covariant=True, contravariant=False
 )
 
 

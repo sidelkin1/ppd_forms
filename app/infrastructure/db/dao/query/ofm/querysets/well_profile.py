@@ -2,7 +2,7 @@ from sqlalchemy import Date, between, bindparam, distinct, func, or_, select
 from sqlalchemy.sql.expression import ColumnElement, ScalarSelect, Select
 from sqlalchemy.sql.functions import Function
 
-from app.infrastructure.db.dao.complex.ofm.querysets.common import (
+from app.infrastructure.db.dao.query.ofm.querysets.common import (
     select_cids,
     select_description,
 )

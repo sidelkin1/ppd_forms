@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from app.core.models.dto import MonthlyReportDB
-from app.infrastructure.db.dao.csv.base import BaseDAO
+from app.infrastructure.file.dao.csv.base import BaseDAO
 
 
 class MonthlyReportDAO(BaseDAO[MonthlyReportDB]):

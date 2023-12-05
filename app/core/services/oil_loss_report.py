@@ -6,7 +6,7 @@ from app.core.config.settings import settings
 from app.core.models.dto import TaskReport
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
-from app.infrastructure.db.dao.complex.reporter import OilLossReporter
+from app.infrastructure.db.dao.query.reporter import OilLossReporter
 
 
 def _prepare_ns_ppd(df: pd.DataFrame) -> pd.DataFrame:

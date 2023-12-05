@@ -18,9 +18,11 @@ async function updateTable(tableName) {
   };
   const result = await assignWork(tableName, url, data);
   if (result) {
-    await checkStatus(tableName, result.job.job_id);
+    const complete = await checkStatus(tableName, result.job.job_id);
+    if (complete) {
+      await fetchDates(tableName, "database");
+    }
   }
-  await fetchDates(tableName, "database");
 
   loader.classList.add("d-none");
   button.classList.remove("disabled");
@@ -44,9 +46,11 @@ async function updateExcel(tableName) {
     result = await assignWork(tableName, url, data);
   }
   if (result) {
-    await checkStatus(tableName, result.job.job_id);
+    const complete = await checkStatus(tableName, result.job.job_id);
+    if (complete) {
+      await fetchDates(tableName, "excel");
+    }
   }
-  await fetchDates(tableName, "excel");
 
   loader.classList.add("d-none");
   button.classList.remove("disabled");

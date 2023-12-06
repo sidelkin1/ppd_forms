@@ -1,3 +1,10 @@
+function constructWebSocketURL(relaivePath) {
+  const url = new URL(location.href);
+  url.protocol = "ws";
+  url.pathname = relaivePath;
+  return url;
+}
+
 async function checkStatus(name, jobID) {
   const success = document.getElementById(`${name}Success`);
   const alert = document.getElementById(`${name}Danger`);
@@ -5,7 +12,8 @@ async function checkStatus(name, jobID) {
   let result;
   const webSocketClient = new WebSocketClient();
   try {
-    await webSocketClient.connect(`ws://127.0.0.1:8000/job/${jobID}/ws`);
+    const url = constructWebSocketURL(`/job/${jobID}/ws`);
+    await webSocketClient.connect(url);
     const response = await webSocketClient.receive();
     const data = JSON.parse(response);
     if (data.job.status !== "completed") {

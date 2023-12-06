@@ -135,3 +135,5 @@ results/*
 !results/.gitkeep
 excel/*
 !excel/.gitkeep
+data/*
+!data/.gitkeep

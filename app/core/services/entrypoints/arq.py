@@ -5,7 +5,7 @@ from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.profile_report import profile_report
 from app.core.utils.result_path import result_path
-from app.infrastructure.db.dao.holder import HolderDAO
+from app.infrastructure.holder import HolderDAO
 
 registry = WorkRegistry()
 

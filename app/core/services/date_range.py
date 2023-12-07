@@ -1,8 +1,8 @@
 from datetime import date
 
 from app.core.models.enums import ExcelTableName, OfmTableName
-from app.infrastructure.db.dao.holder import HolderDAO
 from app.infrastructure.db.dao.local import MainTableDAO
+from app.infrastructure.holder import HolderDAO
 
 _dao_mapper = {
     OfmTableName.report: "local_monthly_report",

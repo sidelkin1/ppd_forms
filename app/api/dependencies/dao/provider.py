@@ -6,7 +6,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.infrastructure.db.dao.holder import HolderDAO
+from app.infrastructure.holder import HolderDAO
 
 
 def dao_provider() -> HolderDAO:

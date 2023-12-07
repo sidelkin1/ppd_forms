@@ -13,7 +13,7 @@
                         {{ report.title }}
                     </h5>
                     <div class="card-body">
-                        <p class="card-text">{{ report.description }}</p>
+                        <p class="card-text">{{ report.description|safe }}</p>
                         {% call(report) accordion_form(
                             report,
                             "Отчет успешно сформирован!",

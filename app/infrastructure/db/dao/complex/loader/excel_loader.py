@@ -5,7 +5,7 @@ from app.infrastructure.db.dao.complex.loader.base import (
     BaseLoader,
     DestinationDAO,
 )
-from app.infrastructure.file.dao.excel.base import BaseDAO
+from app.infrastructure.files.dao.excel.base import BaseDAO
 
 SourceDAO = TypeVar(
     "SourceDAO", bound=BaseDAO, covariant=True, contravariant=False

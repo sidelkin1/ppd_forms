@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from app.core.models.dto import RegexReplaceDB
-from app.infrastructure.file.dao.csv.base import BaseDAO
+from app.infrastructure.files.dao.csv.base import BaseDAO
 
 
 class ReservoirReplaceDAO(BaseDAO[RegexReplaceDB]):

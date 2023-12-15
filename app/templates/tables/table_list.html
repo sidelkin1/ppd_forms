@@ -33,6 +33,7 @@
                         <p class="card-text">{{ table.description|safe }}</p>
                         {% call(table) accordion_form(
                             table,
+                            "Параметры для обновления",
                             "Таблица успешно обновлена!",
                             "Ошибка при обновлении таблицы!"
                         ) %}

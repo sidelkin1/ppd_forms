@@ -1,4 +1,4 @@
-{% macro accordion_form(item, success_text, danger_text, need_link=False) -%}
+{% macro accordion_form(item, title, success_text, danger_text, need_link=False) -%}
     <div class="accordion" id="{{ item.path }}Accordion">
         <div class="accordion-item">
             <h2 class="accordion-header">
@@ -7,7 +7,7 @@
                     type="button" data-bs-toggle="collapse"
                     data-bs-target="#{{ item.path }}Collapse"
                 >
-                    Форма для обновления
+                    {{ title }}
                 </button>
             </h2>
             <div

@@ -16,6 +16,7 @@
                         <p class="card-text">{{ report.description|safe }}</p>
                         {% call(report) accordion_form(
                             report,
+                            "Параметры для выгрузки",
                             "Отчет успешно сформирован!",
                             "Ошибка при формировании отчета!",
                             need_link=True

@@ -31,7 +31,9 @@ def convert_neighbs(input_: Any) -> str:
 excel_options: dict[str, Any] = {
     "converters": {
         1: str,
-        6: lambda x: pd.to_datetime(x, errors="coerce").date(),
+        6: lambda x: pd.to_datetime(
+            x, format=r"%d.%m.%Y", errors="coerce"
+        ).date(),
         10: convert_neighbs,
     },
     "parse_dates": [4],

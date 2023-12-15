@@ -5,9 +5,11 @@ import pandas as pd
 excel_options: dict[str, Any] = {
     "converters": {
         "№ скв": str,
-        "Дата ВНР": lambda x: pd.to_datetime(x, errors="coerce").date(),
+        "Дата ВНР": lambda x: pd.to_datetime(
+            x, format=r"%d.%m.%Y", errors="coerce"
+        ).date(),
         "Фактический ремонт": lambda x: pd.to_datetime(
-            x, errors="coerce"
+            x, format=r"%d.%m.%Y", errors="coerce"
         ).date(),
     },
     "sheet_name": 0,

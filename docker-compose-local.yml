@@ -47,8 +47,7 @@ services:
       - 8000:8000
     build: ./
     volumes:
-      - ./results:/app/results
-      - ./excel:/app/excel
+      - ./files:/app/files
     environment:
       - DB_HOST=db
       - REDIS_HOST=redis
@@ -70,8 +69,7 @@ services:
     build:
       dockerfile: worker.Dockerfile
     volumes:
-      - ./results:/app/results
-      - ./excel:/app/excel
+      - ./files:/app/files
     environment:
       - DB_HOST=db
       - REDIS_HOST=redis

@@ -131,9 +131,7 @@ dmypy.json
 .vscode/
 *.sqlite
 
-results/*
-!results/.gitkeep
-excel/*
-!excel/.gitkeep
+files/*
+!files/.gitkeep
 data/*
 !data/.gitkeep

@@ -1,21 +1,24 @@
+from pathlib import Path
+
 import aiofiles
 from fastapi import HTTPException, UploadFile, status
-
-from app.core.config.settings import settings
 
 COPY_BUFSIZE = 1024 * 1024
 
 
-async def save_upload_file(file: UploadFile):
-    path = settings.base_dir / "excel" / file.filename
+async def save_upload_file(file: UploadFile, base_dir: Path):
     try:
+        if file.filename is None:
+            raise ValueError("filename must be set")
+        path = base_dir / "uploads" / file.filename
+        path.parent.mkdir(parents=True, exist_ok=True)
         async with aiofiles.open(path, "wb") as f:
             while contents := await file.read(COPY_BUFSIZE):
                 await f.write(contents)
-    except Exception:
-        return HTTPException(
+    except Exception as e:
+        raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Ошибка при загрузке файла!",
-        )  # TODO log
+        ) from e
     finally:
         await file.close()

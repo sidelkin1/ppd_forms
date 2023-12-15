@@ -3,7 +3,7 @@ from typing import Any, cast
 
 from app.api.dependencies.dao.provider import DbProvider
 from app.core.config.settings import settings
-from app.core.models.dto import JobStamp, TaskBase
+from app.core.models.schemas import TaskResponse
 from app.core.services.entrypoints.arq import registry
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.factories.local import (
@@ -14,10 +14,8 @@ from app.infrastructure.db.models import ofm
 from app.initial_data import iniialize_mapper
 
 
-async def perform_work(
-    ctx: dict[str, Any], task: TaskBase, job_stamp: JobStamp
-) -> None:
-    await registry[task.route_url](task, job_stamp, ctx)
+async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
+    await registry[response.task.route_url](response, ctx)
 
 
 async def startup(ctx: dict[str, Any]) -> None:

@@ -5,7 +5,8 @@ from typing import Annotated
 from arq.jobs import Job
 from fastapi import Depends, WebSocket
 
-from app.api.dependencies.job import CurrentJobDep, JobResponseDep
+from app.api.dependencies.job import CurrentJobDep
+from app.api.dependencies.responses import JobResponseDep
 from app.api.utils.exceptions import (
     JobExecutionError,
     JobNotFoundError,

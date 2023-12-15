@@ -1,6 +1,7 @@
 from fastapi import APIRouter, WebSocket
 
-from app.api.dependencies.job import JobResponseDep, JobTrackerDep
+from app.api.dependencies.job import JobTrackerDep
+from app.api.dependencies.responses import JobResponseDep
 from app.api.dependencies.user.session import UserIdDep
 from app.core.models.schemas import JobResponse
 

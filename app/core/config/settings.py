@@ -19,8 +19,7 @@ class Settings(BaseSettings):
         Path(__file__).resolve().parent.parent.parent.parent
     )
     data_dir: DirectoryPath = base_dir / "data"
-    excel_dir: DirectoryPath = base_dir / "excel"
-    result_dir: DirectoryPath = base_dir / "results"
+    file_dir: DirectoryPath = base_dir / "files"
 
     field_replace_path: FilePath = data_dir / "field_replace.csv"
     reservoir_replace_path: FilePath = data_dir / "reservoir_replace.csv"

@@ -1,9 +1,9 @@
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 
 from app.core.config.settings import settings
-from app.core.models.dto import TaskReport
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.query.reporter import WellProfileReporter
@@ -50,10 +50,11 @@ def _process_data(df: pd.DataFrame) -> pd.DataFrame:
 
 async def profile_report(
     path: Path,
-    dto: TaskReport,
+    date_from: date,
+    date_to: date,
     dao: WellProfileReporter,
     pool: ProcessPoolManager,
 ) -> None:
-    df = await dao.read_one(date_from=dto.date_from, date_to=dto.date_to)
+    df = await dao.read_one(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, df)
     await save_to_csv(df, path)

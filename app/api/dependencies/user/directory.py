@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.api.dependencies.user.session import UserIdDep
-from app.core.utils.result_path import result_path
+from app.core.config.settings import settings
 
 
 def user_directory_provider() -> Path:
@@ -12,9 +12,8 @@ def user_directory_provider() -> Path:
 
 
 async def get_or_create_directory(user_id: UserIdDep) -> Path:
-    directory = result_path(user_id)
-    if not directory.exists():
-        directory.mkdir(parents=True, exist_ok=True)
+    directory = settings.file_dir / user_id
+    directory.mkdir(parents=True, exist_ok=True)
     return directory
 
 

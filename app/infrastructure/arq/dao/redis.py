@@ -1,8 +1,7 @@
 from arq import ArqRedis
 from arq.jobs import Job
-from pydantic import BaseModel
 
-from app.core.models.dto import JobStamp
+from app.core.models.schemas import TaskResponse
 
 
 class RedisDAO:
@@ -12,9 +11,7 @@ class RedisDAO:
     async def enqueue_job(self, func: str, *args, **kwargs) -> Job | None:
         return await self.redis.enqueue_job(func, *args, **kwargs)
 
-    async def enqueue_task(
-        self, task: BaseModel, job_stamp: JobStamp
-    ) -> Job | None:
+    async def enqueue_task(self, response: TaskResponse) -> Job | None:
         return await self.redis.enqueue_job(
-            "perform_work", task, job_stamp, _job_id=job_stamp.job_id
+            "perform_work", response, _job_id=response.job.job_id
         )

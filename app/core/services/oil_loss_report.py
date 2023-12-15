@@ -1,9 +1,9 @@
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 
 from app.core.config.settings import settings
-from app.core.models.dto import TaskReport
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.query.reporter import OilLossReporter
@@ -143,10 +143,11 @@ def _process_data(dfs: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
 async def oil_loss_report(
     path: Path,
-    dto: TaskReport,
+    date_from: date,
+    date_to: date,
     dao: OilLossReporter,
     pool: ProcessPoolManager,
 ) -> None:
-    dfs = await dao.read_all(date_from=dto.date_from, date_to=dto.date_to)
+    dfs = await dao.read_all(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, dfs)
     await save_to_csv(df, path)

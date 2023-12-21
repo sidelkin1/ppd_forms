@@ -8,9 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.api import dependencies
 from app.api.routes.routers import main_router
 from app.core.config.settings import settings
-from app.infrastructure.arq.factory.redis import (
-    create_pool as create_redis_pool,
-)
+from app.infrastructure.arq.factory import create_pool as create_redis_pool
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )

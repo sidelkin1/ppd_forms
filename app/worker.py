@@ -11,7 +11,7 @@ from app.infrastructure.db.factories.local import (
 )
 from app.infrastructure.db.factories.ofm import create_pool as create_ofm_pool
 from app.infrastructure.db.models import ofm
-from app.initial_data import iniialize_mapper
+from app.initial_data import initialize_mapper
 
 
 async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
@@ -28,7 +28,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["local_pool_dao"] = asynccontextmanager(provider.local_pool_dao)
     ctx["ofm_local_dao"] = asynccontextmanager(provider.ofm_local_dao)
     ctx["excel_local_dao"] = asynccontextmanager(provider.excel_local_dao)
-    await iniialize_mapper(provider)
+    await initialize_mapper(provider)
 
 
 async def shutdown(ctx: dict[str, Any]) -> None:

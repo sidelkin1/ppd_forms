@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% from '/macros/forms.html' import date_range %}
+{% from '/macros/forms.html' import form_date_range %}
+{% from 'reports/macros/forms.html' import form_oil_loss %}
 {% from '/macros/accordion.html' import accordion_form %}
 
 {% block content %}
@@ -21,7 +22,11 @@
                             "Ошибка при формировании отчета!",
                             need_link=True
                         ) %}
-                            {{ date_range(report.path, "Выгрузить", "loadReport") }}
+                            {% if report.path == "oil_loss" %}
+                                {{ form_oil_loss(report, "Выгрузить", "loadReport") }}
+                            {% else %}
+                                {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
+                            {% endif %}
                         {% endcall %}
                     </div>
                 </div>

@@ -24,10 +24,14 @@
     <div class="input-group mb-1">
         <input type="date" class="form-control" id="{{ name }}End" name="end"/>
     </div>
+{%- endmacro %}
+
+{% macro form_date_range(name, button_text, button_func) -%}
+    {{ date_range(name, button_text, button_func) }}
     {{ spinner_button(name, button_text, button_func) }}
 {%- endmacro %}
 
-{% macro upload_file(name, button_text, button_func) -%}
+{% macro form_upload_file(name, button_text, button_func) -%}
     <div class="input-group mb-1">
         <input type="file" class="form-control" id="{{ name }}File" name="file"/>
     </div>

@@ -40,6 +40,13 @@ async def reports(request: Request, user_id: UserIdDep):
                 r" последней дате интервала</li>"
                 r"</ul>"
             ),
+            "loss_choice": {
+                "selected": "--Выберите режим выгрузки--",
+                "options": [
+                    {"value": "start_rate", "text": "Qн на начало периода"},
+                    {"value": "max_rate", "text": "Максимальный Qн"},
+                ],
+            },
         },
     )
     return templates.TemplateResponse(

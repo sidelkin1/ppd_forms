@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% from '/macros/forms.html' import date_range, upload_file %}
+{% from '/macros/forms.html' import form_date_range, form_upload_file %}
 {% from '/macros/accordion.html' import accordion_form %}
 
 {% block content %}
@@ -38,10 +38,10 @@
                             "Ошибка при обновлении таблицы!"
                         ) %}
                             {% if table.source == "database" %}
-                                {{ date_range(table.path, "Обновить", "updateTable") }}
+                                {{ form_date_range(table.path, "Обновить", "updateTable") }}
                             {% endif %}
                             {% if table.source == "excel" %}
-                                {{ upload_file(table.path, "Обновить", "updateExcel") }}
+                                {{ form_upload_file(table.path, "Обновить", "updateExcel") }}
                             {% endif %}
                         {% endcall %}
                     </div>

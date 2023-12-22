@@ -4,18 +4,40 @@ from sqlalchemy.sql.expression import CompoundSelect, Select, Subquery
 from app.infrastructure.db.models.local import MonthlyReport
 
 
-def _select_first_date_for_fluid(fluid: str) -> Select:
+def _select_max_rate(rate: str) -> Subquery:
     return (
         select(
             MonthlyReport.field,
             MonthlyReport.well_name,
             MonthlyReport.cid,
-            func.min(MonthlyReport.dat_rep).label("min_date"),
+            func.max(getattr(MonthlyReport, rate)).label("max_rate"),
         )
         .where(
             MonthlyReport.dat_rep >= bindparam("date_from"),
             MonthlyReport.dat_rep <= bindparam("date_to"),
-            getattr(MonthlyReport, fluid) > 0,
+            getattr(MonthlyReport, rate) > 0,
+        )
+        .group_by(
+            MonthlyReport.field,
+            MonthlyReport.well_name,
+            MonthlyReport.cid,
+        )
+        .subquery()
+    )
+
+
+def _select_first_rate_date(rate: str) -> Select:
+    return (
+        select(
+            MonthlyReport.field,
+            MonthlyReport.well_name,
+            MonthlyReport.cid,
+            func.min(MonthlyReport.dat_rep).label("first_date"),
+        )
+        .where(
+            MonthlyReport.dat_rep >= bindparam("date_from"),
+            MonthlyReport.dat_rep <= bindparam("date_to"),
+            getattr(MonthlyReport, rate) > 0,
         )
         .group_by(
             MonthlyReport.field,
@@ -25,22 +47,35 @@ def _select_first_date_for_fluid(fluid: str) -> Select:
     )
 
 
-def _select_first_date() -> Subquery:
-    first_fluids = union(
-        _select_first_date_for_fluid("liquid"),
-        _select_first_date_for_fluid("water"),
+def _select_max_rate_date(rate: str) -> Select:
+    subq = _select_max_rate(rate)
+    return select(
+        MonthlyReport.field,
+        MonthlyReport.well_name,
+        MonthlyReport.cid,
+        MonthlyReport.dat_rep.label("first_date"),
+    ).where(
+        MonthlyReport.field == subq.c.field,
+        MonthlyReport.well_name == subq.c.well_name,
+        MonthlyReport.cid == subq.c.cid,
+        getattr(MonthlyReport, rate) == subq.c.max_rate,
+        MonthlyReport.dat_rep >= bindparam("date_from"),
+        MonthlyReport.dat_rep <= bindparam("date_to"),
     )
+
+
+def _select_first_date(rates: Subquery) -> Subquery:
     return (
         select(
-            first_fluids.c.field,
-            first_fluids.c.well_name,
-            first_fluids.c.cid,
-            func.max(first_fluids.c.min_date).label("min_date"),
+            rates.c.field,
+            rates.c.well_name,
+            rates.c.cid,
+            func.max(rates.c.first_date).label("min_date"),
         )
         .group_by(
-            first_fluids.c.field,
-            first_fluids.c.well_name,
-            first_fluids.c.cid,
+            rates.c.field,
+            rates.c.well_name,
+            rates.c.cid,
         )
         .subquery()
     )
@@ -57,8 +92,7 @@ def _select_last_date() -> Subquery:
     )
 
 
-def _select_first_report() -> Select:
-    first_date = _select_first_date()
+def _select_first_report(subq: Subquery) -> Select:
     return select(
         MonthlyReport.field,
         MonthlyReport.well_name.label("well"),
@@ -70,10 +104,10 @@ def _select_first_report() -> Select:
         MonthlyReport.inj_rate,
         literal_column("'start'").label("period"),
     ).where(
-        MonthlyReport.field == first_date.c.field,
-        MonthlyReport.well_name == first_date.c.well_name,
-        MonthlyReport.cid == first_date.c.cid,
-        MonthlyReport.dat_rep == first_date.c.min_date,
+        MonthlyReport.field == subq.c.field,
+        MonthlyReport.well_name == subq.c.well_name,
+        MonthlyReport.cid == subq.c.cid,
+        MonthlyReport.dat_rep == subq.c.min_date,
     )
 
 
@@ -98,5 +132,22 @@ def _select_last_report() -> Select:
     )
 
 
-def select_monthly_report() -> CompoundSelect:
-    return union(_select_first_report(), _select_last_report())
+def select_monthly_report_for_first_rate() -> CompoundSelect:
+    rates = union(
+        _select_first_rate_date("liq_rate"),
+        _select_first_rate_date("inj_rate"),
+    ).subquery()
+    subq = _select_first_date(rates)
+    return union(_select_first_report(subq), _select_last_report())
+
+
+def select_monthly_report_for_max_rate() -> CompoundSelect:
+    rates = union(
+        _select_max_rate_date("oil_rate"),
+        _select_max_rate_date("inj_rate"),
+    ).subquery()
+    subq = _select_first_date(rates)
+    return union(_select_first_report(subq), _select_last_report())
+
+
+select_monthly_report = select_monthly_report_for_max_rate

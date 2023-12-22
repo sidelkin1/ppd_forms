@@ -4,7 +4,7 @@ from sqlalchemy.sql.expression import CompoundSelect, Select, Subquery
 from app.infrastructure.db.models.local import MonthlyReport
 
 
-def _select_first_date() -> Subquery:
+def _select_first_date_for_fluid(fluid: str) -> Select:
     return (
         select(
             MonthlyReport.field,
@@ -15,15 +15,32 @@ def _select_first_date() -> Subquery:
         .where(
             MonthlyReport.dat_rep >= bindparam("date_from"),
             MonthlyReport.dat_rep <= bindparam("date_to"),
-            or_(
-                MonthlyReport.water > 0,
-                MonthlyReport.liquid > 0,
-            ),
+            getattr(MonthlyReport, fluid) > 0,
         )
         .group_by(
             MonthlyReport.field,
             MonthlyReport.well_name,
             MonthlyReport.cid,
+        )
+    )
+
+
+def _select_first_date() -> Subquery:
+    first_fluids = union(
+        _select_first_date_for_fluid("liquid"),
+        _select_first_date_for_fluid("water"),
+    )
+    return (
+        select(
+            first_fluids.c.field,
+            first_fluids.c.well_name,
+            first_fluids.c.cid,
+            func.max(first_fluids.c.min_date).label("min_date"),
+        )
+        .group_by(
+            first_fluids.c.field,
+            first_fluids.c.well_name,
+            first_fluids.c.cid,
         )
         .subquery()
     )

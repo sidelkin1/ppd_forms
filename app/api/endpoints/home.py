@@ -43,7 +43,7 @@ async def reports(request: Request, user_id: UserIdDep):
             "loss_choice": {
                 "selected": "--Выберите режим выгрузки--",
                 "options": [
-                    {"value": "start_rate", "text": "Qн на начало периода"},
+                    {"value": "first_rate", "text": "Qн на начало периода"},
                     {"value": "max_rate", "text": "Максимальный Qн"},
                 ],
             },

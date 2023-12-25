@@ -19,7 +19,7 @@ async def create_oil_loss_report(
 ) -> OilLossResponse:
     task = TaskOilLoss(
         name=ReportName.oil_loss,
-        loss_mode=mode,
+        mode=mode,
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )

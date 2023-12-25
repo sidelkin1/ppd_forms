@@ -3,6 +3,6 @@ from app.core.models.enums import LossMode, TaskId
 
 
 class TaskOilLoss(
-    TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]
+    TaskReport, task_id=TaskId.report, route_fields=["task_id", "name", "mode"]
 ):
-    loss_mode: LossMode
+    mode: LossMode

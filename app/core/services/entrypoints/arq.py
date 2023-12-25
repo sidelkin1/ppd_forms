@@ -117,17 +117,31 @@ async def create_profile_report(
         )
 
 
-@registry.add("report:oil_loss")
-async def create_oil_loss_report(
+@registry.add("report:oil_loss:first_rate")
+async def create_first_rate_loss_report(
     response: OilLossResponse, ctx: dict[str, Any]
 ) -> None:
     async with ctx["local_pool_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
             response.path,
-            response.task.loss_mode,
             response.task.date_from,
             response.task.date_to,
-            holder.oil_loss_reporter,
+            holder.first_rate_loss_reporter,
+            ctx["pool"],
+        )
+
+
+@registry.add("report:oil_loss:max_rate")
+async def create_max_rate_loss_report(
+    response: OilLossResponse, ctx: dict[str, Any]
+) -> None:
+    async with ctx["local_pool_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        await oil_loss_report(
+            response.path,
+            response.task.date_from,
+            response.task.date_to,
+            holder.max_rate_loss_reporter,
             ctx["pool"],
         )

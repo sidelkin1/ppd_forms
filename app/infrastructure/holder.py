@@ -5,9 +5,8 @@ from sqlalchemy.orm import Session
 
 from app.core.config.settings import settings
 from app.infrastructure.db.dao import local
-from app.infrastructure.db.dao.complex import initializer, loader, reporter
-from app.infrastructure.db.dao.query import ofm
-from app.infrastructure.db.dao.query import reporter as query_reporter
+from app.infrastructure.db.dao.complex import initializer, loader
+from app.infrastructure.db.dao.query import ofm, reporter
 from app.infrastructure.files.dao import csv, excel
 
 
@@ -140,16 +139,16 @@ class HolderDAO:
         )
 
     @property
-    def well_profile_reporter(self) -> query_reporter.WellProfileReporter:
-        return query_reporter.WellProfileReporter(self.local_pool)
+    def well_profile_reporter(self) -> reporter.WellProfileReporter:
+        return reporter.WellProfileReporter(self.local_pool)
 
     @property
-    def first_rate_loss_reporter(self) -> query_reporter.FirstRateLossReporter:
-        return query_reporter.FirstRateLossReporter(self.local_pool)
+    def first_rate_loss_reporter(self) -> reporter.FirstRateLossReporter:
+        return reporter.FirstRateLossReporter(self.local_pool)
 
     @property
-    def max_rate_loss_reporter(self) -> query_reporter.MaxRateLossReporter:
-        return query_reporter.MaxRateLossReporter(self.local_pool)
+    def max_rate_loss_reporter(self) -> reporter.MaxRateLossReporter:
+        return reporter.MaxRateLossReporter(self.local_pool)
 
     @property
     def new_strategy_inj_loader(self) -> loader.NewStrategyInjLoader:
@@ -185,12 +184,6 @@ class HolderDAO:
     def well_profile_loader(self) -> loader.WellProfileLoader:
         return loader.WellProfileLoader(
             self.ofm_well_profile, self.local_well_profile
-        )
-
-    @property
-    def oil_loss_reporter(self) -> reporter.OilLossReporter:
-        return reporter.OilLossReporter(
-            self.first_rate_loss_reporter, self.max_rate_loss_reporter
         )
 
     async def commit(self) -> None:

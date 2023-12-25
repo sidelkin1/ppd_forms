@@ -4,9 +4,10 @@ from pathlib import Path
 import pandas as pd
 
 from app.core.config.settings import settings
+from app.core.models.enums import LossMode
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
-from app.infrastructure.db.dao.query.reporter import OilLossReporter
+from app.infrastructure.db.dao.complex.reporter import OilLossReporter
 
 
 def _prepare_ns_ppd(df: pd.DataFrame) -> pd.DataFrame:
@@ -143,11 +144,14 @@ def _process_data(dfs: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
 async def oil_loss_report(
     path: Path,
+    loss_mode: LossMode,
     date_from: date,
     date_to: date,
     dao: OilLossReporter,
     pool: ProcessPoolManager,
 ) -> None:
-    dfs = await dao.read_all(date_from=date_from, date_to=date_to)
+    dfs = await dao.read_all(
+        loss_mode=loss_mode, date_from=date_from, date_to=date_to
+    )
     df = await pool.run(_process_data, dfs)
     await save_to_csv(df, path)

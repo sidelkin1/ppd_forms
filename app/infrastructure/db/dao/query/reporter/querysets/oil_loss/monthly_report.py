@@ -148,6 +148,3 @@ def select_monthly_report_for_max_rate() -> CompoundSelect:
     ).subquery()
     subq = _select_first_date(rates)
     return union(_select_first_report(subq), _select_last_report())
-
-
-select_monthly_report = select_monthly_report_for_max_rate

@@ -11,6 +11,7 @@ from app.api.dependencies.job import (
 )
 from app.api.dependencies.redis.provider import RedisProvider, redis_provider
 from app.api.dependencies.responses import (
+    create_oil_loss_report,
     create_task_database,
     create_task_excel,
     create_task_report,
@@ -18,6 +19,7 @@ from app.api.dependencies.responses import (
     job_response_provider,
     task_database_provider,
     task_excel_provider,
+    task_oil_loss_provider,
     task_report_provider,
 )
 from app.api.dependencies.user import (
@@ -50,3 +52,4 @@ def setup(app: FastAPI):
     app.dependency_overrides[task_database_provider] = create_task_database
     app.dependency_overrides[task_report_provider] = create_task_report
     app.dependency_overrides[task_excel_provider] = create_task_excel
+    app.dependency_overrides[task_oil_loss_provider] = create_oil_loss_report

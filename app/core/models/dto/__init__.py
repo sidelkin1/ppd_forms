@@ -10,4 +10,5 @@ from .jobs.job_stamp import JobStamp  # noqa
 from .tasks.base import TaskBase  # noqa
 from .tasks.database import TaskDatabase  # noqa
 from .tasks.excel import TaskExcel  # noqa
+from .tasks.oil_loss import TaskOilLoss  # noqa
 from .tasks.report import TaskReport  # noqa

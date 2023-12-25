@@ -3,6 +3,7 @@ from typing import Any, cast
 from app.core.models.schemas import (
     DatabaseResponse,
     ExcelResponse,
+    OilLossResponse,
     ReportResponse,
 )
 from app.core.services.entrypoints.registry import WorkRegistry
@@ -118,12 +119,13 @@ async def create_profile_report(
 
 @registry.add("report:oil_loss")
 async def create_oil_loss_report(
-    response: ReportResponse, ctx: dict[str, Any]
+    response: OilLossResponse, ctx: dict[str, Any]
 ) -> None:
     async with ctx["local_pool_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
             response.path,
+            response.task.loss_mode,
             response.task.date_from,
             response.task.date_to,
             holder.oil_loss_reporter,

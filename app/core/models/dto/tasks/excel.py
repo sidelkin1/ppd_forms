@@ -1,4 +1,3 @@
-from app.core.config.settings import settings
 from app.core.models.dto.tasks.base import TaskBase
 from app.core.models.enums import ExcelTableName, LoadMode, TaskId
 
@@ -9,7 +8,3 @@ class TaskExcel(
     table: ExcelTableName
     mode: LoadMode
     file: str
-
-    @property
-    def path(self):
-        return settings.excel_dir / self.file

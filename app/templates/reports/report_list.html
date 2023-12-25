@@ -23,7 +23,7 @@
                             need_link=True
                         ) %}
                             {% if report.path == "oil_loss" %}
-                                {{ form_oil_loss(report, "Выгрузить", "loadReport") }}
+                                {{ form_oil_loss(report, "Выгрузить", "loadOilLoss") }}
                             {% else %}
                                 {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
                             {% endif %}

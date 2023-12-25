@@ -3,8 +3,8 @@
 {% macro form_oil_loss(report, button_text, button_func) -%}
     {{ date_range(report.path, button_text, button_func) }}
     <select class="form-select mb-1" id="{{ report.path }}Select">
-        <option value="--" selected>{{ report.loss_choice.selected }}</option>
-        {% for option in report.loss_choice.options %}
+        <option value="--" selected>{{ report.loss_mode.selected }}</option>
+        {% for option in report.loss_mode.options %}
             <option value="{{ option.value }}">{{ option.text }}</option>
         {% endfor %}
     </select>

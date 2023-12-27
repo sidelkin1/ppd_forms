@@ -48,6 +48,17 @@ async def reports(request: Request, user_id: UserIdDep):
                 ],
             },
         },
+        {
+            "path": "opp_per_year",
+            "title": "Количество ОПП за год",
+            "description": (
+                r"Количество ОПП за год:"
+                r"<ul>"
+                r"<li>общее число исследований</li>"
+                r"<li>число охваченных скважин</li>"
+                r"</ul>"
+            ),
+        },
     )
     return templates.TemplateResponse(
         "reports/report_list.html",

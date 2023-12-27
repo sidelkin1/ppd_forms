@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config.settings import settings
 from app.infrastructure.db.dao import local
@@ -16,11 +16,13 @@ class HolderDAO:
         *,
         local_pool: async_sessionmaker[AsyncSession] | None = None,
         local_session: AsyncSession | None = None,
+        ofm_pool: sessionmaker[Session] | None = None,
         ofm_session: Session | None = None,
         excel_path: Path | None = None,
     ) -> None:
         self.local_pool = local_pool
         self.local_session = local_session
+        self.ofm_pool = ofm_pool
         self.ofm_session = ofm_session
         self.excel_path = excel_path
 
@@ -149,6 +151,10 @@ class HolderDAO:
     @property
     def max_rate_loss_reporter(self) -> reporter.MaxRateLossReporter:
         return reporter.MaxRateLossReporter(self.local_pool)
+
+    @property
+    def opp_per_year_reporter(self) -> reporter.OppPerYearReporter:
+        return reporter.OppPerYearReporter(self.ofm_pool)
 
     @property
     def new_strategy_inj_loader(self) -> loader.NewStrategyInjLoader:

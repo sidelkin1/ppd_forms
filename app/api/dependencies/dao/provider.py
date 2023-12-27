@@ -1,9 +1,14 @@
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, cast
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy import Engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.holder import HolderDAO
@@ -34,6 +39,9 @@ class DbProvider:
         with self.ofm_pool() as session:
             yield HolderDAO(ofm_session=session)
 
+    async def ofm_pool_dao(self) -> AsyncGenerator[HolderDAO, None]:
+        yield HolderDAO(ofm_pool=self.ofm_pool)
+
     async def ofm_local_dao(self) -> AsyncGenerator[HolderDAO, None]:
         with self.ofm_pool() as ofm_session:
             async with self.local_pool() as local_session:
@@ -49,8 +57,10 @@ class DbProvider:
 
     async def dispose(self) -> None:
         if self.local_pool and (engine := self.local_pool.kw.get("bind")):
+            engine = cast(AsyncEngine, engine)
             await engine.dispose()
         if self.ofm_pool and (engine := self.ofm_pool.kw.get("bind")):
+            engine = cast(Engine, engine)
             engine.dispose()
 
 

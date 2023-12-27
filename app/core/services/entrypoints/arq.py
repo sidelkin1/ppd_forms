@@ -8,6 +8,7 @@ from app.core.models.schemas import (
 )
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.oil_loss_report import oil_loss_report
+from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
 from app.infrastructure.holder import HolderDAO
 
@@ -143,5 +144,20 @@ async def create_max_rate_loss_report(
             response.task.date_from,
             response.task.date_to,
             holder.max_rate_loss_reporter,
+            ctx["pool"],
+        )
+
+
+@registry.add("report:opp_per_year")
+async def create_opp_per_year_report(
+    response: ReportResponse, ctx: dict[str, Any]
+) -> None:
+    async with ctx["ofm_pool_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        await opp_per_year_report(
+            response.path,
+            response.task.date_from,
+            response.task.date_to,
+            holder.opp_per_year_reporter,
             ctx["pool"],
         )

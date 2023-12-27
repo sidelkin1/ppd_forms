@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.infrastructure.db.dao.query.reporter.base import BaseDAO
+from app.infrastructure.db.dao.query.reporter.local import LocalBaseDAO
 from app.infrastructure.db.dao.query.reporter.querysets.oil_loss import (
     select_inj_well_database,
     select_monthly_report_for_first_rate,
@@ -10,7 +10,7 @@ from app.infrastructure.db.dao.query.reporter.querysets.oil_loss import (
 )
 
 
-class FirstRateLossReporter(BaseDAO):
+class FirstRateLossReporter(LocalBaseDAO):
     def __init__(self, pool: async_sessionmaker[AsyncSession]) -> None:
         super().__init__(
             {
@@ -23,7 +23,7 @@ class FirstRateLossReporter(BaseDAO):
         )
 
 
-class MaxRateLossReporter(BaseDAO):
+class MaxRateLossReporter(LocalBaseDAO):
     def __init__(self, pool: async_sessionmaker[AsyncSession]) -> None:
         super().__init__(
             {

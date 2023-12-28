@@ -1,8 +1,8 @@
 import re
 
-from app.core.unify.base_mapper import BaseMapper
 from app.infrastructure.db.dao import local
 from app.infrastructure.db.types import types
+from app.infrastructure.db.types.unify.base_mapper import BaseMapper
 
 
 async def _update_simple_mapper(

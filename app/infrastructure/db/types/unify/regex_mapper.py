@@ -1,7 +1,10 @@
 import re
 
-from app.core.unify.base_mapper import WordOrder
-from app.core.unify.simple_mapper import ReplaceDict, SimpleMapper
+from app.infrastructure.db.types.unify.base_mapper import WordOrder
+from app.infrastructure.db.types.unify.simple_mapper import (
+    ReplaceDict,
+    SimpleMapper,
+)
 
 
 class RegexMapper(SimpleMapper):

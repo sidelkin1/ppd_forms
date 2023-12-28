@@ -2,8 +2,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.models.dto import RegexReplaceDB
-from app.core.unify.base_mapper import BaseMapper
 from app.infrastructure.db.dao.local.base import BaseDAO, Model
+from app.infrastructure.db.types.unify.base_mapper import BaseMapper
 
 
 class RegexReplaceDAO(BaseDAO[Model, RegexReplaceDB]):

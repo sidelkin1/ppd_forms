@@ -2,11 +2,11 @@ from sqlalchemy.orm import mapped_column
 from typing_extensions import Annotated
 
 from app.core.config.settings import settings
-from app.core.unify.base_mapper import SplitMode
-from app.core.unify.layer_mapper import LayerMapper
-from app.core.unify.regex_mapper import RegexMapper
-from app.core.unify.well_mapper import WellMapper
 from app.infrastructure.db.types.base import BaseType
+from app.infrastructure.db.types.unify.base_mapper import SplitMode
+from app.infrastructure.db.types.unify.layer_mapper import LayerMapper
+from app.infrastructure.db.types.unify.regex_mapper import RegexMapper
+from app.infrastructure.db.types.unify.well_mapper import WellMapper
 
 
 class FieldType(BaseType):

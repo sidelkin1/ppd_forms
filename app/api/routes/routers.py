@@ -11,6 +11,6 @@ main_router.include_router(home_router, tags=["home"])
 main_router.include_router(
     database_router, prefix="/database", tags=["database"]
 )
-main_router.include_router(report_router, prefix="/report", tags=["reports"])
-main_router.include_router(job_router, prefix="/job", tags=["jobs"])
+main_router.include_router(report_router, prefix="/reports", tags=["reports"])
+main_router.include_router(job_router, prefix="/jobs", tags=["jobs"])
 main_router.include_router(excel_router, prefix="/excel", tags=["excel"])

@@ -12,14 +12,14 @@ async function loadReport(reportName) {
   alert.classList.add("d-none");
   success.classList.add("d-none");
 
-  const url = `/report/${reportName}`;
+  const url = `/reports/${reportName}`;
   const data = {
     date_from: dateFrom,
     date_to: dateTo,
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/report/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}`;
     await checkStatus(reportName, result.job.job_id);
   }
 
@@ -42,14 +42,14 @@ async function loadOilLoss(reportName) {
   alert.classList.add("d-none");
   success.classList.add("d-none");
 
-  const url = `/report/${reportName}/${lossMode}`;
+  const url = `/reports/${reportName}/${lossMode}`;
   const data = {
     date_from: dateFrom,
     date_to: dateTo,
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/report/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}`;
     await checkStatus(reportName, result.job.job_id);
   }
 

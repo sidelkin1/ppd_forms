@@ -2,7 +2,7 @@ from sqlalchemy import Result
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.sql.expression import Select
 
-from app.infrastructure.db.dao.query.reporter.base import BaseDAO
+from app.infrastructure.db.dao.sql.reporters.base import BaseDAO
 
 
 class LocalBaseDAO(BaseDAO[async_sessionmaker[AsyncSession]]):

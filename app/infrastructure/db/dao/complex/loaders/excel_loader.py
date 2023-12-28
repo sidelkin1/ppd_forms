@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TypeVar
 
-from app.infrastructure.db.dao.complex.loader.base import (
+from app.infrastructure.db.dao.complex.loaders.base import (
     BaseLoader,
     DestinationDAO,
 )

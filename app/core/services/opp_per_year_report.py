@@ -5,7 +5,7 @@ import pandas as pd
 
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
-from app.infrastructure.db.dao.query.reporter import OppPerYearReporter
+from app.infrastructure.db.dao.sql.reporters import OppPerYearReporter
 
 
 def _process_data(df: pd.DataFrame) -> pd.DataFrame:

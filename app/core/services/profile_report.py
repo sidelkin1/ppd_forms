@@ -6,7 +6,7 @@ import pandas as pd
 from app.core.config.settings import settings
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
-from app.infrastructure.db.dao.query.reporter import WellProfileReporter
+from app.infrastructure.db.dao.sql.reporters import WellProfileReporter
 
 
 def _group_diff_absorb(df: pd.DataFrame) -> pd.DataFrame:

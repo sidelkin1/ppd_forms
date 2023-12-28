@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import TypeVar
 
-from app.infrastructure.db.dao.complex.loader.base import (
+from app.infrastructure.db.dao.complex.loaders.base import (
     BaseLoader,
     DestinationDAO,
 )
-from app.infrastructure.db.dao.query.ofm.base import BaseDAO
+from app.infrastructure.db.dao.sql.ofm.base import BaseDAO
 
 SourceDAO = TypeVar(
     "SourceDAO", bound=BaseDAO, covariant=True, contravariant=False

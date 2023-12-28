@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config.settings import settings
 from app.infrastructure.db.dao import local
-from app.infrastructure.db.dao.complex import initializer, loader
-from app.infrastructure.db.dao.query import ofm, reporter
+from app.infrastructure.db.dao.complex import initializers, loaders
+from app.infrastructure.db.dao.sql import ofm, reporters
 from app.infrastructure.files.dao import csv, excel
 
 
@@ -109,86 +109,90 @@ class HolderDAO:
     @property
     def monthly_report_initializer(
         self,
-    ) -> initializer.MonthlyReportInitializer:
-        return initializer.MonthlyReportInitializer(
+    ) -> initializers.MonthlyReportInitializer:
+        return initializers.MonthlyReportInitializer(
             self.csv_monthly_report, self.local_monthly_report
         )
 
     @property
-    def well_profile_initializer(self) -> initializer.WellProfileInitializer:
-        return initializer.WellProfileInitializer(
+    def well_profile_initializer(self) -> initializers.WellProfileInitializer:
+        return initializers.WellProfileInitializer(
             self.csv_well_profile, self.local_well_profile
         )
 
     @property
-    def field_replace_initializer(self) -> initializer.FieldReplaceInitializer:
-        return initializer.FieldReplaceInitializer(
+    def field_replace_initializer(
+        self,
+    ) -> initializers.FieldReplaceInitializer:
+        return initializers.FieldReplaceInitializer(
             self.csv_field_replace, self.local_field_replace
         )
 
     @property
     def reservoir_replace_initializer(
         self,
-    ) -> initializer.ReservoirReplaceInitializer:
-        return initializer.ReservoirReplaceInitializer(
+    ) -> initializers.ReservoirReplaceInitializer:
+        return initializers.ReservoirReplaceInitializer(
             self.csv_reservoir_replace, self.local_reservoir_replace
         )
 
     @property
-    def layer_replace_initializer(self) -> initializer.LayerReplaceInitializer:
-        return initializer.LayerReplaceInitializer(
+    def layer_replace_initializer(
+        self,
+    ) -> initializers.LayerReplaceInitializer:
+        return initializers.LayerReplaceInitializer(
             self.csv_layer_replace, self.local_layer_replace
         )
 
     @property
-    def well_profile_reporter(self) -> reporter.WellProfileReporter:
-        return reporter.WellProfileReporter(self.local_pool)
+    def well_profile_reporter(self) -> reporters.WellProfileReporter:
+        return reporters.WellProfileReporter(self.local_pool)
 
     @property
-    def first_rate_loss_reporter(self) -> reporter.FirstRateLossReporter:
-        return reporter.FirstRateLossReporter(self.local_pool)
+    def first_rate_loss_reporter(self) -> reporters.FirstRateLossReporter:
+        return reporters.FirstRateLossReporter(self.local_pool)
 
     @property
-    def max_rate_loss_reporter(self) -> reporter.MaxRateLossReporter:
-        return reporter.MaxRateLossReporter(self.local_pool)
+    def max_rate_loss_reporter(self) -> reporters.MaxRateLossReporter:
+        return reporters.MaxRateLossReporter(self.local_pool)
 
     @property
-    def opp_per_year_reporter(self) -> reporter.OppPerYearReporter:
-        return reporter.OppPerYearReporter(self.ofm_pool)
+    def opp_per_year_reporter(self) -> reporters.OppPerYearReporter:
+        return reporters.OppPerYearReporter(self.ofm_pool)
 
     @property
-    def new_strategy_inj_loader(self) -> loader.NewStrategyInjLoader:
-        return loader.NewStrategyInjLoader(
+    def new_strategy_inj_loader(self) -> loaders.NewStrategyInjLoader:
+        return loaders.NewStrategyInjLoader(
             self.excel_new_strategy_inj, self.local_new_strategy_inj
         )
 
     @property
-    def new_strategy_oil_loader(self) -> loader.NewStrategyOilLoader:
-        return loader.NewStrategyOilLoader(
+    def new_strategy_oil_loader(self) -> loaders.NewStrategyOilLoader:
+        return loaders.NewStrategyOilLoader(
             self.excel_new_strategy_oil, self.local_new_strategy_oil
         )
 
     @property
-    def inj_well_database_loader(self) -> loader.InjWellDatabaseLoader:
-        return loader.InjWellDatabaseLoader(
+    def inj_well_database_loader(self) -> loaders.InjWellDatabaseLoader:
+        return loaders.InjWellDatabaseLoader(
             self.excel_inj_well_database, self.local_inj_well_database
         )
 
     @property
-    def neighborhood_loader(self) -> loader.NeighborhoodLoader:
-        return loader.NeighborhoodLoader(
+    def neighborhood_loader(self) -> loaders.NeighborhoodLoader:
+        return loaders.NeighborhoodLoader(
             self.excel_neighborhood, self.local_neighborhood
         )
 
     @property
-    def monthly_report_loader(self) -> loader.MonthlyReportLoader:
-        return loader.MonthlyReportLoader(
+    def monthly_report_loader(self) -> loaders.MonthlyReportLoader:
+        return loaders.MonthlyReportLoader(
             self.ofm_monthly_report, self.local_monthly_report
         )
 
     @property
-    def well_profile_loader(self) -> loader.WellProfileLoader:
-        return loader.WellProfileLoader(
+    def well_profile_loader(self) -> loaders.WellProfileLoader:
+        return loaders.WellProfileLoader(
             self.ofm_well_profile, self.local_well_profile
         )
 

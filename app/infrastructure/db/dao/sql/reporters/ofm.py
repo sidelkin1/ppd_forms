@@ -3,7 +3,7 @@ from sqlalchemy import Result
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.sql.expression import Select
 
-from app.infrastructure.db.dao.query.reporter.base import BaseDAO
+from app.infrastructure.db.dao.sql.reporters.base import BaseDAO
 
 
 class OfmBaseDAO(BaseDAO[sessionmaker[Session]]):

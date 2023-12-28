@@ -3,7 +3,7 @@ from enum import Enum
 from sqlalchemy import Date, bindparam, func, literal_column, select, union
 from sqlalchemy.sql.expression import ColumnClause, Select, Subquery
 
-from app.infrastructure.db.dao.query.querysets.common import (
+from app.infrastructure.db.dao.sql.querysets.common import (
     select_cids,
     select_description,
     select_well_name,

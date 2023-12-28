@@ -3,7 +3,7 @@ from typing import Any
 from sqlalchemy import bindparam, func, select
 from sqlalchemy.sql.expression import ColumnElement, Select, Subquery
 
-from app.infrastructure.db.dao.query.querysets.common import (
+from app.infrastructure.db.dao.sql.querysets.common import (
     select_cids,
     select_description,
 )

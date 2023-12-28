@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.infrastructure.db.dao.query.reporter.ofm import OfmBaseDAO
-from app.infrastructure.db.dao.query.reporter.querysets.opp_per_year import (
+from app.infrastructure.db.dao.sql.reporters.ofm import OfmBaseDAO
+from app.infrastructure.db.dao.sql.reporters.querysets.opp_per_year import (
     select_well_profiles,
 )
 

@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
 from app.core.models.dto import MonthlyReportDB
-from app.infrastructure.db.dao.query.ofm.base import BaseDAO
-from app.infrastructure.db.dao.query.ofm.querysets.monthly_report import (
+from app.infrastructure.db.dao.sql.ofm.base import BaseDAO
+from app.infrastructure.db.dao.sql.ofm.querysets.monthly_report import (
     select_well_rates,
 )
 

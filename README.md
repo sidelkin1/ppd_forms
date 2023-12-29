@@ -53,12 +53,12 @@ docker-compose -f docker-compose-local.yml up -d --build
     - `POST` **/excel/{table}/{mode}** - загрузить таблицу `{table}` в режиме `{mode}`
     - `GET` **/excel/{table}** - запросить интервал дат записей в таблице `{table}`
 - Выгрузка отчетов:
-    - `POST` **/report/{name}** - запустить процесс выгрузки отчета `{name}`
-    - `GET` **/report/{file_id}** - скачать файл отчета с именем `{file_id}`
-    - `DELETE` **/report/{file_id}** - удалить файл отчета с именем `{file_id}`
+    - `POST` **/reports/{name}** - запустить процесс выгрузки отчета `{name}`
+    - `GET` **/reports/{file_id}** - скачать файл отчета с именем `{file_id}`
+    - `DELETE` **/reports/{file_id}** - удалить файл отчета с именем `{file_id}`
 - Мониторинг задач:
-    - `GET` **/job/{job_id}** - получить статус выполнения задачи `{job_id}`
-    - **/job/{job_id}/ws** - получить статус выполнения задачи `{job_id}` через `WebSocket`
+    - `GET` **/jobs/{job_id}** - получить статус выполнения задачи `{job_id}`
+    - **/jobs/{job_id}/ws** - получить статус выполнения задачи `{job_id}` через `WebSocket`
 
 ## Техническая информация
 

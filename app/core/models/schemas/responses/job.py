@@ -10,7 +10,7 @@ from app.core.models.schemas.responses.task import TaskResponse, TaskT
 
 
 class JobResponse(BaseResponse[dict[str, Any]]):
-    task: dict[str, Any] = Field(alias="data")
+    task: dict[str, Any] | None = Field(alias="data", default=None)
 
     model_config = ConfigDict(populate_by_name=True)
 

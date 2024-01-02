@@ -7,12 +7,6 @@ from fastapi import Depends, WebSocket
 
 from app.api.dependencies.job import CurrentJobDep
 from app.api.dependencies.responses import JobResponseDep
-from app.api.utils.exceptions import (
-    JobExecutionError,
-    JobNotFoundError,
-    JobStatusException,
-    JobWebSocketError,
-)
 from app.core.models.enums import JobStatus
 from app.core.models.schemas import JobResponse
 
@@ -32,70 +26,48 @@ class JobTracker:
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        if not self.socket_task.done():
-            self.socket_task.cancel()
-            await self.websocket.close()
-        if not self.job_task.done():
-            self.job_task.cancel()
-            try:
-                await self.job.abort()
-            except Exception:
-                print("Exception while aborting job")  # TODO log
+        await self.websocket.close()
+        self.socket_task.cancel()
+        self.job_task.cancel()
 
     async def _socket_listen(self) -> None:
-        while True:
-            await self.websocket.receive()
+        try:
+            while True:
+                await self.websocket.receive()
+        except Exception as error:
+            print(f"Webosocket error: {error}")  # TODO log
 
     async def _job_result(self) -> None:
-        await self.job.result()
+        if self.response.job.status is JobStatus.not_found:
+            self.response.job.message = "Job is not found"
+            return
+        try:
+            await self.job.result()
+        except Exception as error:
+            self.response.job.status = JobStatus.error
+            self.response.job.message = str(error)
+            print(f"Job error: {error}")  # TODO log
+        else:
+            self.response.job.status = JobStatus.completed
+            self.response.job.message = "Job is completed"
 
-    async def send_response(
-        self,
-        status: JobStatus | None = None,
-        message: str | None = None,
-    ) -> None:
-        if status is not None:
-            self.response.job.status = status
-        if message is not None:
-            self.response.job.message = message
+    async def send_response(self) -> None:
         await self.websocket.send_text(
             self.response.model_dump_json(exclude_none=True)
         )
 
     async def status(self) -> None:
-        try:
-            if self.response.job.status is JobStatus.not_found:
-                raise JobNotFoundError(message="Job is not found")
-            await asyncio.wait(
-                (self.socket_task, self.job_task),
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-            if self.socket_task.done():
-                error = self.socket_task.exception()
-                raise JobWebSocketError(
-                    f"Webosocket error: {error}"
-                ) from error
+        await asyncio.wait(
+            (self.socket_task, self.job_task),
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        if self.socket_task.done():
             try:
-                self.job_task.result()
-            except Exception as error:
-                raise JobExecutionError(
-                    status=JobStatus.error,
-                    message=str(error),
-                ) from error
-        except JobWebSocketError as error:
-            print(error)  # TODO log
-        except JobStatusException as error:
-            await self.send_response(
-                status=error.status, message=error.message
-            )
-        except Exception as error:
-            await self.send_response(
-                status=JobStatus.error, message=str(error)
-            )
+                await self.job.abort()
+            except Exception:
+                print("Exception while aborting job")  # TODO log
         else:
-            await self.send_response(
-                status=JobStatus.completed, message="Job is completed"
-            )
+            await self.send_response()
 
 
 def job_tracker_provider() -> JobTracker:

@@ -1,7 +1,7 @@
 """Импорты класса Base и всех моделей для Alembic."""
 import asyncio
 
-from sqlalchemy.ext.asyncio import AsyncConnection
+from sqlalchemy import Connection
 from sqlalchemy.schema import CreateSchema
 
 from app.core.config.settings import settings
@@ -9,7 +9,7 @@ from app.infrastructure.db.factories.local import create_engine
 from app.infrastructure.db.models.local import Base  # noqa
 
 
-def prepare_base(conn: AsyncConnection) -> None:
+def prepare_base(conn: Connection) -> None:
     schema = settings.util_table_schema
     if not conn.dialect.has_schema(conn, schema):
         conn.execute(CreateSchema(schema))

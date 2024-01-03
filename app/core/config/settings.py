@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     @classmethod
     def assemble_redis_settings(cls, v: Any, info: FieldValidationInfo) -> Any:
         return v or RedisSettings(
-            host=info.data["redis_host"], port=info.data["redis_port"]
+            host=info.data.get("redis_host"), port=info.data.get("redis_port")
         )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

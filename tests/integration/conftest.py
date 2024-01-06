@@ -8,7 +8,6 @@ from arq.connections import ArqRedis
 from arq.worker import Worker
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.testclient import TestClient
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import dependencies
@@ -19,12 +18,6 @@ from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )
 from app.lifespan import lifespan
-from tests.fixtures.job_fixtures import job_abort  # noqa: F401
-from tests.fixtures.job_fixtures import job_error  # noqa: F401
-from tests.fixtures.job_fixtures import job_ok  # noqa: F401
-from tests.fixtures.response_fixtures import test_response  # noqa: F401
-from tests.fixtures.response_fixtures import test_response_error  # noqa: F401
-from tests.fixtures.response_fixtures import test_response_ok  # noqa: F401
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -79,9 +72,3 @@ def app() -> FastAPI:
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     dependencies.setup(app)
     return app
-
-
-@pytest.fixture(scope="session")
-def test_client(app: FastAPI) -> Generator[TestClient, None, None]:
-    with TestClient(app=app, base_url="http://test") as client:
-        yield client

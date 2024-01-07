@@ -1,4 +1,6 @@
+from arq import ArqRedis
 from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.dependencies.dao.provider import DbProvider, dao_provider
 from app.api.dependencies.job import (
@@ -22,6 +24,7 @@ from app.api.dependencies.responses import (
     task_oil_loss_provider,
     task_report_provider,
 )
+from app.api.dependencies.settings import settings_provider
 from app.api.dependencies.user import (
     get_file_path,
     get_or_create_directory,
@@ -30,15 +33,20 @@ from app.api.dependencies.user import (
     user_file_provider,
     user_id_provider,
 )
+from app.core.config.settings import Settings
 
 
-def setup(app: FastAPI):
+def setup(
+    app: FastAPI,
+    pool: async_sessionmaker[AsyncSession],
+    redis: ArqRedis,
+    settings: Settings,
+) -> None:
     app.dependency_overrides[dao_provider] = DbProvider(
-        local_pool=app.state.pool
+        local_pool=pool
     ).local_dao
-    app.dependency_overrides[redis_provider] = RedisProvider(
-        pool=app.state.redis
-    ).dao
+    app.dependency_overrides[redis_provider] = RedisProvider(pool=redis).dao
+    app.dependency_overrides[settings_provider] = lambda: settings
 
     app.dependency_overrides[new_job_provider] = create_job_stamp
     app.dependency_overrides[current_job_provider] = get_current_job

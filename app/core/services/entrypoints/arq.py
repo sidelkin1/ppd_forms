@@ -115,6 +115,7 @@ async def create_profile_report(
             response.task.date_to,
             holder.well_profile_reporter,
             ctx["pool"],
+            ctx["settings"],
         )
 
 
@@ -130,6 +131,7 @@ async def create_first_rate_loss_report(
             response.task.date_to,
             holder.first_rate_loss_reporter,
             ctx["pool"],
+            ctx["settings"],
         )
 
 
@@ -145,6 +147,7 @@ async def create_max_rate_loss_report(
             response.task.date_to,
             holder.max_rate_loss_reporter,
             ctx["pool"],
+            ctx["settings"],
         )
 
 
@@ -160,4 +163,5 @@ async def create_opp_per_year_report(
             response.task.date_to,
             holder.opp_per_year_reporter,
             ctx["pool"],
+            ctx["settings"],
         )

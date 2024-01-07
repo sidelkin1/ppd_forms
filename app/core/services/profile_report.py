@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from app.core.config.settings import settings
+from app.core.config.settings import Settings
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.sql.reporters import WellProfileReporter
@@ -39,8 +39,8 @@ def _calc_layer_rates(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _process_data(df: pd.DataFrame) -> pd.DataFrame:
-    df["layer"] = df["layer"].str.split(settings.delimiter)
+def _process_data(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
+    df["layer"] = df["layer"].str.split(delimiter)
     df = df.explode("layer")
     df["layer"].fillna("", inplace=True)
     df = _group_diff_absorb(df)
@@ -54,7 +54,8 @@ async def profile_report(
     date_to: date,
     dao: WellProfileReporter,
     pool: ProcessPoolManager,
+    settings: Settings,
 ) -> None:
     df = await dao.read_one(date_from=date_from, date_to=date_to)
-    df = await pool.run(_process_data, df)
-    await save_to_csv(df, path)
+    df = await pool.run(_process_data, df, settings.delimiter)
+    await save_to_csv(df, path, settings.csv_encoding, settings.csv_delimiter)

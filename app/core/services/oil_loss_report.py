@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from app.core.config.settings import settings
+from app.core.config.settings import Settings
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.sql.reporters import (
@@ -12,26 +12,29 @@ from app.infrastructure.db.dao.sql.reporters import (
 )
 
 
-def _prepare_ns_ppd(df: pd.DataFrame) -> pd.DataFrame:
+def _prepare_ns_ppd(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
     df["reservoir_neighbs"].fillna(df["reservoir"], inplace=True)
-    df["reservoir"] = df["reservoir_neighbs"].str.split(settings.delimiter)
+    df["reservoir"] = df["reservoir_neighbs"].str.split(delimiter)
     df.drop(columns=["reservoir_neighbs"], inplace=True)
     df = df.explode("reservoir")
     return df
 
 
-def _prepare_inj_db(df: pd.DataFrame) -> pd.DataFrame:
-    df["reservoir"] = df["reservoir"].str.split(settings.delimiter)
+def _prepare_inj_db(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
+    df["reservoir"] = df["reservoir"].str.split(delimiter)
     df = df.explode("reservoir")
     return df
 
 
 def _gather_neighbs(
-    df_inj_db: pd.DataFrame, df_ns_ppd: pd.DataFrame, df_neighbs: pd.DataFrame
+    df_inj_db: pd.DataFrame,
+    df_ns_ppd: pd.DataFrame,
+    df_neighbs: pd.DataFrame,
+    delimiter: str,
 ) -> pd.DataFrame:
     df = pd.merge(
-        _prepare_inj_db(df_inj_db),
-        _prepare_ns_ppd(df_ns_ppd),
+        _prepare_inj_db(df_inj_db, delimiter),
+        _prepare_ns_ppd(df_ns_ppd, delimiter),
         on=["field", "well", "reservoir"],
         how="left",
     )
@@ -46,7 +49,7 @@ def _gather_neighbs(
     df.drop(columns=["neighbs_gid"], inplace=True)
     df["gtm_date"].fillna("", inplace=True)
     df["neighbs"].fillna("", inplace=True)
-    df["neighbs"] = df["neighbs"].str.split(settings.delimiter)
+    df["neighbs"] = df["neighbs"].str.split(delimiter)
     df = df.explode("neighbs")
     return df
 
@@ -137,8 +140,12 @@ def _calc_loss(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _process_data(dfs: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    df = _gather_neighbs(dfs["inj_db"], dfs["ns_ppd"], dfs["neighbs"])
+def _process_data(
+    dfs: dict[str, pd.DataFrame], delimiter: str
+) -> pd.DataFrame:
+    df = _gather_neighbs(
+        dfs["inj_db"], dfs["ns_ppd"], dfs["neighbs"], delimiter
+    )
     df = _join_mer(df, dfs["mer"])
     df = _calc_loss(df)
     return df
@@ -150,7 +157,8 @@ async def oil_loss_report(
     date_to: date,
     dao: FirstRateLossReporter | MaxRateLossReporter,
     pool: ProcessPoolManager,
+    settings: Settings,
 ) -> None:
     dfs = await dao.read_all(date_from=date_from, date_to=date_to)
-    df = await pool.run(_process_data, dfs)
-    await save_to_csv(df, path)
+    df = await pool.run(_process_data, dfs, settings.delimiter)
+    await save_to_csv(df, path, settings.csv_encoding, settings.csv_delimiter)

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from app.core.config.settings import Settings
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.sql.reporters import OppPerYearReporter
@@ -28,7 +29,8 @@ async def opp_per_year_report(
     date_to: date,
     dao: OppPerYearReporter,
     pool: ProcessPoolManager,
+    settings: Settings,
 ) -> None:
     df = await dao.read_one(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, df)
-    await save_to_csv(df, path)
+    await save_to_csv(df, path, settings.csv_encoding, settings.csv_delimiter)

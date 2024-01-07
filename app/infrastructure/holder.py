@@ -3,7 +3,6 @@ from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.config.settings import settings
 from app.infrastructure.db.dao import local
 from app.infrastructure.db.dao.complex import initializers, loaders
 from app.infrastructure.db.dao.sql import ofm, reporters
@@ -18,13 +17,13 @@ class HolderDAO:
         local_session: AsyncSession | None = None,
         ofm_pool: sessionmaker[Session] | None = None,
         ofm_session: Session | None = None,
-        excel_path: Path | None = None,
+        file_path: Path | None = None,
     ) -> None:
         self.local_pool = local_pool
         self.local_session = local_session
         self.ofm_pool = ofm_pool
         self.ofm_session = ofm_session
-        self.excel_path = excel_path
+        self.file_path = file_path
 
     @property
     def local_monthly_report(self) -> local.MonthlyReportDAO:
@@ -72,39 +71,39 @@ class HolderDAO:
 
     @property
     def csv_monthly_report(self) -> csv.MonthlyReportDAO:
-        return csv.MonthlyReportDAO(settings.monthly_report_path)
+        return csv.MonthlyReportDAO(self.file_path)
 
     @property
     def csv_well_profile(self) -> csv.WellProfileDAO:
-        return csv.WellProfileDAO(settings.well_profile_path)
+        return csv.WellProfileDAO(self.file_path)
 
     @property
     def csv_field_replace(self) -> csv.FieldReplaceDAO:
-        return csv.FieldReplaceDAO(settings.field_replace_path)
+        return csv.FieldReplaceDAO(self.file_path)
 
     @property
     def csv_reservoir_replace(self) -> csv.ReservoirReplaceDAO:
-        return csv.ReservoirReplaceDAO(settings.reservoir_replace_path)
+        return csv.ReservoirReplaceDAO(self.file_path)
 
     @property
     def csv_layer_replace(self) -> csv.LayerReplaceDAO:
-        return csv.LayerReplaceDAO(settings.layer_replace_path)
+        return csv.LayerReplaceDAO(self.file_path)
 
     @property
     def excel_new_strategy_inj(self) -> excel.NewStrategyInjDAO:
-        return excel.NewStrategyInjDAO(self.excel_path)
+        return excel.NewStrategyInjDAO(self.file_path)
 
     @property
     def excel_new_strategy_oil(self) -> excel.NewStrategyOilDAO:
-        return excel.NewStrategyOilDAO(self.excel_path)
+        return excel.NewStrategyOilDAO(self.file_path)
 
     @property
     def excel_inj_well_database(self) -> excel.InjWellDatabaseDAO:
-        return excel.InjWellDatabaseDAO(self.excel_path)
+        return excel.InjWellDatabaseDAO(self.file_path)
 
     @property
     def excel_neighborhood(self) -> excel.NeighborhoodDAO:
-        return excel.NeighborhoodDAO(self.excel_path)
+        return excel.NeighborhoodDAO(self.file_path)
 
     @property
     def monthly_report_initializer(

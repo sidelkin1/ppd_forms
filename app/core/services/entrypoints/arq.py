@@ -17,42 +17,42 @@ registry = WorkRegistry()
 
 @registry.add("excel:ns_ppd:refresh")
 async def refresh_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_inj_loader.refresh()
 
 
 @registry.add("excel:ns_ppd:reload")
 async def reload_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_inj_loader.reload()
 
 
 @registry.add("excel:ns_oil:refresh")
 async def refresh_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_oil_loader.refresh()
 
 
 @registry.add("excel:ns_oil:reload")
 async def reload_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_oil_loader.reload()
 
 
 @registry.add("excel:inj_db:refresh")
 async def refresh_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.inj_well_database_loader.refresh()
 
 
 @registry.add("excel:inj_db:reload")
 async def reload_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.inj_well_database_loader.reload()
 
@@ -61,14 +61,14 @@ async def reload_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
 async def refresh_neighbs(
     response: ExcelResponse, ctx: dict[str, Any]
 ) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.neighborhood_loader.refresh()
 
 
 @registry.add("excel:neighbs:reload")
 async def reload_neighbs(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["excel_local_dao"](response.path) as holder:
+    async with ctx["file_local_dao"](response.path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.neighborhood_loader.reload()
 

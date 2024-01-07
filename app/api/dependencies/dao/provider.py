@@ -49,11 +49,11 @@ class DbProvider:
                     local_session=local_session, ofm_session=ofm_session
                 )
 
-    async def excel_local_dao(
-        self, excel_path: Path
+    async def file_local_dao(
+        self, file_path: Path
     ) -> AsyncGenerator[HolderDAO, None]:
         async with self.local_pool() as session:
-            yield HolderDAO(local_session=session, excel_path=excel_path)
+            yield HolderDAO(local_session=session, file_path=file_path)
 
     async def dispose(self) -> None:
         if self.local_pool and (engine := self.local_pool.kw.get("bind")):

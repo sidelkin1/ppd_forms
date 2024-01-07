@@ -4,14 +4,16 @@ from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.schema import CreateSchema
 
 from alembic import context
-from app.infrastructure.db.migrations.base import Base, settings
+from app.infrastructure.db.migrations.base import Base, get_settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
+settings = get_settings()
 config.set_main_option("sqlalchemy.url", str(settings.local_database_url))
 
 # Interpret the config file for Python logging.
@@ -56,6 +58,12 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def prepare_base(connection: Connection, schema: str) -> None:
+    if not connection.dialect.has_schema(connection, schema):
+        connection.execute(CreateSchema(schema))
+        connection.commit()
+
+
 def do_run_migrations(connection: Connection) -> None:
     context.configure(
         connection=connection,
@@ -81,6 +89,7 @@ async def run_async_migrations() -> None:
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
+        await connection.run_sync(prepare_base, settings.util_table_schema)
 
     await connectable.dispose()
 

@@ -29,10 +29,10 @@ async def initialize_mapper(provider: DbProvider) -> None:
     )
 
 
-async def initialize_main(provider: DbProvider) -> None:
+async def initialize_main(provider: DbProvider, settings: Settings) -> None:
     await asyncio.gather(
-        # db.init_monthly_report(provider),
-        db.init_well_profile(provider),
+        # db.init_monthly_report(provider, settings),
+        db.init_well_profile(provider, settings),
     )
 
 
@@ -44,7 +44,7 @@ async def main() -> None:
         provider = DbProvider(local_pool=pool)
         await initialize_replace(provider, settings)
         await initialize_mapper(provider)
-        await initialize_main(provider)
+        await initialize_main(provider, settings)
         logger.info("Исходные данные созданы")
     finally:
         await provider.dispose()

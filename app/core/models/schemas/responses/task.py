@@ -1,9 +1,11 @@
 from pathlib import Path
 from typing import TypeVar
 
-from app.core.config.settings import settings
+from app.core.config.settings import get_settings
 from app.core.models.dto import TaskBase
 from app.core.models.schemas.responses.base import BaseResponse
+
+settings = get_settings()  # FIXME avoid global variable
 
 TaskT = TypeVar("TaskT", bound=TaskBase, covariant=True, contravariant=False)
 

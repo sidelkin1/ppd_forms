@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from typing import Any, cast
 
 from app.api.dependencies.dao.provider import DbProvider
-from app.core.config.settings import settings
+from app.core.config.settings import get_settings
 from app.core.models.schemas import TaskResponse
 from app.core.services.entrypoints.arq import registry
 from app.core.utils.process_pool import ProcessPoolManager
@@ -12,6 +12,8 @@ from app.infrastructure.db.factories.local import (
 from app.infrastructure.db.factories.ofm import create_pool as create_ofm_pool
 from app.infrastructure.db.models import ofm
 from app.initial_data import initialize_mapper
+
+settings = get_settings()
 
 
 async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
@@ -45,3 +47,4 @@ class WorkerSettings:
     on_shutdown = shutdown
     redis_settings = settings.redis_settings
     allow_abort_jobs = True
+    ctx = dict(settings=settings)

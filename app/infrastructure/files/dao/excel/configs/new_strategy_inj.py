@@ -3,7 +3,9 @@ from typing import Any
 
 import pandas as pd
 
-from app.core.config.settings import settings
+from app.core.config.settings import get_settings
+
+settings = get_settings()  # FIXME avoid global variable
 
 RESERVOIRS_WELLS_SEPARATOR = ":"
 

@@ -7,7 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import dependencies
 from app.api.routes.routers import main_router
-from app.core.config.settings import settings
+from app.core.config.settings import get_settings
 from app.infrastructure.arq.factory import create_pool as create_redis_pool
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
@@ -16,18 +16,21 @@ from app.lifespan import lifespan
 
 
 def main() -> FastAPI:
+    settings = get_settings()
+    pool = create_local_pool(settings)
+    redis = create_redis_pool(settings)
+
     app = FastAPI(
         title=settings.app_title,
         description=settings.app_description,
         lifespan=lifespan,
     )
-    app.state.pool = create_local_pool(settings)
-    app.state.redis = create_redis_pool(settings)
     app.add_middleware(SessionMiddleware, secret_key=os.urandom(32))
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
+    app.state.settings = settings  # needed for lifespan
 
-    dependencies.setup(app)
+    dependencies.setup(app, pool, redis, settings)
 
     return app
 

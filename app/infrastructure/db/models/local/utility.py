@@ -1,8 +1,10 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.config.settings import settings
+from app.core.config.settings import get_settings
 from app.infrastructure.db.models.local.base import Base
+
+settings = get_settings()  # FIXME avoid global variable
 
 
 class BaseReplace:

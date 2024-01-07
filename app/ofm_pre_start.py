@@ -9,7 +9,7 @@ from tenacity import (
     wait_fixed,
 )
 
-from app.core.config.settings import settings
+from app.core.config.settings import get_settings
 from app.infrastructure.db.factories.ofm import create_engine
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +28,7 @@ wait_seconds = 1
 def init() -> None:
     engine = None
     try:
+        settings = get_settings()
         engine = create_engine(settings)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1 FROM DUAL"))

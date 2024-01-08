@@ -1,0 +1,17 @@
+# Generic single-database configuration with an async dbapi
+
+For create first migration
+
+```bash
+
+alembic revision --autogenerate -m "First migration"
+
+```
+
+for migrate
+
+```bash
+
+alembic upgrade head
+
+```

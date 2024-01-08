@@ -1,8 +1,8 @@
 """First migration
 
-Revision ID: db77d68badaf
-Revises:
-Create Date: 2023-10-25 10:04:04.917827
+Revision ID: 43d8ab9b3d7c
+Revises: 
+Create Date: 2024-01-08 16:06:29.433235
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import app.infrastructure.db.migrations.types
 
 
 # revision identifiers, used by Alembic.
-revision = 'db77d68badaf'
+revision = '43d8ab9b3d7c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,12 +34,12 @@ def upgrade() -> None:
     sa.Column('well_name', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
     sa.Column('cid_all', app.infrastructure.db.migrations.types.MultiResevoirType(length=200), nullable=False),
     sa.Column('cid', app.infrastructure.db.migrations.types.ResevoirType(length=100), nullable=False),
+    sa.Column('dat_rep', sa.Date(), nullable=False),
     sa.Column('oil', sa.Float(), nullable=False),
     sa.Column('oil_v', sa.Float(), nullable=False),
     sa.Column('water_v', sa.Float(), nullable=False),
     sa.Column('water', sa.Float(), nullable=False),
     sa.Column('days', sa.Float(), nullable=False),
-    sa.Column('dat_rep', sa.Date(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__monthlyreport')),
     sa.UniqueConstraint('field', 'well_name', 'cid', 'dat_rep', name=op.f('uq__monthlyreport__field'))
@@ -66,6 +66,7 @@ def upgrade() -> None:
     sa.Column('field', app.infrastructure.db.migrations.types.FieldType(length=50), nullable=False),
     sa.Column('well', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
     sa.Column('reservoir', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=False),
+    sa.Column('gtm_date', sa.Date(), nullable=False),
     sa.Column('gtm_description', sa.String(), nullable=False),
     sa.Column('oil_recovery', sa.Float(), nullable=True),
     sa.Column('effect_end', sa.Date(), nullable=True),
@@ -74,7 +75,6 @@ def upgrade() -> None:
     sa.Column('gtm_problem', sa.String(), nullable=False),
     sa.Column('reservoir_neighbs', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=True),
     sa.Column('neighbs', app.infrastructure.db.migrations.types.MultiWellType(length=100), nullable=True),
-    sa.Column('gtm_date', sa.Date(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__newstrategyinj')),
     sa.UniqueConstraint('field', 'well', 'gtm_date', name=op.f('uq__newstrategyinj__field'))
@@ -87,9 +87,9 @@ def upgrade() -> None:
     sa.Column('well', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
     sa.Column('reservoir_before', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=False),
     sa.Column('reservoir_after', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=False),
+    sa.Column('vnr_date', sa.Date(), nullable=False),
     sa.Column('gtm_name', sa.String(), nullable=False),
     sa.Column('start_date', sa.Date(), nullable=False),
-    sa.Column('vnr_date', sa.Date(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__newstrategyoil')),
     sa.UniqueConstraint('field', 'well', 'vnr_date', name=op.f('uq__newstrategyoil__field'))
@@ -129,6 +129,7 @@ def upgrade() -> None:
     sa.Column('cid_all', app.infrastructure.db.migrations.types.MultiResevoirType(length=200), nullable=False),
     sa.Column('cid_layer', app.infrastructure.db.migrations.types.ResevoirType(length=100), nullable=True),
     sa.Column('layer', app.infrastructure.db.migrations.types.MultiLayerType(length=100), nullable=True),
+    sa.Column('rec_date', sa.Date(), nullable=False),
     sa.Column('uwi', sa.String(length=10), nullable=False),
     sa.Column('well_type', sa.String(), nullable=True),
     sa.Column('top', sa.Float(), nullable=False),
@@ -139,14 +140,13 @@ def upgrade() -> None:
     sa.Column('tot_absorp', sa.Float(), nullable=True),
     sa.Column('liq_rate', sa.Float(), nullable=True),
     sa.Column('remarks', sa.String(), nullable=True),
-    sa.Column('rec_date', sa.Date(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__wellprofile'))
     )
     op.create_index(op.f('ix__wellprofile_cid_all'), 'wellprofile', ['cid_all'], unique=False)
     op.create_index(op.f('ix__wellprofile_field'), 'wellprofile', ['field'], unique=False)
     op.create_index(op.f('ix__wellprofile_rec_date'), 'wellprofile', ['rec_date'], unique=False)
-    op.create_index(op.f('ix__wellprofile_uwi'), 'wellprofile', ['uwi', 'rec_date'], unique=False)
+    op.create_index(op.f('ix__wellprofile_uwi'), 'wellprofile', ['uwi'], unique=False)
     op.create_index(op.f('ix__wellprofile_well_name'), 'wellprofile', ['well_name'], unique=False)
     # ### end Alembic commands ###
 

@@ -1,14 +1,13 @@
-from .db.inj_well_database import InjWellDatabaseDB  # noqa
-from .db.monthly_report import MonthlyReportDB  # noqa
-from .db.neighborhood import NeighborhoodDB  # noqa
-from .db.new_strategy_inj import NewStrategyInjDB  # noqa
-from .db.new_strategy_oil import NewStrategyOilDB  # noqa
-from .db.replace import RegexReplaceDB  # noqa
-from .db.replace import SimpleReplaceDB  # noqa
-from .db.well_profile import WellProfileDB  # noqa
-from .jobs.job_stamp import JobStamp  # noqa
-from .tasks.base import TaskBase  # noqa
-from .tasks.database import TaskDatabase  # noqa
-from .tasks.excel import TaskExcel  # noqa
-from .tasks.oil_loss import TaskOilLoss  # noqa
-from .tasks.report import TaskReport  # noqa
+from .db.inj_well_database import InjWellDatabaseDB
+from .db.monthly_report import MonthlyReportDB
+from .db.neighborhood import NeighborhoodDB
+from .db.new_strategy_inj import NewStrategyInjDB
+from .db.new_strategy_oil import NewStrategyOilDB
+from .db.replace import RegexReplaceDB, SimpleReplaceDB
+from .db.well_profile import WellProfileDB
+from .jobs.job_stamp import JobStamp
+from .tasks.base import TaskBase
+from .tasks.database import TaskDatabase
+from .tasks.excel import TaskExcel
+from .tasks.oil_loss import TaskOilLoss
+from .tasks.report import TaskReport

@@ -37,6 +37,7 @@ pytest = "^7.4.3"
 pytest-asyncio = "^0.23.2"
 httpx = "^0.26.0"
 testcontainers = {extras = ["postgresql"], version = "^3.7.1"}
+flake8-pyproject = "^1.2.3"
 
 [build-system]
 requires = ["poetry-core"]
@@ -51,4 +52,14 @@ worker = "arq app.worker.WorkerSettings"
 ofm-pre-start = "python -m app.ofm_pre_start"
 
 [tool.mypy]
-exclude = "(alembic/versions/)"
+exclude = "app/infrastructure/db/migrations/versions/*.py"
+
+[tool.flake8]
+ignore = "W503"
+max-line-length = 79
+paths = ["./app"]
+max-complexity = 10
+exclude = "app/infrastructure/db/migrations/versions/*.py"
+per-file-ignores = [
+    "__init__.py:F401",
+]

@@ -1,8 +1,0 @@
-[flake8]
-ignore = W503
-max-line-length = 79
-paths = 
-    ./app
-max-complexity = 10
-exclude = 
-   alembic/versions/*.py

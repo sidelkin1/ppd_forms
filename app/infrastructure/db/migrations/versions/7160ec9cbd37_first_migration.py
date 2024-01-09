@@ -1,8 +1,8 @@
 """First migration
 
-Revision ID: 43d8ab9b3d7c
-Revises: 
-Create Date: 2024-01-08 16:06:29.433235
+Revision ID: 7160ec9cbd37
+Revises: 000000000000
+Create Date: 2024-01-09 22:25:06.634459
 
 """
 from alembic import op
@@ -11,8 +11,8 @@ import app.infrastructure.db.migrations.types
 
 
 # revision identifiers, used by Alembic.
-revision = '43d8ab9b3d7c'
-down_revision = None
+revision = '7160ec9cbd37'
+down_revision = '000000000000'
 branch_labels = None
 depends_on = None
 
@@ -146,7 +146,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix__wellprofile_cid_all'), 'wellprofile', ['cid_all'], unique=False)
     op.create_index(op.f('ix__wellprofile_field'), 'wellprofile', ['field'], unique=False)
     op.create_index(op.f('ix__wellprofile_rec_date'), 'wellprofile', ['rec_date'], unique=False)
-    op.create_index(op.f('ix__wellprofile_uwi'), 'wellprofile', ['uwi'], unique=False)
+    op.create_index(op.f('ix__wellprofile_uwi'), 'wellprofile', ['uwi', 'rec_date'], unique=False)
     op.create_index(op.f('ix__wellprofile_well_name'), 'wellprofile', ['well_name'], unique=False)
     # ### end Alembic commands ###
 

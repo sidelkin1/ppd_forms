@@ -5,15 +5,11 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from sqlalchemy.schema import CreateSchema
 
-from app.core.config.settings import get_settings
 from app.infrastructure.db.models.local import Base
 
 config = context.config
 
-settings = get_settings()
-config.set_main_option("sqlalchemy.url", str(settings.local_database_url))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -33,12 +29,6 @@ def run_migrations_offline() -> None:
 
     with context.begin_transaction():
         context.run_migrations()
-
-
-def prepare_base(connection: Connection, schema: str) -> None:
-    if not connection.dialect.has_schema(connection, schema):
-        connection.execute(CreateSchema(schema))
-        connection.commit()
 
 
 def do_run_migrations(connection: Connection) -> None:
@@ -61,7 +51,6 @@ async def run_async_migrations() -> None:
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-        await connection.run_sync(prepare_base, settings.util_table_schema)
 
     await connectable.dispose()
 

@@ -31,8 +31,6 @@ class Settings(BaseSettings):
     app_title: str = "Стандартные формы для ППД"
     app_description: str = "Приложение для создания типовых отчетов ППД"
 
-    util_table_schema: str = "utils"
-
     delimiter: str = ","
 
     max_workers: int = 4

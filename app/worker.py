@@ -1,5 +1,9 @@
+import os
 from contextlib import asynccontextmanager
 from typing import Any, cast
+
+from arq.connections import RedisSettings
+from dotenv import load_dotenv
 
 from app.api.dependencies.dao.provider import DbProvider
 from app.core.config.settings import get_settings
@@ -13,7 +17,7 @@ from app.infrastructure.db.factories.ofm import create_pool as create_ofm_pool
 from app.infrastructure.db.models import ofm
 from app.initial_data import initialize_mapper
 
-settings = get_settings()
+load_dotenv()
 
 
 async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
@@ -21,6 +25,7 @@ async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
 
 
 async def startup(ctx: dict[str, Any]) -> None:
+    settings = get_settings()
     local_pool = create_local_pool(settings)
     ofm_pool = create_ofm_pool(settings) if ofm.setup(settings) else None
     provider = DbProvider(local_pool=local_pool, ofm_pool=ofm_pool)
@@ -45,6 +50,7 @@ class WorkerSettings:
     functions = [perform_work]
     on_startup = startup
     on_shutdown = shutdown
-    redis_settings = settings.redis_settings
+    redis_settings = RedisSettings(
+        host=os.getenv("REDIS_HOST"), port=os.getenv("REDIS_PORT")
+    )
     allow_abort_jobs = True
-    ctx = dict(settings=settings)

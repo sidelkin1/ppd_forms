@@ -13,7 +13,9 @@ async def field_list(holder: HolderDep):
     return fields
 
 
-@router.get("/fields/{field_id}", response_model=list[ReservoirListDB])
+@router.get(
+    "/fields/{field_id}/reservoirs", response_model=list[ReservoirListDB]
+)
 async def reservoir_list(field_id: int, holder: HolderDep):
     fields = await holder.ofm_field_list.get_by_params()
     check_field_exists(field_id, fields)

@@ -59,6 +59,9 @@ docker-compose -f docker-compose-local.yml up -d --build
 - Мониторинг задач:
     - `GET` **/jobs/{job_id}** - получить статус выполнения задачи `{job_id}`
     - **/jobs/{job_id}/ws** - получить статус выполнения задачи `{job_id}` через `WebSocket`
+- Активы УН:
+    - `GET` **/uneft/fields** - получить список месторождений
+    - `GET` **/uneft/fields/{field_id}/reservoirs** - получить список объектов месторождения `{field_id}`
 
 ## Техническая информация
 

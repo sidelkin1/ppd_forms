@@ -34,8 +34,8 @@ from app.api.dependencies.user import (
 
 def setup(app: FastAPI):
     app.dependency_overrides[dao_provider] = DbProvider(
-        local_pool=app.state.pool
-    ).local_dao
+        local_pool=app.state.pool, ofm_pool=app.state.ofm
+    ).ofm_local_dao
     app.dependency_overrides[redis_provider] = RedisProvider(
         pool=app.state.redis
     ).dao

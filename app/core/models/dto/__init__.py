@@ -1,3 +1,4 @@
+from .db.field_list import FieldListDB  # noqa
 from .db.inj_well_database import InjWellDatabaseDB  # noqa
 from .db.monthly_report import MonthlyReportDB  # noqa
 from .db.neighborhood import NeighborhoodDB  # noqa
@@ -5,6 +6,7 @@ from .db.new_strategy_inj import NewStrategyInjDB  # noqa
 from .db.new_strategy_oil import NewStrategyOilDB  # noqa
 from .db.replace import RegexReplaceDB  # noqa
 from .db.replace import SimpleReplaceDB  # noqa
+from .db.reservoir_list import ReservoirListDB  # noqa
 from .db.well_profile import WellProfileDB  # noqa
 from .jobs.job_stamp import JobStamp  # noqa
 from .tasks.base import TaskBase  # noqa

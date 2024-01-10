@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters.local import LocalBaseDAO
-from app.infrastructure.db.dao.sql.reporters.querysets.well_profile import (
+from app.infrastructure.db.dao.sql.reporters.querysets import (
     select_profile_report,
 )
 

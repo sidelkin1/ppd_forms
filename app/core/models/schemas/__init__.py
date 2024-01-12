@@ -7,3 +7,4 @@ from .responses.job import JobResponse  # noqa
 from .responses.report import OilLossResponse  # noqa
 from .responses.report import ReportResponse  # noqa
 from .responses.task import TaskResponse  # noqa
+from .responses.uneft import FieldsResponse, ReservoirsResponse  # noqa

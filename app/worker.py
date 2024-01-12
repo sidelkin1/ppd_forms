@@ -15,7 +15,7 @@ from app.initial_data import initialize_mapper
 
 
 async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
-    await registry[response.task.route_url](response, ctx)
+    return await registry[response.task.route_url](response, ctx)
 
 
 async def startup(ctx: dict[str, Any]) -> None:
@@ -25,6 +25,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["provider"] = provider
     ctx["pool"] = ProcessPoolManager(settings)
     ctx["local_dao"] = asynccontextmanager(provider.local_dao)
+    ctx["ofm_dao"] = asynccontextmanager(provider.ofm_dao)
     ctx["local_pool_dao"] = asynccontextmanager(provider.local_pool_dao)
     ctx["ofm_local_dao"] = asynccontextmanager(provider.ofm_local_dao)
     ctx["ofm_pool_dao"] = asynccontextmanager(provider.ofm_pool_dao)

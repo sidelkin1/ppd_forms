@@ -14,3 +14,6 @@ from .tasks.database import TaskDatabase  # noqa
 from .tasks.excel import TaskExcel  # noqa
 from .tasks.oil_loss import TaskOilLoss  # noqa
 from .tasks.report import TaskReport  # noqa
+from .tasks.uneft import TaskFields  # noqa
+from .tasks.uneft import TaskReservoirs  # noqa
+from .tasks.uneft import TaskUneft  # noqa

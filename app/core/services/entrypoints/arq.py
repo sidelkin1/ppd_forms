@@ -1,6 +1,6 @@
 from typing import Any, cast
 
-from app.core.models.dto import FieldListDB, ReservoirListDB
+from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 from app.core.models.schemas import (
     DatabaseResponse,
     ExcelResponse,
@@ -169,7 +169,7 @@ async def create_opp_per_year_report(
 @registry.add("uneft:fields")
 async def get_fields(
     response: FieldsResponse, ctx: dict[str, Any]
-) -> list[FieldListDB]:
+) -> list[UneftFieldDB]:
     async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         results = await holder.ofm_field_list.get_by_params()
@@ -179,7 +179,7 @@ async def get_fields(
 @registry.add("uneft:reservoirs")
 async def get_reservoirs(
     response: ReservoirsResponse, ctx: dict[str, Any]
-) -> list[ReservoirListDB]:
+) -> list[UneftReservoirDB]:
     async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         results = await holder.ofm_reservoir_list.get_by_params(

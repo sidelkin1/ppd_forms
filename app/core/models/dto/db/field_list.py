@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class FieldListDB(BaseModel):
+class UneftFieldDB(BaseModel):
     id: int
     name: str
 

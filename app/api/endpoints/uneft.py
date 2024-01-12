@@ -6,19 +6,19 @@ from app.api.dependencies.responses import (
     ReservoirsResponseDep,
 )
 from app.api.utils.validators import check_field_exists
-from app.core.models.dto import FieldListDB, ReservoirListDB
+from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 
 router = APIRouter()
 
 
-@router.get("/fields", response_model=list[FieldListDB])
+@router.get("/fields", response_model=list[UneftFieldDB])
 async def field_list(response: FieldsResponseDep, redis: RedisDep):
     fields = await redis.result(response)
     return fields
 
 
 @router.get(
-    "/fields/{field_id}/reservoirs", response_model=list[ReservoirListDB]
+    "/fields/{field_id}/reservoirs", response_model=list[UneftReservoirDB]
 )
 async def reservoir_list(
     field_id: int,

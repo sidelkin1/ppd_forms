@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class ReservoirListDB(BaseModel):
+class UneftReservoirDB(BaseModel):
     id: int
     name: str
 

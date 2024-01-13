@@ -4,7 +4,7 @@ from typing import Annotated
 from arq import ArqRedis
 from fastapi import Depends
 
-from app.infrastructure.arq.dao.redis import RedisDAO
+from app.infrastructure.redis.dao import RedisDAO
 
 
 def redis_provider() -> RedisDAO:

@@ -16,17 +16,21 @@ async def test_job_ok(
     client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
 ):
     function = func(work_ok, name="work_ok")
-    response = TaskTestResponse.test_ok()
-    await arq_redis.enqueue_job(
+    response_ok = TaskTestResponse.test(
+        status=JobStatus.completed, message="Job is completed"
+    )
+    response = TaskTestResponse.test(job_id=response_ok.job.job_id)
+    job = await arq_redis.enqueue_job(
         function.name, response, _job_id=response.job.job_id
     )
     worker_ = worker(functions=[function])
     await worker_.main()
+    assert await job.result() == "OK!"
     with client.websocket_connect(
         f"jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
-        assert data == response.model_dump(exclude_none=True)
+        assert data == response_ok.model_dump(exclude_none=True)
 
 
 @pytest.mark.asyncio(scope="session")
@@ -34,17 +38,22 @@ async def test_job_error(
     client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
 ):
     function = func(work_error, name="work_error")
-    response = TaskTestResponse.test_error()
-    await arq_redis.enqueue_job(
+    response_error = TaskTestResponse.test(
+        status=JobStatus.error, message="Error!"
+    )
+    response = TaskTestResponse.test(job_id=response_error.job.job_id)
+    job = await arq_redis.enqueue_job(
         function.name, response, _job_id=response.job.job_id
     )
     worker_ = worker(functions=[function])
     await worker_.main()
+    with pytest.raises(ValueError):
+        await job.result()
     with client.websocket_connect(
         f"jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
-        assert data == response.model_dump(exclude_none=True)
+        assert data == response_error.model_dump(exclude_none=True)
 
 
 @pytest.mark.asyncio(scope="session")

@@ -4,8 +4,8 @@ from typing import Any
 from app.core.models.schemas import TaskResponse
 
 
-async def work_ok(ctx: dict[str, Any], response: TaskResponse) -> None:
-    print("OK!")
+async def work_ok(ctx: dict[str, Any], response: TaskResponse) -> str:
+    return "OK!"
 
 
 async def work_error(ctx: dict[str, Any], response: TaskResponse) -> None:

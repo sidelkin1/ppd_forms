@@ -137,8 +137,6 @@ def app(settings: Settings) -> FastAPI:
         description=settings.app_description,
         lifespan=lifespan,
     )
-    app.state.pool = create_local_pool(settings)
-    app.state.redis = create_redis_pool(settings)
     app.add_middleware(SessionMiddleware, secret_key=os.urandom(32))
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")

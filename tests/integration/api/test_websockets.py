@@ -13,7 +13,7 @@ from tests.fixtures.worker_constants import work_error, work_long, work_ok
 
 @pytest.mark.asyncio(scope="session")
 async def test_job_ok(
-    client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
+    test_client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
 ):
     function = func(work_ok, name="work_ok")
     response_ok = TaskTestResponse.test(
@@ -26,7 +26,7 @@ async def test_job_ok(
     worker_ = worker(functions=[function])
     await worker_.main()
     assert await job.result() == "OK!"
-    with client.websocket_connect(
+    with test_client.websocket_connect(
         f"jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
@@ -35,7 +35,7 @@ async def test_job_ok(
 
 @pytest.mark.asyncio(scope="session")
 async def test_job_error(
-    client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
+    test_client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
 ):
     function = func(work_error, name="work_error")
     response_error = TaskTestResponse.test(
@@ -49,7 +49,7 @@ async def test_job_error(
     await worker_.main()
     with pytest.raises(ValueError):
         await job.result()
-    with client.websocket_connect(
+    with test_client.websocket_connect(
         f"jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
@@ -58,7 +58,7 @@ async def test_job_error(
 
 @pytest.mark.asyncio(scope="session")
 async def test_job_abort(
-    client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
+    test_client: TestClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
 ):
     function = func(work_long, name="work_long")
     response = TaskTestResponse.test()
@@ -67,15 +67,15 @@ async def test_job_abort(
     )
     worker_ = worker(functions=[function], allow_abort_jobs=True)
     asyncio.create_task(worker_.main())
-    with client.websocket_connect(f"jobs/{response.job.job_id}/ws"):
+    with test_client.websocket_connect(f"jobs/{response.job.job_id}/ws"):
         await asyncio.sleep(0.1)
     with pytest.raises(asyncio.CancelledError):
         await job.result()
 
 
-def test_job_is_not_found(client: TestClient):
+def test_job_is_not_found(test_client: TestClient):
     job_id = "unknown_job_id"
-    with client.websocket_connect(f"jobs/{job_id}/ws") as websocket:
+    with test_client.websocket_connect(f"jobs/{job_id}/ws") as websocket:
         data = websocket.receive_json()
         assert data == {
             "job": {

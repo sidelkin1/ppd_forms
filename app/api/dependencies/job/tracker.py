@@ -52,8 +52,8 @@ class JobTracker:
             self.response.job.message = "Job is completed"
 
     async def send_response(self) -> None:
-        await self.websocket.send_text(
-            self.response.model_dump_json(exclude_none=True)
+        await self.websocket.send_json(
+            self.response.model_dump(mode="json", exclude_none=True)
         )
 
     async def status(self) -> None:

@@ -19,6 +19,12 @@ from app.infrastructure.db.factories.local import (
 )
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from app.lifespan import lifespan
+from tests.fixtures.task_fixtures import (  # noqa
+    task_database,
+    task_excel,
+    task_oil_loss,
+    task_report,
+)
 
 
 @pytest_asyncio.fixture(scope="session")

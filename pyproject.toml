@@ -68,5 +68,6 @@ per-file-ignores = [
 [tool.coverage.run]
 omit = [
     ".*",
+    "tests/*",
     "*/site-packages/*",
 ]

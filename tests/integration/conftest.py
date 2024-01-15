@@ -1,6 +1,7 @@
 import logging
 import os
 from collections.abc import AsyncGenerator, Generator
+from pathlib import Path
 
 import pytest
 import pytest_asyncio
@@ -17,7 +18,13 @@ from sqlalchemy.orm import close_all_sessions, sessionmaker
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
+from app.api.dependencies.dao.provider import DbProvider
 from app.core.config.settings import Settings
+from app.initial_data import (
+    initialize_main,
+    initialize_mapper,
+    initialize_replace,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +63,7 @@ def postgres_url() -> Generator[str, None, None]:
         postgres.stop()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def arq_redis(redis_settings: RedisSettings) -> ArqRedis:
     redis = await create_redis(redis_settings)
     yield redis
@@ -82,8 +89,12 @@ def redis_settings() -> Generator[RedisSettings, None, None]:
 
 @pytest.fixture(scope="session")
 def settings(postgres_url: str, redis_settings: RedisSettings) -> Settings:
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    resource_dir = base_dir / "tests" / "fixtures" / "resources"
     return Settings(
-        local_database_url=postgres_url, redis_settings=redis_settings
+        local_database_url=postgres_url,
+        redis_settings=redis_settings,
+        well_profile_path=resource_dir / "well_profile.csv",
     )
 
 
@@ -105,3 +116,13 @@ def alembic_config(settings: Settings) -> AlembicConfig:
 @pytest.fixture(scope="session", autouse=True)
 def upgrade_schema_db(alembic_config: AlembicConfig) -> None:
     upgrade(alembic_config, "head")
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def initialize_db(
+    upgrade_schema_db, pool: sessionmaker, settings: Settings
+) -> None:
+    provider = DbProvider(local_pool=pool)
+    await initialize_replace(provider, settings)
+    await initialize_mapper(provider)
+    await initialize_main(provider, settings)

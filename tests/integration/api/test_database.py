@@ -111,3 +111,11 @@ async def test_reload_profile_not_allowed(
     )
     assert not resp.is_success
     assert resp.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_get_dates(client: AsyncClient):
+    resp = await client.get("database/profile")
+    assert resp.is_success
+    data = resp.json()
+    assert data == {"min_date": "1996-10-15", "max_date": "2003-09-29"}

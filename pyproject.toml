@@ -34,7 +34,7 @@ absolufy-imports = "^0.3.1"
 pre-commit = "^3.4.0"
 mypy = "^1.6.1"
 pytest = "^7.4.3"
-pytest-asyncio = "^0.23.2"
+pytest-asyncio = "^0.23.3"
 httpx = "^0.26.0"
 testcontainers = {extras = ["postgresql"], version = "^3.7.1"}
 flake8-pyproject = "^1.2.3"

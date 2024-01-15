@@ -18,13 +18,14 @@ from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
-from app.lifespan import lifespan
 from tests.fixtures.task_fixtures import (  # noqa
     task_database,
     task_excel,
     task_oil_loss,
     task_report,
 )
+from tests.fixtures.worker_fixtures import work_ok  # noqa
+from tests.fixtures.worker_fixtures import work_error, work_long  # noqa
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -43,20 +44,15 @@ def test_client(app: FastAPI) -> Generator[TestClient, None, None]:
 def app(settings: Settings) -> FastAPI:
     pool = create_local_pool(settings)
     redis = create_redis_pool(settings)
-    app = FastAPI(
-        title=settings.app_title,
-        description=settings.app_description,
-        lifespan=lifespan,
-    )
+    app = FastAPI()
     app.add_middleware(SessionMiddleware, secret_key=os.urandom(32))
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
-    app.state.settings = settings  # needed for lifespan
     dependencies.setup(app, pool, redis, settings)
     return app
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def worker(
     arq_redis: ArqRedis,
 ) -> Generator[Callable[..., Worker], None, None]:

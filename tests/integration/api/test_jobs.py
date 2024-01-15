@@ -2,25 +2,26 @@ from typing import Callable
 
 import pytest
 from arq.connections import ArqRedis
-from arq.worker import Worker, func
+from arq.worker import Function, Worker
 from httpx import AsyncClient
 
 from app.core.models.enums import JobStatus
-from tests.fixtures.response_constants import TaskTestResponse
-from tests.fixtures.worker_constants import work_error, work_ok
+from tests.mocks.test_response import TaskTestResponse
 
 
 @pytest.mark.asyncio(scope="session")
 async def test_job_ok(
-    client: AsyncClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
+    client: AsyncClient,
+    arq_redis: ArqRedis,
+    worker: Callable[..., Worker],
+    work_ok: Function,
 ):
-    function = func(work_ok, name="work_ok")
     response_ok = TaskTestResponse.test(status=JobStatus.completed)
     response = TaskTestResponse.test(job_id=response_ok.job.job_id)
     job = await arq_redis.enqueue_job(
-        function.name, response, _job_id=response.job.job_id
+        work_ok.name, response, _job_id=response.job.job_id
     )
-    worker_ = worker(functions=[function])
+    worker_ = worker(functions=[work_ok])
     await worker_.main()
     assert await job.result() == "OK!"
     resp = await client.get(f"jobs/{response.job.job_id}")
@@ -31,17 +32,19 @@ async def test_job_ok(
 
 @pytest.mark.asyncio(scope="session")
 async def test_job_error(
-    client: AsyncClient, arq_redis: ArqRedis, worker: Callable[..., Worker]
+    client: AsyncClient,
+    arq_redis: ArqRedis,
+    worker: Callable[..., Worker],
+    work_error: Function,
 ):
-    function = func(work_error, name="work_error")
     response_error = TaskTestResponse.test(
         status=JobStatus.error, message="Error!"
     )
     response = TaskTestResponse.test(job_id=response_error.job.job_id)
     job = await arq_redis.enqueue_job(
-        function.name, response, _job_id=response.job.job_id
+        work_error.name, response, _job_id=response.job.job_id
     )
-    worker_ = worker(functions=[function])
+    worker_ = worker(functions=[work_error])
     await worker_.main()
     with pytest.raises(ValueError):
         await job.result()

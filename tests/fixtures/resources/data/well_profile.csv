@@ -1,0 +1,7 @@
+field,uwi,well_name,well_type,rec_date,cid_all,cid_layer,layer,top,bottom,abstop,absbotm,diff_absorp,tot_absorp,liq_rate,remarks
+F1,F1W1,W1,Prod,2000-01-01,"R1,R2",R1,"L1,L2",1111,2222,-1111,-2222,10,100,,
+F1,F1W1,W1,Prod,2000-01-01,"R1,R2",R1,"L2,L3",1111,2222,-1111,-2222,20,100,,
+F1,F1W1,W1,Prod,2000-01-01,"R1,R2",R1,L4,1111,2222,-1111,-2222,20,100,,
+F1,F1W1,W1,Prod,2000-01-01,"R1,R2",R2,L5,1111,2222,-1111,-2222,30,100,,
+F1,F1W1,W1,Prod,2000-01-01,"R1,R2",R2,"L6,L7",1111,2222,-1111,-2222,20,100,,
+F1,F1W1,W1,Prod,2001-01-01,"R1,R2",,,1111,2222,-1111,-2222,,100,,

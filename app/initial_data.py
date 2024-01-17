@@ -36,7 +36,14 @@ async def initialize_main(provider: DbProvider, settings: Settings) -> None:
     )
 
 
-async def main() -> None:
+async def initialize_all(provider: DbProvider, settings: Settings) -> None:
+    await asyncio.gather(
+        db.init_monthly_report(provider, settings),
+        db.init_well_profile(provider, settings),
+    )
+
+
+async def main() -> None:  # pragma: no cover
     try:
         logger.info("Создание исходных данных")
         settings = get_settings()

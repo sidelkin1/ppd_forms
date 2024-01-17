@@ -20,13 +20,23 @@ from testcontainers.redis import RedisContainer
 
 from app.api.dependencies.dao.provider import DbProvider
 from app.core.config.settings import Settings
+from app.core.utils.process_pool import ProcessPoolManager
 from app.initial_data import (
-    initialize_main,
+    initialize_all,
     initialize_mapper,
     initialize_replace,
 )
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture(scope="session")
+def process_pool(
+    settings: Settings,
+) -> Generator[ProcessPoolManager, None, None]:
+    pool = ProcessPoolManager(settings)
+    yield pool
+    pool.close()
 
 
 @pytest_asyncio.fixture
@@ -90,11 +100,12 @@ def redis_settings() -> Generator[RedisSettings, None, None]:
 @pytest.fixture(scope="session")
 def settings(postgres_url: str, redis_settings: RedisSettings) -> Settings:
     base_dir = Path(__file__).resolve().parent.parent.parent
-    resource_dir = base_dir / "tests" / "fixtures" / "resources"
+    data_dir = base_dir / "tests" / "fixtures" / "resources" / "data"
     return Settings(
         local_database_url=postgres_url,
         redis_settings=redis_settings,
-        well_profile_path=resource_dir / "well_profile.csv",
+        well_profile_path=data_dir / "well_profile.csv",
+        monthly_report_path=data_dir / "monthly_report.csv",
     )
 
 
@@ -125,4 +136,4 @@ async def initialize_db(
     provider = DbProvider(local_pool=pool)
     await initialize_replace(provider, settings)
     await initialize_mapper(provider)
-    await initialize_main(provider, settings)
+    await initialize_all(provider, settings)

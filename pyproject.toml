@@ -39,6 +39,7 @@ httpx = "^0.26.0"
 testcontainers = {extras = ["postgresql"], version = "^3.7.1"}
 flake8-pyproject = "^1.2.3"
 coverage = {extras = ["toml"], version = "^7.4.0"}
+csv-diff = "^1.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -70,4 +71,13 @@ omit = [
     ".*",
     "tests/*",
     "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
 ]

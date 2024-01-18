@@ -77,7 +77,7 @@ def postgres_url() -> Generator[str, None, None]:
 async def arq_redis(redis_settings: RedisSettings) -> ArqRedis:
     redis = await create_redis(redis_settings)
     yield redis
-    await redis.close()
+    await redis.aclose()
 
 
 @pytest.fixture(scope="session")
@@ -106,6 +106,10 @@ def settings(postgres_url: str, redis_settings: RedisSettings) -> Settings:
         redis_settings=redis_settings,
         well_profile_path=data_dir / "well_profile.csv",
         monthly_report_path=data_dir / "monthly_report.csv",
+        inj_well_database_path=data_dir / "inj_well_database.csv",
+        neighborhood_path=data_dir / "neighborhood.csv",
+        new_strategy_inj_path=data_dir / "new_strategy_inj.csv",
+        new_strategy_oil_path=data_dir / "new_strategy_oil.csv",
     )
 
 

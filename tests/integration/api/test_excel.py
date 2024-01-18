@@ -55,3 +55,12 @@ async def test_load_database_no_path(
     )
     assert not resp.is_success
     assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.parametrize("table", ["ns_ppd", "ns_oil"])
+@pytest.mark.asyncio(scope="session")
+async def test_get_dates(client: AsyncClient, table: str):
+    resp = await client.get(f"excel/{table}")
+    assert resp.is_success
+    data = resp.json()
+    assert data == {"min_date": "2000-01-01", "max_date": "2001-01-01"}

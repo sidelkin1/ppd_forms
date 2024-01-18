@@ -51,7 +51,7 @@ async def test_oil_loss_report(
     process_pool: ProcessPoolManager,
     tmp_path: Path,
     settings: Settings,
-    class_dao: FirstRateLossReporter | MaxRateLossReporter,
+    class_dao: type[FirstRateLossReporter] | type[MaxRateLossReporter],
     expected_report: str,
 ):
     path = tmp_path / "results.csv"

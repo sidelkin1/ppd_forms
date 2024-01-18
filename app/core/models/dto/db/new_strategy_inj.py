@@ -2,7 +2,7 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict
 
-from app.core.models.dto.db.validators import EmptyStrOrNanToNone, NanToNone
+from app.core.models.dto.db.validators import EmptyStrOrNanToNone
 
 
 class NewStrategyInjDB(BaseModel):
@@ -13,7 +13,7 @@ class NewStrategyInjDB(BaseModel):
     gtm_description: str
     gtm_date: date
     oil_recovery: float | None
-    effect_end: NanToNone[date]
+    effect_end: EmptyStrOrNanToNone[date]
     gtm_group: str
     oil_rate: float | None
     gtm_problem: str

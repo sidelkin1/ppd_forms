@@ -6,7 +6,7 @@ from arq.worker import Function, Worker
 from httpx import AsyncClient
 
 from app.core.models.enums import JobStatus
-from tests.mocks.test_response import TaskTestResponse
+from tests.mocks.response import TaskTestResponse
 
 
 @pytest.mark.asyncio(scope="session")

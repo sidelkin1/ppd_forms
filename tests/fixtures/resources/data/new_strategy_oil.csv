@@ -1,4 +1,4 @@
 field,well,reservoir_before,reservoir_after,gtm_name,start_date,vnr_date
-F1,W1,"R1,R2","R1,R2",Name,2000-03-24,2000-04-08
+F1,W1,"R1,R2","R1,R2",Name,2000-03-24,2001-01-01
 F1,W2,R1,R2,Name,2000-06-24,2000-09-08
-F1,W3,R2,R2,Name,2000-02-24,2000-03-08
+F1,W3,R2,R2,Name,2000-01-01,2000-01-01

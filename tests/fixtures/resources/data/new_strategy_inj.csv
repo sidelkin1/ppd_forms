@@ -1,3 +1,3 @@
 field,well,reservoir,gtm_description,oil_recovery,effect_end,gtm_group,oil_rate,gtm_problem,reservoir_neighbs,neighbs,gtm_date
-F1,W1,"R1,R2",Test,2.0,,Group,0.005012531328320802,Problem,"R1,R2","W1,W2",2000-05-01
-F1,W2,R1,Test,0.0,,Group,0.0,Problem,,,2000-01-01
+F1,W1,"R1,R2",Test,2.0,,Group,0.005012531328320802,Problem,"R1,R2","W1,W2",2000-01-01
+F1,W2,R1,Test,0.0,,Group,0.0,Problem,,,2001-01-01

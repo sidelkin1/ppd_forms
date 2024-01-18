@@ -90,6 +90,22 @@ class HolderDAO:
         return csv.LayerReplaceDAO(self.file_path)
 
     @property
+    def csv_inj_well_database(self) -> csv.InjWellDatabaseDAO:
+        return csv.InjWellDatabaseDAO(self.file_path)
+
+    @property
+    def csv_neighborhood(self) -> csv.NeighborhoodDAO:
+        return csv.NeighborhoodDAO(self.file_path)
+
+    @property
+    def csv_new_strategy_inj(self) -> csv.NewStrategyInjDAO:
+        return csv.NewStrategyInjDAO(self.file_path)
+
+    @property
+    def csv_new_strategy_oil(self) -> csv.NewStrategyOilDAO:
+        return csv.NewStrategyOilDAO(self.file_path)
+
+    @property
     def excel_new_strategy_inj(self) -> excel.NewStrategyInjDAO:
         return excel.NewStrategyInjDAO(self.file_path)
 
@@ -141,6 +157,38 @@ class HolderDAO:
     ) -> initializers.LayerReplaceInitializer:
         return initializers.LayerReplaceInitializer(
             self.csv_layer_replace, self.local_layer_replace
+        )
+
+    @property
+    def inj_well_database_initializer(
+        self,
+    ) -> initializers.InjWellDatabaseInitializer:
+        return initializers.InjWellDatabaseInitializer(
+            self.csv_inj_well_database, self.local_inj_well_database
+        )
+
+    @property
+    def neighborhood_initializer(
+        self,
+    ) -> initializers.NeighborhoodInitializer:
+        return initializers.NeighborhoodInitializer(
+            self.csv_neighborhood, self.local_neighborhood
+        )
+
+    @property
+    def new_strategy_inj_initializer(
+        self,
+    ) -> initializers.NewStrategyInjInitializer:
+        return initializers.NewStrategyInjInitializer(
+            self.csv_new_strategy_inj, self.local_new_strategy_inj
+        )
+
+    @property
+    def new_strategy_oil_initializer(
+        self,
+    ) -> initializers.NewStrategyOilInitializer:
+        return initializers.NewStrategyOilInitializer(
+            self.csv_new_strategy_oil, self.local_new_strategy_oil
         )
 
     @property

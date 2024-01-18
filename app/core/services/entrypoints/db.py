@@ -44,3 +44,43 @@ async def init_well_profile(provider: DbProvider, settings: Settings) -> None:
         settings.well_profile_path
     ) as holder:
         await init_db.init_well_profile(holder.well_profile_initializer)
+
+
+async def init_inj_well_database(
+    provider: DbProvider, settings: Settings
+) -> None:
+    async with asynccontextmanager(provider.file_local_dao)(
+        settings.inj_well_database_path
+    ) as holder:
+        await init_db.init_inj_well_database(
+            holder.inj_well_database_initializer
+        )
+
+
+async def init_neighborhood(provider: DbProvider, settings: Settings) -> None:
+    async with asynccontextmanager(provider.file_local_dao)(
+        settings.neighborhood_path
+    ) as holder:
+        await init_db.init_neighborhood(holder.neighborhood_initializer)
+
+
+async def init_new_strategy_inj(
+    provider: DbProvider, settings: Settings
+) -> None:
+    async with asynccontextmanager(provider.file_local_dao)(
+        settings.new_strategy_inj_path
+    ) as holder:
+        await init_db.init_new_strategy_inj(
+            holder.new_strategy_inj_initializer
+        )
+
+
+async def init_new_strategy_oil(
+    provider: DbProvider, settings: Settings
+) -> None:
+    async with asynccontextmanager(provider.file_local_dao)(
+        settings.new_strategy_oil_path
+    ) as holder:
+        await init_db.init_new_strategy_oil(
+            holder.new_strategy_oil_initializer
+        )

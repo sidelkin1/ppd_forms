@@ -32,3 +32,31 @@ async def init_layer_replace(
 ) -> None:
     await dao.initialize()
     await dao.commit()
+
+
+async def init_inj_well_database(
+    dao: initializers.InjWellDatabaseInitializer,
+) -> None:
+    await dao.initialize()
+    await dao.commit()
+
+
+async def init_neighborhood(
+    dao: initializers.NeighborhoodInitializer,
+) -> None:
+    await dao.initialize()
+    await dao.commit()
+
+
+async def init_new_strategy_inj(
+    dao: initializers.NewStrategyInjInitializer,
+) -> None:
+    await dao.initialize()
+    await dao.commit()
+
+
+async def init_new_strategy_oil(
+    dao: initializers.NewStrategyOilInitializer,
+) -> None:
+    await dao.initialize()
+    await dao.commit()

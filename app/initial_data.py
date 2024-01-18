@@ -40,6 +40,10 @@ async def initialize_all(provider: DbProvider, settings: Settings) -> None:
     await asyncio.gather(
         db.init_monthly_report(provider, settings),
         db.init_well_profile(provider, settings),
+        db.init_inj_well_database(provider, settings),
+        db.init_neighborhood(provider, settings),
+        db.init_new_strategy_inj(provider, settings),
+        db.init_new_strategy_oil(provider, settings),
     )
 
 

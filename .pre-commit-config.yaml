@@ -13,17 +13,18 @@ repos:
     hooks:
     -   id: black
         args: ["--line-length=79"]
-        exclude: (alembic/versions/)
+        exclude: (migrations/versions/)
 
 -   repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
     -   id: isort
         args: ["--profile", "black", "--filter-files", "--line-length=79"]
-        exclude: (alembic/versions/)
+        exclude: (migrations/versions/)
 
 -   repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
     -   id: flake8
-        exclude: (alembic/versions/)
+        args: [--per-file-ignores, "__init__.py:F401"]
+        exclude: (migrations/versions/)

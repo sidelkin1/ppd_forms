@@ -5,9 +5,9 @@ from typing import Any
 from arq.connections import RedisSettings
 from pydantic import (
     DirectoryPath,
-    FieldValidationInfo,
     FilePath,
     PostgresDsn,
+    ValidationInfo,
     field_validator,
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     layer_replace_path: FilePath = data_dir / "layer_replace.csv"
     monthly_report_path: FilePath = data_dir / "monthly_report.csv"
     well_profile_path: FilePath = data_dir / "well_profile.csv"
+    inj_well_database_path: FilePath | None = None
+    neighborhood_path: FilePath | None = None
+    new_strategy_inj_path: FilePath | None = None
+    new_strategy_oil_path: FilePath | None = None
 
     app_title: str = "Стандартные формы для ППД"
     app_description: str = "Приложение для создания типовых отчетов ППД"
@@ -49,7 +53,7 @@ class Settings(BaseSettings):
 
     @field_validator("local_database_url", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Any, info: FieldValidationInfo) -> Any:
+    def assemble_db_connection(cls, v: Any, info: ValidationInfo) -> Any:
         return v or PostgresDsn.build(
             scheme="postgresql+asyncpg",
             username=info.data.get("postgres_user"),
@@ -65,7 +69,7 @@ class Settings(BaseSettings):
 
     @field_validator("redis_settings", mode="before")
     @classmethod
-    def assemble_redis_settings(cls, v: Any, info: FieldValidationInfo) -> Any:
+    def assemble_redis_settings(cls, v: Any, info: ValidationInfo) -> Any:
         return v or RedisSettings(
             host=info.data.get("redis_host"), port=info.data.get("redis_port")
         )

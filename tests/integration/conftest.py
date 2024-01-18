@@ -74,7 +74,9 @@ def postgres_url() -> Generator[str, None, None]:
 
 
 @pytest_asyncio.fixture
-async def arq_redis(redis_settings: RedisSettings) -> ArqRedis:
+async def arq_redis(
+    redis_settings: RedisSettings,
+) -> AsyncGenerator[ArqRedis, None]:
     redis = await create_redis(redis_settings)
     yield redis
     await redis.aclose()

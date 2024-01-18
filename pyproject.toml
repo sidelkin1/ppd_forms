@@ -71,3 +71,7 @@ omit = [
     "tests/*",
     "*/site-packages/*",
 ]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"**/migrations/versions/*" = ["N999"]

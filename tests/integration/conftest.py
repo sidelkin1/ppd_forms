@@ -21,6 +21,7 @@ from testcontainers.redis import RedisContainer
 from app.api.dependencies.dao.provider import DbProvider
 from app.core.config.settings import Settings
 from app.core.utils.process_pool import ProcessPoolManager
+from app.infrastructure.holder import HolderDAO
 from app.initial_data import (
     initialize_all,
     initialize_mapper,
@@ -28,6 +29,16 @@ from app.initial_data import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@pytest_asyncio.fixture
+async def holder(session: AsyncSession) -> HolderDAO:
+    return HolderDAO(local_session=session)
+
+
+@pytest_asyncio.fixture(scope="session")
+async def pool_holder(pool: sessionmaker) -> HolderDAO:
+    return HolderDAO(local_pool=pool)
 
 
 @pytest.fixture(scope="session")

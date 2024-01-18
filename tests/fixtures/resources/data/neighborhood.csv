@@ -1,0 +1,5 @@
+field,reservoir,well,neighbs
+F1,R1,I1,"W1,W2"
+F1,R2,I1,W1
+F1,R1,I2,"W3,W4"
+F1,R2,I2,"W3,W4"

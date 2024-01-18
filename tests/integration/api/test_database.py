@@ -117,5 +117,6 @@ async def test_reload_profile_not_allowed(
 @pytest.mark.asyncio(scope="session")
 async def test_get_dates(client: AsyncClient, table: str):
     resp = await client.get(f"database/{table}")
+    assert resp.is_success
     data = resp.json()
     assert data == {"min_date": "2000-01-01", "max_date": "2001-01-01"}

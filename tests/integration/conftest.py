@@ -91,7 +91,7 @@ async def arq_redis(
 ) -> AsyncGenerator[ArqRedis, None]:
     redis = await create_redis(redis_settings)
     yield redis
-    await redis.aclose()
+    await redis.close()
 
 
 @pytest.fixture(scope="session")

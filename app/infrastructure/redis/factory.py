@@ -14,7 +14,7 @@ def create_redis_maker(redis_settings: RedisSettings):
         try:
             yield redis
         finally:
-            await redis.aclose()
+            await redis.close()
 
     return decorator
 

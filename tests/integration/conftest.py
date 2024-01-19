@@ -27,18 +27,19 @@ from app.initial_data import (
     initialize_mapper,
     initialize_replace,
 )
+from tests.mocks.holder import HolderMock
 
 logger = logging.getLogger(__name__)
 
 
 @pytest_asyncio.fixture
 async def holder(session: AsyncSession) -> HolderDAO:
-    return HolderDAO(local_session=session)
+    return HolderMock(local_session=session)
 
 
 @pytest_asyncio.fixture(scope="session")
 async def pool_holder(pool: sessionmaker) -> HolderDAO:
-    return HolderDAO(local_pool=pool)
+    return HolderMock(local_pool=pool)
 
 
 @pytest.fixture(scope="session")

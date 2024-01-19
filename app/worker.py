@@ -29,6 +29,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     local_pool = create_local_pool(settings)
     ofm_pool = create_ofm_pool(settings) if ofm.setup(settings) else None
     provider = DbProvider(local_pool=local_pool, ofm_pool=ofm_pool)
+    ctx["settings"] = settings
     ctx["provider"] = provider
     ctx["pool"] = ProcessPoolManager(settings)
     ctx["local_dao"] = asynccontextmanager(provider.local_dao)

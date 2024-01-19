@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from app.core.models.dto import JobStamp, TaskBase
 from app.core.models.schemas import TaskResponse
 
@@ -11,4 +13,4 @@ class TaskTestResponse(TaskResponse[TaskBase]):
     def test(cls, **kwargs):
         task = TaskTest()
         job_stamp = JobStamp(**kwargs)
-        return cls(task=task, job=job_stamp)
+        return cls(Path(), task=task, job=job_stamp)

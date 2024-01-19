@@ -1,21 +1,24 @@
 from pathlib import Path
 from typing import TypeVar
 
-from app.core.config.settings import get_settings
 from app.core.models.dto import TaskBase
 from app.core.models.schemas.responses.base import BaseResponse
-
-settings = get_settings()  # FIXME avoid global variable
 
 TaskT = TypeVar("TaskT", bound=TaskBase, covariant=True, contravariant=False)
 
 
 class TaskResponse(BaseResponse[TaskT]):
+    _file_dir: Path
+
+    def __init__(self, file_dir: Path, **data):
+        super().__init__(**data)
+        self._file_dir = file_dir
+
     @property
     def user_dir(self) -> Path:
         if self.job.user_id is None:
             raise ValueError("user_id must be set")
-        directory = settings.file_dir / self.job.user_id
+        directory = self._file_dir / self.job.user_id
         directory.mkdir(parents=True, exist_ok=True)
         return directory
 

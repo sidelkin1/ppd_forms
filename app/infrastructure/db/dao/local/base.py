@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import delete, exists, insert, select
+from sqlalchemy import delete, exists, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.infrastructure.db.models.local.base import Base
@@ -40,6 +40,10 @@ class BaseDAO(Generic[Model, DataModel]):
 
     async def delete_all(self) -> None:
         await self.session.execute(delete(self.model))
+
+    async def count(self):
+        result = await self.session.execute(select(func.count(self.model.id)))
+        return result.scalar_one()
 
     async def commit(self) -> None:
         await self.session.commit()

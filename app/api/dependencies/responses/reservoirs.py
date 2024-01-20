@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.api.dependencies.settings import SettingsDep
 from app.api.dependencies.user import UserIdDep
 from app.core.models.dto import JobStamp, TaskReservoirs
 from app.core.models.enums import UneftAssets
@@ -13,10 +14,14 @@ def task_reservoirs_provider() -> ReservoirsResponse:
 
 
 async def get_reservoirs(
-    field_id: int, user_id: UserIdDep
+    field_id: int,
+    user_id: UserIdDep,
+    settings: SettingsDep,
 ) -> ReservoirsResponse:
     task = TaskReservoirs(assets=UneftAssets.reservoirs, field_id=field_id)
-    return ReservoirsResponse(task=task, job=JobStamp(user_id=user_id))
+    return ReservoirsResponse(
+        settings.file_dir, task=task, job=JobStamp(user_id=user_id)
+    )
 
 
 ReservoirsResponseDep = Annotated[

@@ -24,8 +24,12 @@ from tests.fixtures.task_fixtures import (  # noqa
     task_oil_loss,
     task_report,
 )
-from tests.fixtures.worker_fixtures import work_ok  # noqa
-from tests.fixtures.worker_fixtures import work_error, work_long  # noqa
+from tests.fixtures.worker_fixtures import (  # noqa
+    work_error,
+    work_long,
+    work_ok,
+    work_uneft,
+)
 
 
 @pytest_asyncio.fixture(scope="session")

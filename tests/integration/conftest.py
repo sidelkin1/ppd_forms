@@ -94,6 +94,7 @@ async def arq_redis(
     redis_settings: RedisSettings,
 ) -> AsyncGenerator[ArqRedis, None]:
     redis = await create_redis(redis_settings)
+    await redis.flushall()
     yield redis
     await redis.close()
 

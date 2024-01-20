@@ -6,3 +6,4 @@ from .responses.excel import ExcelResponse
 from .responses.job import JobResponse
 from .responses.report import OilLossResponse, ReportResponse
 from .responses.task import TaskResponse
+from .responses.uneft import FieldsResponse, ReservoirsResponse

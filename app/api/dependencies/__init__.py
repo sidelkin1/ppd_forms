@@ -17,12 +17,16 @@ from app.api.dependencies.responses import (
     create_task_database,
     create_task_excel,
     create_task_report,
+    get_fields,
     get_job_response,
+    get_reservoirs,
     job_response_provider,
     task_database_provider,
     task_excel_provider,
+    task_fields_provider,
     task_oil_loss_provider,
     task_report_provider,
+    task_reservoirs_provider,
 )
 from app.api.dependencies.settings import settings_provider
 from app.api.dependencies.user import (
@@ -61,3 +65,5 @@ def setup(
     app.dependency_overrides[task_report_provider] = create_task_report
     app.dependency_overrides[task_excel_provider] = create_task_excel
     app.dependency_overrides[task_oil_loss_provider] = create_oil_loss_report
+    app.dependency_overrides[task_fields_provider] = get_fields
+    app.dependency_overrides[task_reservoirs_provider] = get_reservoirs

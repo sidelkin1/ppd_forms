@@ -70,6 +70,14 @@ class HolderDAO:
         return ofm.WellProfileDAO(self.ofm_session)
 
     @property
+    def ofm_field_list(self) -> ofm.FieldListDAO:
+        return ofm.FieldListDAO(self.ofm_session)
+
+    @property
+    def ofm_reservoir_list(self) -> ofm.ReservoirListDAO:
+        return ofm.ReservoirListDAO(self.ofm_session)
+
+    @property
     def csv_monthly_report(self) -> csv.MonthlyReportDAO:
         return csv.MonthlyReportDAO(self.file_path)
 

@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import close_all_sessions, sessionmaker
+from sqlalchemy.pool import NullPool
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
@@ -59,7 +60,10 @@ async def session(pool: sessionmaker) -> AsyncGenerator[AsyncSession, None]:
 
 @pytest.fixture(scope="session")
 def pool(postgres_url: str) -> Generator[sessionmaker, None, None]:
-    engine = create_async_engine(url=postgres_url)
+    engine = create_async_engine(
+        url=postgres_url,
+        poolclass=NullPool,  # FIXME workaround for pytest-asyncio==0.23.3
+    )
     pool_: async_sessionmaker[AsyncSession] = async_sessionmaker(
         bind=engine, expire_on_commit=False, autoflush=False
     )

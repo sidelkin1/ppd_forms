@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from datetime import date
 from pathlib import Path
-from typing import Callable
 
 import pytest
 from csv_diff import compare, load_csv

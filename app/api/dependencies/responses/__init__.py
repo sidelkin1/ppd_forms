@@ -4,6 +4,7 @@ from .database import (
     task_database_provider,
 )
 from .excel import ExcelResponseDep, create_task_excel, task_excel_provider
+from .fields import FieldsResponseDep, get_fields, task_fields_provider
 from .job import JobResponseDep, get_job_response, job_response_provider
 from .oil_loss import (
     OilLossResponseDep,
@@ -11,3 +12,8 @@ from .oil_loss import (
     task_oil_loss_provider,
 )
 from .report import ReportResponseDep, create_task_report, task_report_provider
+from .reservoirs import (
+    ReservoirsResponseDep,
+    get_reservoirs,
+    task_reservoirs_provider,
+)

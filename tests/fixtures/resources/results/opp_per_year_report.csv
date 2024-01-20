@@ -1,0 +1,4 @@
+('field', '');('reservoir', '');('well_type', '');('rec_date', '');('well_name', 'size');('well_name', 'nunique')
+F1;R1;Prod;2000-01-01;1;1
+F1;R2;Prod;2000-01-01;1;1
+F2;R1;Inj;2001-01-01;1;1

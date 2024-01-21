@@ -117,9 +117,9 @@ def redis_settings() -> Generator[RedisSettings, None, None]:
 
 
 @pytest.fixture(scope="session")
-def settings(postgres_url: str, redis_settings: RedisSettings) -> Settings:
-    base_dir = Path(__file__).resolve().parent.parent.parent
-    data_dir = base_dir / "tests" / "fixtures" / "resources" / "data"
+def settings(
+    postgres_url: str, redis_settings: RedisSettings, data_dir: Path
+) -> Settings:
     return Settings(
         local_database_url=postgres_url,
         redis_settings=redis_settings,

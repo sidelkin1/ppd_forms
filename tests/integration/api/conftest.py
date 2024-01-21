@@ -1,4 +1,3 @@
-import os
 from collections.abc import AsyncGenerator, Callable, Generator
 
 import pytest
@@ -45,11 +44,11 @@ def test_client(app: FastAPI) -> Generator[TestClient, None, None]:
 
 
 @pytest.fixture(scope="session")
-def app(settings: Settings) -> FastAPI:
+def app(settings: Settings, secret_key: int) -> FastAPI:
     pool = create_local_pool(settings)
     redis = create_redis_pool(settings)
     app = FastAPI()
-    app.add_middleware(SessionMiddleware, secret_key=os.urandom(32))
+    app.add_middleware(SessionMiddleware, secret_key=secret_key)
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     dependencies.setup(app, pool, redis, settings)

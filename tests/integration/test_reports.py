@@ -48,9 +48,8 @@ async def test_reports(
     dao: str,
     service: Callable[..., None],
     expected_report: str,
+    result_dir: Path,
 ):
-    base_dir = Path(__file__).resolve().parent.parent.parent
-    result_dir = base_dir / "tests" / "fixtures" / "resources" / "results"
     path = tmp_path / "results.csv"
     date_from = date(2000, 1, 1)
     date_to = date(2001, 1, 1)

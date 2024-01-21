@@ -13,8 +13,8 @@ router = APIRouter()
 
 
 @router.post("/", response_model=dict)
-async def upload_file(file: UploadFile, base_dir: UserDirDep):
-    await save_upload_file(file, base_dir)
+async def upload_file(file: UploadFile, user_dir: UserDirDep):
+    await save_upload_file(file, user_dir / "uploads")
     return {"filename": file.filename}
 
 

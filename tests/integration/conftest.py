@@ -118,10 +118,14 @@ def redis_settings() -> Generator[RedisSettings, None, None]:
 
 @pytest.fixture(scope="session")
 def settings(
-    postgres_url: str, redis_settings: RedisSettings, data_dir: Path
+    postgres_url: str,
+    redis_settings: RedisSettings,
+    data_dir: Path,
+    file_dir: Path,
 ) -> Settings:
     return Settings(
         local_database_url=postgres_url,
+        file_dir=file_dir,
         redis_settings=redis_settings,
         well_profile_path=data_dir / "well_profile.csv",
         monthly_report_path=data_dir / "monthly_report.csv",

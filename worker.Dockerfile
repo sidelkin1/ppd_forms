@@ -1,7 +1,7 @@
 FROM oraclelinux:8 as builder
 
 RUN dnf -y module disable python36 && \
-    dnf -y install python3.11 python3.11-pip python3.11-setuptools python3.11-wheel && \
+    dnf -y install python3.11-3.11.5 python3.11-pip python3.11-setuptools python3.11-wheel && \
     rm -rf /var/cache/dnf
 
 RUN pip3 install poetry==1.6.1
@@ -23,7 +23,7 @@ ARG release=19
 ARG update=18
 
 RUN dnf -y module disable python36 && \
-    dnf -y install python3.11 && \
+    dnf -y install python3.11-3.11.5 && \
     dnf -y install oracle-release-el8 && \
     dnf -y install oracle-instantclient${release}.${update}-basiclite && \
     rm -rf /var/cache/dnf && \

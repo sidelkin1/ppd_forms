@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.api.dependencies.user import UserIdDep
@@ -8,12 +8,12 @@ templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", response_class=HTMLResponse)
 async def home():
     return RedirectResponse("/reports")
 
 
-@router.get("/reports")
+@router.get("/reports", response_class=HTMLResponse)
 async def reports(request: Request, user_id: UserIdDep):
     reports = (
         {
@@ -66,7 +66,7 @@ async def reports(request: Request, user_id: UserIdDep):
     )
 
 
-@router.get("/tables")
+@router.get("/tables", response_class=HTMLResponse)
 async def tables(request: Request, user_id: UserIdDep):
     tables = (
         {

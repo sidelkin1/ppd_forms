@@ -5,6 +5,7 @@ from arq import ArqRedis
 from fastapi import Depends
 
 from app.infrastructure.redis.dao import RedisDAO
+from app.infrastructure.redis.factory import redismaker
 
 
 def redis_provider() -> RedisDAO:
@@ -12,7 +13,7 @@ def redis_provider() -> RedisDAO:
 
 
 class RedisProvider:
-    def __init__(self, pool: ArqRedis) -> None:
+    def __init__(self, pool: redismaker[ArqRedis]) -> None:
         self.pool = pool
 
     async def dao(self) -> AsyncGenerator[RedisDAO, None]:

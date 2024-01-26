@@ -38,12 +38,13 @@ from app.api.dependencies.user import (
     user_id_provider,
 )
 from app.core.config.settings import Settings
+from app.infrastructure.redis.factory import redismaker
 
 
 def setup(
     app: FastAPI,
     pool: async_sessionmaker[AsyncSession],
-    redis: ArqRedis,
+    redis: redismaker[ArqRedis],
     settings: Settings,
 ) -> None:
     app.dependency_overrides[dao_provider] = DbProvider(

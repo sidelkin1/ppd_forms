@@ -29,6 +29,7 @@ class DbProvider:
         self.ofm_pool = ofm_pool
 
     async def local_dao(self) -> AsyncGenerator[HolderDAO, None]:
+        assert self.local_pool is not None
         async with self.local_pool() as session:
             yield HolderDAO(local_session=session)
 
@@ -36,6 +37,7 @@ class DbProvider:
         yield HolderDAO(local_pool=self.local_pool)
 
     async def ofm_dao(self) -> AsyncGenerator[HolderDAO, None]:
+        assert self.ofm_pool is not None
         with self.ofm_pool() as session:
             yield HolderDAO(ofm_session=session)
 
@@ -43,6 +45,8 @@ class DbProvider:
         yield HolderDAO(ofm_pool=self.ofm_pool)
 
     async def ofm_local_dao(self) -> AsyncGenerator[HolderDAO, None]:
+        assert self.local_pool is not None
+        assert self.ofm_pool is not None
         with self.ofm_pool() as ofm_session:
             async with self.local_pool() as local_session:
                 yield HolderDAO(
@@ -52,6 +56,7 @@ class DbProvider:
     async def file_local_dao(
         self, file_path: Path
     ) -> AsyncGenerator[HolderDAO, None]:
+        assert self.local_pool is not None
         async with self.local_pool() as session:
             yield HolderDAO(local_session=session, file_path=file_path)
 

@@ -26,7 +26,9 @@ async def create_task_database(
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    return DatabaseResponse(settings.file_dir, task=task, job=job_stamp)
+    return DatabaseResponse(
+        _file_dir=settings.file_dir, task=task, job=job_stamp
+    )
 
 
 DatabaseResponseDep = Annotated[

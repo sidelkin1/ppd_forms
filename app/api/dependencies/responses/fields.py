@@ -19,7 +19,7 @@ async def get_fields(
 ) -> FieldsResponse:
     task = TaskFields(assets=UneftAssets.fields)
     return FieldsResponse(
-        settings.file_dir, task=task, job=JobStamp(user_id=user_id)
+        _file_dir=settings.file_dir, task=task, job=JobStamp(user_id=user_id)
     )
 
 

@@ -10,9 +10,9 @@ TaskT = TypeVar("TaskT", bound=TaskBase, covariant=True, contravariant=False)
 class TaskResponse(BaseResponse[TaskT]):
     _file_dir: Path
 
-    def __init__(self, file_dir: Path, **data):
+    def __init__(self, _file_dir: Path, **data):
         super().__init__(**data)
-        self._file_dir = file_dir
+        self._file_dir = _file_dir
 
     @property
     def user_dir(self) -> Path:

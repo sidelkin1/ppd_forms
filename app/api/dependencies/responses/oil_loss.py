@@ -25,7 +25,9 @@ async def create_oil_loss_report(
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    return OilLossResponse(settings.file_dir, task=task, job=job_stamp)
+    return OilLossResponse(
+        _file_dir=settings.file_dir, task=task, job=job_stamp
+    )
 
 
 OilLossResponseDep = Annotated[

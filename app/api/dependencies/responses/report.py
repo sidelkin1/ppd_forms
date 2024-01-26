@@ -24,7 +24,9 @@ async def create_task_report(
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    return ReportResponse(settings.file_dir, task=task, job=job_stamp)
+    return ReportResponse(
+        _file_dir=settings.file_dir, task=task, job=job_stamp
+    )
 
 
 ReportResponseDep = Annotated[ReportResponse, Depends(task_report_provider)]

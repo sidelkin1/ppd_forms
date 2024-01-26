@@ -20,7 +20,7 @@ async def get_reservoirs(
 ) -> ReservoirsResponse:
     task = TaskReservoirs(assets=UneftAssets.reservoirs, field_id=field_id)
     return ReservoirsResponse(
-        settings.file_dir, task=task, job=JobStamp(user_id=user_id)
+        _file_dir=settings.file_dir, task=task, job=JobStamp(user_id=user_id)
     )
 
 

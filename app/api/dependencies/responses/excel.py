@@ -21,7 +21,7 @@ async def create_task_excel(
     settings: SettingsDep,
 ) -> ExcelResponse:
     task = TaskExcel(table=table, mode=mode, file=path.file)
-    return ExcelResponse(settings.file_dir, task=task, job=job_stamp)
+    return ExcelResponse(_file_dir=settings.file_dir, task=task, job=job_stamp)
 
 
 ExcelResponseDep = Annotated[ExcelResponse, Depends(task_excel_provider)]

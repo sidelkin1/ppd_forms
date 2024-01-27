@@ -1,3 +1,4 @@
+import logging
 import os
 
 import uvicorn
@@ -7,6 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import dependencies
 from app.api.routes.routers import main_router
+from app.core.config.parsers.logging_config import setup_logging
 from app.core.config.settings import get_settings
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
@@ -14,9 +16,12 @@ from app.infrastructure.db.factories.local import (
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from app.lifespan import lifespan
 
+logger = logging.getLogger(__name__)
+
 
 def main() -> FastAPI:
     settings = get_settings()
+    setup_logging(settings.logging_config_file)
     pool = create_local_pool(settings)
     redis = create_redis_pool(settings)
 
@@ -32,6 +37,7 @@ def main() -> FastAPI:
 
     dependencies.setup(app, pool, redis, settings)
 
+    logger.info("app prepared")
     return app
 
 

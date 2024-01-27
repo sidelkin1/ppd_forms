@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 from typing import Any, cast
@@ -6,6 +7,7 @@ from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
 from app.api.dependencies.dao.provider import DbProvider
+from app.core.config.parsers.logging_config import setup_logging
 from app.core.config.settings import get_settings
 from app.core.models.schemas import TaskResponse
 from app.core.services.entrypoints.arq import registry
@@ -19,6 +21,8 @@ from app.initial_data import initialize_mapper
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 
 async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
     return await registry[response.task.route_url](response, ctx)
@@ -26,6 +30,7 @@ async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
 
 async def startup(ctx: dict[str, Any]) -> None:
     settings = get_settings()
+    setup_logging(settings.logging_config_file)
     local_pool = create_local_pool(settings)
     ofm_pool = create_ofm_pool(settings) if ofm.setup(settings) else None
     provider = DbProvider(local_pool=local_pool, ofm_pool=ofm_pool)
@@ -39,6 +44,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["ofm_pool_dao"] = asynccontextmanager(provider.ofm_pool_dao)
     ctx["file_local_dao"] = asynccontextmanager(provider.file_local_dao)
     await initialize_mapper(provider)
+    logger.info("worker prepared")
 
 
 async def shutdown(ctx: dict[str, Any]) -> None:
@@ -46,6 +52,7 @@ async def shutdown(ctx: dict[str, Any]) -> None:
         pool.close()
     if provider := cast(DbProvider, ctx.get("provider")):
         await provider.dispose()
+    logger.info("worker closed")
 
 
 class WorkerSettings:

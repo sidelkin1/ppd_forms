@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
@@ -9,6 +10,8 @@ from app.api.dependencies.job import CurrentJobDep
 from app.api.dependencies.responses import JobResponseDep
 from app.core.models.enums import JobStatus
 from app.core.models.schemas import JobResponse
+
+logger = logging.getLogger(__name__)
 
 
 class JobTracker:
@@ -35,7 +38,7 @@ class JobTracker:
             while True:
                 await self.websocket.receive()
         except Exception as error:
-            print(f"Webosocket error: {error}")  # TODO log
+            logger.error(f"Webosocket error: {error}")
 
     async def _job_result(self) -> None:
         if self.response.job.status is JobStatus.not_found:
@@ -46,7 +49,7 @@ class JobTracker:
         except Exception as error:
             self.response.job.status = JobStatus.error
             self.response.job.message = str(error)
-            print(f"Job error: {error}")  # TODO log
+            logger.error(f"Job error: {error}")
         else:
             self.response.job.status = JobStatus.completed
             self.response.job.message = "Job is completed"
@@ -65,7 +68,9 @@ class JobTracker:
             try:
                 await self.job.abort()
             except Exception:
-                print("Exception while aborting job")  # TODO log
+                logger.error(
+                    f"Exception while aborting job: {self.job.job_id}"
+                )
         else:
             await self.send_response()
 

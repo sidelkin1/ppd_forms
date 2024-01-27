@@ -1,0 +1,24 @@
+- description: Какое-то краткое описание таблицы.
+  path: report
+  source: database
+  title: МЭР
+- description: Какое-то краткое описание таблицы.
+  path: profile
+  source: database
+  title: ОПП
+- description: Какое-то краткое описание таблицы.
+  path: ns_ppd
+  source: excel
+  title: НС ППД
+- description: Какое-то краткое описание таблицы.
+  path: ns_oil
+  source: excel
+  title: НС НФ
+- description: Какое-то краткое описание таблицы.
+  path: inj_db
+  source: excel
+  title: База ГТМ ППД
+- description: Какое-то краткое описание таблицы.
+  path: neighbs
+  source: excel
+  title: Округа

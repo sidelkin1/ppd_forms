@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     base_dir: DirectoryPath = (
         Path(__file__).resolve().parent.parent.parent.parent
     )
+    app_dir: DirectoryPath = base_dir / "app"
     data_dir: DirectoryPath = base_dir / "data"
     file_dir: DirectoryPath = base_dir / "files"
 
@@ -31,6 +32,16 @@ class Settings(BaseSettings):
     neighborhood_path: FilePath | None = None
     new_strategy_inj_path: FilePath | None = None
     new_strategy_oil_path: FilePath | None = None
+
+    report_config_file: FilePath = (
+        app_dir / "core" / "config" / "yaml" / "reports.yaml"
+    )
+    table_config_file: FilePath = (
+        app_dir / "core" / "config" / "yaml" / "tables.yaml"
+    )
+    logging_config_file: FilePath = (
+        app_dir / "core" / "config" / "yaml" / "logging.yaml"
+    )
 
     app_title: str = "Стандартные формы для ППД"
     app_description: str = "Приложение для создания типовых отчетов ППД"

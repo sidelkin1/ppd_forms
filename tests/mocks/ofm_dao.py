@@ -8,7 +8,7 @@ class MonthlyReportMock(MonthlyReportDAO):
     def __init__(self, session: Session) -> None:
         pass
 
-    async def get_by_params(self) -> list[MonthlyReportDB]:
+    async def get_by_params(self, **params) -> list[MonthlyReportDB]:
         return [
             MonthlyReportDB(
                 field="F2",
@@ -29,7 +29,7 @@ class WellProfileMock(WellProfileDAO):
     def __init__(self, session: Session) -> None:
         pass
 
-    async def get_by_params(self) -> list[WellProfileDB]:
+    async def get_by_params(self, **params) -> list[WellProfileDB]:
         return [
             WellProfileDB(
                 field="F2",

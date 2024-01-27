@@ -1,6 +1,6 @@
 from sqlalchemy import Date, between, bindparam, distinct, func, or_, select
 from sqlalchemy.sql.expression import ColumnElement, ScalarSelect, Select
-from sqlalchemy.sql.functions import Function
+from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.infrastructure.db.dao.sql.querysets.common import (
     select_cids,
@@ -19,7 +19,7 @@ from app.infrastructure.db.models.ofm.reflected import (
 )
 
 
-def _get_db_func(schema: str, name: str) -> Function:
+def _get_db_func(schema: str, name: str) -> _FunctionGenerator:
     return getattr(getattr(func, schema), name)
 
 

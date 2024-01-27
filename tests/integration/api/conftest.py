@@ -58,8 +58,8 @@ def app(settings: Settings, secret_key: int) -> FastAPI:
 @pytest_asyncio.fixture
 async def worker(
     arq_redis: ArqRedis,
-) -> Generator[Callable[..., Worker], None, None]:
-    worker_: Worker = None
+) -> AsyncGenerator[Callable[..., Worker], None]:
+    worker_: Worker | None = None
 
     def create(
         functions=[],

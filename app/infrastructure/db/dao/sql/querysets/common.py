@@ -53,7 +53,7 @@ def select_cids() -> ScalarSelect:
     )
     # sourcery skip: use-fstring-for-concatenation
     return reduce(
-        lambda result, subq: func.decode(
+        lambda result, subq: func.decode(  # type: ignore
             subq,
             None,
             result,

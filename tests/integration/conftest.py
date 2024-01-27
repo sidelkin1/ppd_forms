@@ -133,7 +133,7 @@ def settings(
         neighborhood_path=data_dir / "neighborhood.csv",
         new_strategy_inj_path=data_dir / "new_strategy_inj.csv",
         new_strategy_oil_path=data_dir / "new_strategy_oil.csv",
-    )
+    )  # type: ignore[call-arg]
 
 
 @pytest.fixture(scope="session")

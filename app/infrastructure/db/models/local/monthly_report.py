@@ -1,13 +1,6 @@
 from datetime import date
 
-from sqlalchemy import (
-    ColumnElement,
-    Float,
-    Index,
-    UniqueConstraint,
-    cast,
-    func,
-)
+from sqlalchemy import Float, Index, Label, UniqueConstraint, cast, func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped
 
@@ -50,7 +43,7 @@ class MonthlyReport(date_stamp_factory("dat_rep"), Base):
 
     @watercut.inplace.expression
     @classmethod
-    def _watercut_expression(cls) -> ColumnElement[Float]:
+    def _watercut_expression(cls) -> Label[float]:
         return func.coalesce(
             cls.water_v / func.nullif(cls.liquid, 0), cast(0, Float)
         ).label("watercut")

@@ -1,7 +1,7 @@
 from enum import Enum
 
 from sqlalchemy import Date, bindparam, func, literal_column, select, union
-from sqlalchemy.sql.expression import ColumnClause, Select, Subquery
+from sqlalchemy.sql.expression import ColumnClause, Label, Select, Subquery
 
 from app.infrastructure.db.dao.sql.querysets.common import (
     select_cids,
@@ -33,7 +33,9 @@ class RateColumn(str, Enum):
     WATER_V = ("water_v", WellMode.INJECTION)
     WATER = ("water", WellMode.PRODUCTION)
 
-    def __call__(self, model: type[Base], mode: WellMode) -> ColumnClause:
+    def __call__(
+        self, model: type[Base], mode: WellMode
+    ) -> ColumnClause | Label:
         if mode is self.literal:
             return literal_column("0").label(self.value)
         return getattr(model, self.value)

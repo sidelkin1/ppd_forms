@@ -1,6 +1,8 @@
+from typing import Any
+
 from app.infrastructure.db.types.unify.base_mapper import BaseMapper, WordOrder
 
-ReplaceDict = dict[str, WordOrder]
+ReplaceDict = dict[str, Any]
 
 
 class SimpleMapper(BaseMapper):
@@ -23,4 +25,5 @@ class SimpleMapper(BaseMapper):
         self,
         replace: ReplaceDict | None = None,
     ) -> None:
-        self.replace.update(replace)
+        if replace is not None:
+            self.replace.update(replace)

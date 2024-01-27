@@ -47,7 +47,9 @@ class LayerMapper(SimpleMapper):
         self, word: WordOrder, max_order: int
     ) -> tuple[WordOrder, int]:
         word = self.replace.get(word[self.WORD], [word])
-        max_pair_order = max(pair[self.ORDER] for pair in word)
+        max_pair_order = max(
+            pair[self.ORDER] for pair in word  # type: ignore[index]
+        )
         return word, max(max_order, max_pair_order)
 
     def unique_words(self, result: list[WordOrder]) -> list[WordOrder]:

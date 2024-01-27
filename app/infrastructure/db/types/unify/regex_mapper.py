@@ -20,8 +20,10 @@ class RegexMapper(SimpleMapper):
     def replace_word(
         self, word: WordOrder, max_order: int
     ) -> tuple[WordOrder, int]:
-        if match := self.pattern.match(word[self.WORD]):
-            word = self.replace[match.lastgroup]
+        if self.pattern is not None:
+            if match := self.pattern.match(word[self.WORD]):
+                if match.lastgroup is not None:
+                    word = self.replace[match.lastgroup]
         return word, max(max_order, word[self.ORDER])
 
     def update(
@@ -29,6 +31,7 @@ class RegexMapper(SimpleMapper):
         replace: ReplaceDict | None = None,
         pattern: re.Pattern | None = None,
     ) -> None:
-        self.replace.update(replace)
+        if replace is not None:
+            self.replace.update(replace)
         if pattern is not None:
             self.pattern = pattern

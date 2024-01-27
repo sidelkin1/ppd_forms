@@ -10,7 +10,7 @@ from app.infrastructure.db.dao.sql.reporters import WellProfileReporter
 
 
 def _group_diff_absorb(df: pd.DataFrame) -> pd.DataFrame:
-    columns = df.columns.difference(("diff_absorp", "remarks"), sort=False)
+    columns = df.columns.difference(["diff_absorp", "remarks"], sort=False)
     df["diff_absorp"] /= df.groupby(level=0)["diff_absorp"].transform(len)
     return df.groupby(columns.to_list(), as_index=False).agg(
         {

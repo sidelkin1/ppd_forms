@@ -42,7 +42,7 @@ def work_long() -> Function:
 def work_uneft() -> Function:
     async def perform_work(
         ctx: dict[str, Any], response: TaskResponse[TaskBase]
-    ) -> None:
+    ) -> Any:
         result = {
             "uneft:fields": [
                 UneftFieldDB(id=1, name="F1"),

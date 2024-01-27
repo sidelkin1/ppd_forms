@@ -22,7 +22,7 @@ url_tokens = {
     "DB_HOST": os.getenv("DB_HOST", ""),
     "DB_PORT": os.getenv("DB_PORT", ""),
 }
-url = config.get_main_option("sqlalchemy.url")
+url = config.get_main_option("sqlalchemy.url", "")
 url = re.sub(r"\${(.+?)}", lambda m: url_tokens[m.group(1)], url)
 config.set_main_option("sqlalchemy.url", url)
 

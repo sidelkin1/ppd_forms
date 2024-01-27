@@ -9,7 +9,7 @@ class TaskBase(BaseModel):
     _task_id: ClassVar[TaskId]
     _route_fields: ClassVar[list[str]]
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def task_id(self) -> TaskId:
         return self._task_id

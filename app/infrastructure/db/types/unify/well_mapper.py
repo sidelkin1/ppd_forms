@@ -42,7 +42,9 @@ class WellMapper(BaseMapper):
         if del_orzid:
             self.tran_tab = str.maketrans(in_tab, out_tab, "НN")
         else:
-            self.tran_tab = str.maketrans(in_tab, out_tab)
+            self.tran_tab = str.maketrans(  # type: ignore[assignment]
+                in_tab, out_tab
+            )
 
     def replace_word(
         self, word: WordOrder, max_order: int

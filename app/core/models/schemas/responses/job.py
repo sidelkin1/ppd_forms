@@ -1,14 +1,14 @@
-from typing import Any, Self
+from typing import Any, Self, cast
 
-from arq.jobs import Job
+from arq.jobs import Job, JobResult
 
-from app.core.models.dto import JobStamp
+from app.core.models.dto import JobStamp, TaskBase
 from app.core.models.enums import JobStatus
 from app.core.models.schemas.responses.base import BaseResponse
-from app.core.models.schemas.responses.task import TaskResponse, TaskT
+from app.core.models.schemas.responses.task import TaskResponse
 
 
-class JobResponse(BaseResponse[dict[str, Any]]):
+class JobResponse(BaseResponse[dict[str, Any] | None]):
     @classmethod
     async def from_job(cls, job: Job) -> Self:
         status = JobStatus.from_arq(await job.status())
@@ -18,8 +18,8 @@ class JobResponse(BaseResponse[dict[str, Any]]):
                 job_id=job.job_id, file_id=None, status=status
             )
         else:
-            info = await job.info()
-            response: TaskResponse[TaskT] = info.args[0]
+            info = cast(JobResult, await job.info())
+            response: TaskResponse[TaskBase] = info.args[0]
             task = response.task.model_dump()
             job_stamp = response.job
             if status is JobStatus.in_progress:

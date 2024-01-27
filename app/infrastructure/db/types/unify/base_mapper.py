@@ -2,6 +2,7 @@ import re
 from abc import ABC, abstractmethod
 from enum import Enum
 from functools import cache
+from typing import Final
 
 WordOrder = tuple[str, int]
 
@@ -12,10 +13,10 @@ class SplitMode(str, Enum):
 
 
 class BaseMapper(ABC):
-    NULL_ORDER: int = 0
+    NULL_ORDER: Final = 0
 
-    WORD: int = 0
-    ORDER: int = 1
+    WORD: Final = 0
+    ORDER: Final = 1
 
     word_pattern: re.Pattern = re.compile(r"[\w+\-()`]+")
     split_pattern: re.Pattern = re.compile(r"[,;\n\r]+")
@@ -36,7 +37,7 @@ class BaseMapper(ABC):
         self.delimiter = delimiter
         self.split_mode = split_mode
         if cached:
-            self._getitem = cache(self._getitem)
+            self._getitem = cache(self._getitem)  # type: ignore[method-assign]
 
     def __getitem__(self, input: str) -> str:
         return self._getitem(input)
@@ -78,7 +79,10 @@ class BaseMapper(ABC):
     def unique_words(self, result: list[WordOrder]) -> list[WordOrder]:
         seen = set()
         return [
-            word for word in result if word not in seen and not seen.add(word)
+            word
+            for word in result
+            if word not in seen
+            and not seen.add(word)  # type: ignore[func-returns-value]
         ]
 
     def sort_words(

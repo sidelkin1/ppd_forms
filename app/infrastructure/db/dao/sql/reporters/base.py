@@ -5,7 +5,7 @@ import pandas as pd
 from sqlalchemy import Result
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.sql.expression import Select
+from sqlalchemy.sql.expression import CompoundSelect, Select
 
 Pool = TypeVar(
     "Pool",
@@ -16,12 +16,16 @@ Pool = TypeVar(
 
 
 class BaseDAO(Generic[Pool]):
-    def __init__(self, querysets: dict[str, Select], pool: Pool) -> None:
+    def __init__(
+        self, querysets: dict[str, Select | CompoundSelect], pool: Pool
+    ) -> None:
         self.querysets = list(querysets.values())
         self.keys = list(querysets.keys())
         self.pool = pool
 
-    async def _perform_query(self, queryset: Select, **params) -> Result:
+    async def _perform_query(
+        self, queryset: Select | CompoundSelect, **params
+    ) -> Result:
         raise NotImplementedError
 
     async def read_one(

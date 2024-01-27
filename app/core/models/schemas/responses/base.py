@@ -8,7 +8,7 @@ T = TypeVar("T")
 
 
 class BaseResponse(BaseModel, Generic[T]):
-    task: T | None = None
+    task: T
     job: JobStamp
 
     model_config = ConfigDict(extra="forbid")

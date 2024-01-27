@@ -10,14 +10,14 @@ from app.core.models.dto import TaskOilLoss, TaskReport
 
 
 def get_correct_url(task: TaskReport | TaskOilLoss) -> str:
-    if task.name == "oil_loss":
+    if isinstance(task, TaskOilLoss):
         return f"reports/{task.name.value}/{task.mode.value}"
     return f"reports/{task.name.value}"
 
 
 def get_unknown_name_url(task: TaskReport | TaskOilLoss) -> str:
-    if task.task_id == "oil_loss":
-        return f"reports/unknown/{task.mode.value}"
+    if isinstance(task, TaskOilLoss):
+        return f"reports/{task.name.value}/unknown"
     return "reports/unknown"
 
 

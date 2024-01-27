@@ -4,7 +4,7 @@ from typing import TypeVar
 from app.core.models.dto import TaskOilLoss, TaskReport
 from app.core.models.schemas.responses.task import TaskResponse
 
-TaskT = TypeVar("TaskT", bound=TaskReport, covariant=True, contravariant=False)
+TaskT = TypeVar("TaskT", bound=TaskReport)
 
 
 class BaseReportResponse(TaskResponse[TaskT]):

@@ -1,5 +1,10 @@
 from sqlalchemy import bindparam, func, select, union
-from sqlalchemy.sql.expression import ColumnElement, ScalarSelect, Select
+from sqlalchemy.sql.expression import (
+    ColumnElement,
+    CompoundSelect,
+    ScalarSelect,
+    Select,
+)
 
 from app.infrastructure.db.models.ofm.reflected import DictG, WellStockHistExt
 
@@ -23,7 +28,7 @@ def _select_reservoir_id(ora: ColumnElement) -> Select:
     )
 
 
-def _select_reservoir_ids() -> Select:
+def _select_reservoir_ids() -> CompoundSelect:
     return union(
         _select_reservoir_id(WellStockHistExt.ora1),
         _select_reservoir_id(WellStockHistExt.ora2),

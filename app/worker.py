@@ -53,6 +53,7 @@ class WorkerSettings:
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = RedisSettings(
-        host=os.getenv("REDIS_HOST"), port=os.getenv("REDIS_PORT")
+        host=cast(str, os.getenv("REDIS_HOST")),
+        port=cast(int, os.getenv("REDIS_PORT")),
     )
     allow_abort_jobs = True

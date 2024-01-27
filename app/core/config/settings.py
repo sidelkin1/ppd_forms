@@ -1,6 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from arq.connections import RedisSettings
 from pydantic import (
@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     postgres_user: str
     postgres_password: str
     postgres_db: str
-    local_database_url: PostgresDsn = None
+    local_database_url: PostgresDsn = None  # type: ignore[assignment]
 
     @field_validator("local_database_url", mode="before")
     @classmethod
@@ -65,13 +65,14 @@ class Settings(BaseSettings):
 
     redis_host: str
     redis_port: int
-    redis_settings: RedisSettings = None
+    redis_settings: RedisSettings = None  # type: ignore[assignment]
 
     @field_validator("redis_settings", mode="before")
     @classmethod
     def assemble_redis_settings(cls, v: Any, info: ValidationInfo) -> Any:
         return v or RedisSettings(
-            host=info.data.get("redis_host"), port=info.data.get("redis_port")
+            host=cast(str, info.data.get("redis_host")),
+            port=cast(int, info.data.get("redis_port")),
         )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -79,4 +80,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings()  # type: ignore[call-arg]

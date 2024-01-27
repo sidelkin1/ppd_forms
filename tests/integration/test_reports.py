@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import date
 from pathlib import Path
 
@@ -46,7 +46,7 @@ async def test_reports(
     tmp_path: Path,
     settings: Settings,
     dao: str,
-    service: Callable[..., None],
+    service: Callable[..., Awaitable],
     expected_report: str,
     result_dir: Path,
 ):

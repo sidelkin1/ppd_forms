@@ -2,11 +2,15 @@ import re
 
 from app.infrastructure.db.dao import local
 from app.infrastructure.db.types import types
-from app.infrastructure.db.types.unify.base_mapper import BaseMapper
+from app.infrastructure.db.types.unify import (
+    BaseMapper,
+    RegexMapper,
+    SimpleMapper,
+)
 
 
 async def _update_simple_mapper(
-    mapper: BaseMapper, dao: local.SimpleReplaceDAO
+    mapper: SimpleMapper, dao: local.SimpleReplaceDAO
 ) -> None:
     objs = await dao.get_all()
     mapper.update(
@@ -18,7 +22,7 @@ async def _update_simple_mapper(
 
 
 async def _update_regex_mapper(
-    mapper: BaseMapper, dao: local.RegexReplaceDAO
+    mapper: RegexMapper, dao: local.RegexReplaceDAO
 ) -> None:
     objs = await dao.get_grouped_patterns()
     pattern = re.compile(

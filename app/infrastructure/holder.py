@@ -27,132 +27,106 @@ class HolderDAO:
 
     @property
     def local_monthly_report(self) -> local.MonthlyReportDAO:
-        assert self.local_session is not None
         return local.MonthlyReportDAO(self.local_session)
 
     @property
     def local_well_profile(self) -> local.WellProfileDAO:
-        assert self.local_session is not None
         return local.WellProfileDAO(self.local_session)
 
     @property
     def local_new_strategy_inj(self) -> local.NewStrategyInjDAO:
-        assert self.local_session is not None
         return local.NewStrategyInjDAO(self.local_session)
 
     @property
     def local_field_replace(self) -> local.FieldReplaceDAO:
-        assert self.local_session is not None
         return local.FieldReplaceDAO(self.local_session)
 
     @property
     def local_reservoir_replace(self) -> local.ReservoirReplaceDAO:
-        assert self.local_session is not None
         return local.ReservoirReplaceDAO(self.local_session)
 
     @property
     def local_layer_replace(self) -> local.LayerReplaceDAO:
-        assert self.local_session is not None
         return local.LayerReplaceDAO(self.local_session)
 
     @property
     def local_inj_well_database(self) -> local.InjWellDatabaseDAO:
-        assert self.local_session is not None
         return local.InjWellDatabaseDAO(self.local_session)
 
     @property
     def local_new_strategy_oil(self) -> local.NewStrategyOilDAO:
-        assert self.local_session is not None
         return local.NewStrategyOilDAO(self.local_session)
 
     @property
     def local_neighborhood(self) -> local.NeighborhoodDAO:
-        assert self.local_session is not None
         return local.NeighborhoodDAO(self.local_session)
 
     @property
     def ofm_monthly_report(self) -> ofm.MonthlyReportDAO:
-        assert self.ofm_session is not None
         return ofm.MonthlyReportDAO(self.ofm_session)
 
     @property
     def ofm_well_profile(self) -> ofm.WellProfileDAO:
-        assert self.ofm_session is not None
         return ofm.WellProfileDAO(self.ofm_session)
 
     @property
     def ofm_field_list(self) -> ofm.FieldListDAO:
-        assert self.ofm_session is not None
         return ofm.FieldListDAO(self.ofm_session)
 
     @property
     def ofm_reservoir_list(self) -> ofm.ReservoirListDAO:
-        assert self.ofm_session is not None
         return ofm.ReservoirListDAO(self.ofm_session)
 
     @property
     def csv_monthly_report(self) -> csv.MonthlyReportDAO:
-        assert self.file_path is not None
         return csv.MonthlyReportDAO(self.file_path)
 
     @property
     def csv_well_profile(self) -> csv.WellProfileDAO:
-        assert self.file_path is not None
         return csv.WellProfileDAO(self.file_path)
 
     @property
     def csv_field_replace(self) -> csv.FieldReplaceDAO:
-        assert self.file_path is not None
         return csv.FieldReplaceDAO(self.file_path)
 
     @property
     def csv_reservoir_replace(self) -> csv.ReservoirReplaceDAO:
-        assert self.file_path is not None
         return csv.ReservoirReplaceDAO(self.file_path)
 
     @property
     def csv_layer_replace(self) -> csv.LayerReplaceDAO:
-        assert self.file_path is not None
         return csv.LayerReplaceDAO(self.file_path)
 
     @property
     def csv_inj_well_database(self) -> csv.InjWellDatabaseDAO:
-        assert self.file_path is not None
         return csv.InjWellDatabaseDAO(self.file_path)
 
     @property
     def csv_neighborhood(self) -> csv.NeighborhoodDAO:
-        assert self.file_path is not None
         return csv.NeighborhoodDAO(self.file_path)
 
     @property
     def csv_new_strategy_inj(self) -> csv.NewStrategyInjDAO:
-        assert self.file_path is not None
         return csv.NewStrategyInjDAO(self.file_path)
 
     @property
     def csv_new_strategy_oil(self) -> csv.NewStrategyOilDAO:
-        assert self.file_path is not None
         return csv.NewStrategyOilDAO(self.file_path)
 
     @property
     def excel_new_strategy_inj(self) -> excel.NewStrategyInjDAO:
-        assert self.file_path is not None
         return excel.NewStrategyInjDAO(self.file_path)
 
     @property
     def excel_new_strategy_oil(self) -> excel.NewStrategyOilDAO:
-        assert self.file_path is not None
         return excel.NewStrategyOilDAO(self.file_path)
 
     @property
     def excel_inj_well_database(self) -> excel.InjWellDatabaseDAO:
-        assert self.file_path is not None
         return excel.InjWellDatabaseDAO(self.file_path)
 
     @property
     def excel_neighborhood(self) -> excel.NeighborhoodDAO:
-        assert self.file_path is not None
         return excel.NeighborhoodDAO(self.file_path)
 
     @property
@@ -227,22 +201,18 @@ class HolderDAO:
 
     @property
     def well_profile_reporter(self) -> reporters.WellProfileReporter:
-        assert self.local_pool is not None
         return reporters.WellProfileReporter(self.local_pool)
 
     @property
     def first_rate_loss_reporter(self) -> reporters.FirstRateLossReporter:
-        assert self.local_pool is not None
         return reporters.FirstRateLossReporter(self.local_pool)
 
     @property
     def max_rate_loss_reporter(self) -> reporters.MaxRateLossReporter:
-        assert self.local_pool is not None
         return reporters.MaxRateLossReporter(self.local_pool)
 
     @property
     def opp_per_year_reporter(self) -> reporters.OppPerYearReporter:
-        assert self.ofm_pool is not None
         return reporters.OppPerYearReporter(self.ofm_pool)
 
     @property

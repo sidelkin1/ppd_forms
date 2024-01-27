@@ -23,13 +23,13 @@ class BaseDAO(Generic[Model]):
 
     async def _get_all(self) -> pd.DataFrame:
         df: pd.DataFrame = await run_in_threadpool(
-            pd.read_excel,
+            pd.read_excel,  # type: ignore[arg-type]
             self.filepath,
             engine="openpyxl",
             **self.excel_options
         )
         if self.column_names:
-            df.columns = self.column_names
+            df.columns = self.column_names  # type: ignore[assignment]
         return df
 
     async def get_all(self) -> list[Model]:

@@ -55,4 +55,4 @@ class MainTableDAO(BaseDAO[Model, DataModel]):
                 func.max(self.model.date_stamp),
             )
         )
-        return result.one().tuple()
+        return result.one()._tuple()

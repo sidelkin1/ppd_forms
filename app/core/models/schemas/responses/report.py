@@ -4,7 +4,9 @@ from typing import TypeVar
 from app.core.models.dto import TaskOilLoss, TaskReport
 from app.core.models.schemas.responses.task import TaskResponse
 
-TaskT = TypeVar("TaskT", bound=TaskReport)
+TaskT = TypeVar(
+    "TaskT", bound=TaskReport
+)  # FIXME need covariant, contrvariant values
 
 
 class BaseReportResponse(TaskResponse[TaskT]):

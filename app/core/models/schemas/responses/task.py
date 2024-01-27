@@ -4,7 +4,9 @@ from typing import TypeVar
 from app.core.models.dto import TaskBase
 from app.core.models.schemas.responses.base import BaseResponse
 
-TaskT = TypeVar("TaskT", bound=TaskBase)
+TaskT = TypeVar(
+    "TaskT", bound=TaskBase
+)  # FIXME need covariant, contrvariant values
 
 
 class TaskResponse(BaseResponse[TaskT]):

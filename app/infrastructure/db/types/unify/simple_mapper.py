@@ -2,7 +2,7 @@ from typing import Any
 
 from app.infrastructure.db.types.unify.base_mapper import BaseMapper, WordOrder
 
-ReplaceDict = dict[str, Any]
+ReplaceDict = dict[str, Any]  # FIXME need more precise type conversion
 
 
 class SimpleMapper(BaseMapper):

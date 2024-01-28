@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from app.api.dependencies.dao.provider import DbProvider
+from app.api.dependencies.db import DbProvider
 from app.core.services import init_mapper
 
 

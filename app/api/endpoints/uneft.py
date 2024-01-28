@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.dependencies.redis.provider import RedisDep
+from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.responses import (
     FieldsResponseDep,
     ReservoirsResponseDep,

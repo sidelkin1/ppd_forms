@@ -3,7 +3,7 @@ from typing import Annotated
 from arq.jobs import Job
 from fastapi import Depends
 
-from app.api.dependencies.redis.provider import RedisDep
+from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.user.session import UserIdDep
 from app.core.models.dto.jobs.job_stamp import JobStamp
 

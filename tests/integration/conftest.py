@@ -19,7 +19,7 @@ from sqlalchemy.pool import NullPool
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
-from app.api.dependencies.dao.provider import DbProvider
+from app.api.dependencies.db import DbProvider
 from app.core.config.settings import Settings
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.holder import HolderDAO

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app.api.dependencies.dao.provider import HolderDep
-from app.api.dependencies.redis.provider import RedisDep
+from app.api.dependencies.db import HolderDep
+from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.responses import DatabaseResponseDep
 from app.core.models.enums import LoadMode, OfmTableName
 from app.core.models.schemas import DatabaseResponse, DateRange

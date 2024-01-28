@@ -6,7 +6,7 @@ from typing import Any, cast
 from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
-from app.api.dependencies.dao.provider import DbProvider
+from app.api.dependencies.db import DbProvider
 from app.core.config.parsers.logging_config import setup_logging
 from app.core.config.settings import get_settings
 from app.core.models.schemas import TaskResponse

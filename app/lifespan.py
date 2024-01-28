@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.dependencies.dao.provider import DbProvider
+from app.api.dependencies.db import DbProvider
 from app.infrastructure.db.factories.local import create_pool
 from app.initial_data import initialize_mapper
 

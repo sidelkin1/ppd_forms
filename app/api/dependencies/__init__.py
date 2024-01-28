@@ -2,7 +2,7 @@ from arq import ArqRedis
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.api.dependencies.dao.provider import DbProvider, dao_provider
+from app.api.dependencies.db import DbProvider, dao_provider
 from app.api.dependencies.job import (
     create_job_stamp,
     current_job_provider,
@@ -11,7 +11,7 @@ from app.api.dependencies.job import (
     job_tracker_provider,
     new_job_provider,
 )
-from app.api.dependencies.redis.provider import RedisProvider, redis_provider
+from app.api.dependencies.redis import RedisProvider, redis_provider
 from app.api.dependencies.responses import (
     create_oil_loss_report,
     create_task_database,

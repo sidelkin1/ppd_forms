@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 from fastapi.responses import FileResponse
 
-from app.api.dependencies.redis.provider import RedisDep
+from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.responses import (
     OilLossResponseDep,
     ReportResponseDep,

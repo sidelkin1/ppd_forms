@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from app.api.dependencies.dao.provider import DbProvider
+from app.api.dependencies.db import DbProvider
 from app.core.config.settings import Settings, get_settings
 from app.core.services.entrypoints import db, mapper
 from app.infrastructure.db.factories.local import create_pool

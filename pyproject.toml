@@ -119,7 +119,7 @@ disable_error_code = ["union-attr", "arg-type"]
 
 [[tool.mypy.overrides]]
 module = [
-    "app.api.dependencies.dao.provider",
+    "app.api.dependencies.db",
     "app.infrastructure.db.models.local.inj_well_database",
     "app.infrastructure.db.models.local.monthly_report",
     "app.infrastructure.db.models.local.neighborhood",

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, status
 
-from app.api.dependencies.dao.provider import HolderDep
-from app.api.dependencies.redis.provider import RedisDep
+from app.api.dependencies.db import HolderDep
+from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.responses import ExcelResponseDep
 from app.api.dependencies.user import UserDirDep
 from app.api.utils.upload_file import save_upload_file

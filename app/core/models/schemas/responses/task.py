@@ -10,7 +10,7 @@ TaskT = TypeVar(
 
 
 class TaskResponse(BaseResponse[TaskT]):
-    _file_dir: Path
+    _file_dir: Path  # FIXME may lead to serialization issues
 
     def __init__(self, _file_dir: Path, **data):
         super().__init__(**data)

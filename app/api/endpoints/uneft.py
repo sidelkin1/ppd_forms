@@ -1,19 +1,43 @@
+from pathlib import Path
+
 from fastapi import APIRouter
 
 from app.api.dependencies.redis import RedisDep
-from app.api.dependencies.responses import (
-    FieldsResponseDep,
-    ReservoirsResponseDep,
-)
+from app.api.dependencies.settings import SettingsDep
+from app.api.dependencies.user import UserIdDep
 from app.api.utils.validators import check_field_exists
-from app.core.models.dto import UneftFieldDB, UneftReservoirDB
+from app.core.models.dto import (
+    JobStamp,
+    TaskFields,
+    TaskReservoirs,
+    UneftFieldDB,
+    UneftReservoirDB,
+)
+from app.core.models.enums import UneftAssets
+from app.core.models.schemas import FieldsResponse, ReservoirsResponse
+from app.infrastructure.redis.dao import RedisDAO
 
 router = APIRouter()
 
 
-@router.get("/fields", response_model=list[UneftFieldDB])
-async def field_list(response: FieldsResponseDep, redis: RedisDep):
+async def get_fields(
+    file_dir: Path, user_id: str, redis: RedisDAO
+) -> list[UneftFieldDB]:
+    task = TaskFields(assets=UneftAssets.fields)
+    response = FieldsResponse(
+        _file_dir=file_dir, task=task, job=JobStamp(user_id=user_id)
+    )
     fields = await redis.result(response)
+    return fields
+
+
+@router.get("/fields", response_model=list[UneftFieldDB])
+async def field_list(
+    redis: RedisDep,
+    user_id: UserIdDep,
+    settings: SettingsDep,
+):
+    fields = await get_fields(settings.file_dir, user_id, redis)
     return fields
 
 
@@ -22,11 +46,17 @@ async def field_list(response: FieldsResponseDep, redis: RedisDep):
 )
 async def reservoir_list(
     field_id: int,
-    fields_response: FieldsResponseDep,
-    reservoirs_response: ReservoirsResponseDep,
     redis: RedisDep,
+    user_id: UserIdDep,
+    settings: SettingsDep,
 ):
-    fields = await redis.result(fields_response)
+    fields = await get_fields(settings.file_dir, user_id, redis)
     check_field_exists(field_id, fields)
-    reservoirs = await redis.result(reservoirs_response)
+    task = TaskReservoirs(assets=UneftAssets.reservoirs, field_id=field_id)
+    response = ReservoirsResponse(
+        _file_dir=settings.file_dir,
+        task=task,
+        job=JobStamp(user_id=user_id),
+    )
+    reservoirs = await redis.result(response)
     return reservoirs

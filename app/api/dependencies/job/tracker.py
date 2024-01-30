@@ -7,7 +7,7 @@ from arq.jobs import Job
 from fastapi import Depends, WebSocket
 
 from app.api.dependencies.job import CurrentJobDep
-from app.api.dependencies.responses import JobResponseDep
+from app.api.dependencies.response import JobResponseDep
 from app.core.models.enums import JobStatus
 from app.core.models.schemas import JobResponse
 

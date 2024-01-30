@@ -1,13 +1,12 @@
 from fastapi import APIRouter, status
 from fastapi.responses import FileResponse
 
+from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis import RedisDep
-from app.api.dependencies.responses import (
-    OilLossResponseDep,
-    ReportResponseDep,
-)
+from app.api.dependencies.settings import SettingsDep
 from app.api.dependencies.user import UserFileDep
 from app.api.utils.validators import check_file_exists
+from app.core.models.dto import TaskOilLoss, TaskReport
 from app.core.models.enums import LossMode, ReportName
 from app.core.models.schemas import DateRange, OilLossResponse, ReportResponse
 
@@ -23,9 +22,19 @@ router = APIRouter()
 async def generate_oil_loss_report(
     mode: LossMode,
     date_range: DateRange,
-    response: OilLossResponseDep,
     redis: RedisDep,
+    job_stamp: NewJobDep,
+    settings: SettingsDep,
 ):
+    task = TaskOilLoss(
+        name=ReportName.oil_loss,
+        mode=mode,
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
+    )
+    response = OilLossResponse(
+        _file_dir=settings.file_dir, task=task, job=job_stamp
+    )
     await redis.enqueue_task(response)
     return response
 
@@ -39,9 +48,18 @@ async def generate_oil_loss_report(
 async def generate_report(
     name: ReportName,
     date_range: DateRange,
-    response: ReportResponseDep,
     redis: RedisDep,
+    job_stamp: NewJobDep,
+    settings: SettingsDep,
 ):
+    task = TaskReport(
+        name=name,
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
+    )
+    response = ReportResponse(
+        _file_dir=settings.file_dir, task=task, job=job_stamp
+    )
     await redis.enqueue_task(response)
     return response
 

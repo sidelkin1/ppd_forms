@@ -1,12 +1,11 @@
 from fastapi import APIRouter, status
 from fastapi.responses import FileResponse
 
-from app.api.dependencies.job import NewJobDep
+from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
-from app.api.dependencies.settings import SettingsDep
-from app.api.dependencies.user import UserFileDep
+from app.api.dependencies.session import UserIdDep
 from app.api.utils.validators import check_file_exists
-from app.core.models.dto import TaskOilLoss, TaskReport
+from app.core.models.dto import JobStamp, TaskOilLoss, TaskReport
 from app.core.models.enums import LossMode, ReportName
 from app.core.models.schemas import DateRange, OilLossResponse, ReportResponse
 
@@ -22,9 +21,9 @@ router = APIRouter()
 async def generate_oil_loss_report(
     mode: LossMode,
     date_range: DateRange,
+    user_id: UserIdDep,
     redis: RedisDep,
-    job_stamp: NewJobDep,
-    settings: SettingsDep,
+    path: PathDep,
 ):
     task = TaskOilLoss(
         name=ReportName.oil_loss,
@@ -33,7 +32,7 @@ async def generate_oil_loss_report(
         date_to=date_range.date_to,
     )
     response = OilLossResponse(
-        _file_dir=settings.file_dir, task=task, job=job_stamp
+        _file_dir=path.file_dir, task=task, job=JobStamp(user_id=user_id)
     )
     await redis.enqueue_task(response)
     return response
@@ -48,9 +47,9 @@ async def generate_oil_loss_report(
 async def generate_report(
     name: ReportName,
     date_range: DateRange,
+    user_id: UserIdDep,
     redis: RedisDep,
-    job_stamp: NewJobDep,
-    settings: SettingsDep,
+    path: PathDep,
 ):
     task = TaskReport(
         name=name,
@@ -58,20 +57,22 @@ async def generate_report(
         date_to=date_range.date_to,
     )
     response = ReportResponse(
-        _file_dir=settings.file_dir, task=task, job=job_stamp
+        _file_dir=path.file_dir, task=task, job=JobStamp(user_id=user_id)
     )
     await redis.enqueue_task(response)
     return response
 
 
 @router.get("/{file_id}")
-async def download_report(file_id: str, path: UserFileDep):
-    check_file_exists(path)
-    return FileResponse(path, media_type="text/csv")
+async def download_report(file_id: str, user_id: UserIdDep, path: PathDep):
+    file_path = path.file_path(user_id, file_id)
+    check_file_exists(file_path)
+    return FileResponse(file_path, media_type="text/csv")
 
 
 @router.delete("/{file_id}", response_model=dict)
-async def delete_report(file_id: str, path: UserFileDep):
-    check_file_exists(path)
-    path.unlink(missing_ok=True)
+async def delete_report(file_id: str, user_id: UserIdDep, path: PathDep):
+    file_path = path.file_path(user_id, file_id)
+    check_file_exists(file_path)
+    file_path.unlink(missing_ok=True)
     return {"message": "Отчет удален!"}

@@ -1,13 +1,9 @@
 import asyncio
 import logging
-from collections.abc import AsyncGenerator
-from typing import Annotated
 
 from arq.jobs import Job
-from fastapi import Depends, WebSocket
+from fastapi import WebSocket
 
-from app.api.dependencies.job import CurrentJobDep
-from app.api.dependencies.response import JobResponseDep
 from app.core.models.enums import JobStatus
 from app.core.models.schemas import JobResponse
 
@@ -73,17 +69,3 @@ class JobTracker:
                 )
         else:
             await self.send_response()
-
-
-def job_tracker_provider() -> JobTracker:
-    raise NotImplementedError
-
-
-async def get_job_tracker(
-    websocket: WebSocket, job: CurrentJobDep, response: JobResponseDep
-) -> AsyncGenerator[JobTracker, None]:
-    async with JobTracker(websocket, job, response) as tracker:
-        yield tracker
-
-
-JobTrackerDep = Annotated[JobTracker, Depends(job_tracker_provider)]

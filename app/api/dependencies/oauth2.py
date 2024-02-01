@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 from fastapi import HTTPException, Request, status
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security import OAuth2
@@ -10,8 +8,8 @@ class OAuth2PasswordBearerWithCookie(OAuth2):
     def __init__(
         self,
         tokenUrl: str,
-        scheme_name: Optional[str] = None,
-        scopes: Optional[Dict[str, str]] = None,
+        scheme_name: str | None = None,
+        scopes: dict[str, str] | None = None,
         auto_error: bool = True,
     ):
         if not scopes:
@@ -23,8 +21,8 @@ class OAuth2PasswordBearerWithCookie(OAuth2):
             flows=flows, scheme_name=scheme_name, auto_error=auto_error
         )
 
-    async def __call__(self, request: Request) -> Optional[str]:
-        authorization: str = request.cookies.get("access_token")
+    async def __call__(self, request: Request) -> str | None:
+        authorization = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(authorization)
         if not authorization or scheme.lower() != "bearer":
             if self.auto_error:

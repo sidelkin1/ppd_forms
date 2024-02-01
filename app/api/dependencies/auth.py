@@ -89,7 +89,7 @@ class AuthProvider:
             raise
         return User(username=username)
 
-    async def get_current_user_or_none(self, request: Request) -> User:
+    async def get_current_user_or_none(self, request: Request) -> User | None:
         try:
             token = await oauth2_scheme(request)
             user = await self.get_current_user(token)
@@ -103,5 +103,5 @@ def get_auth_provider() -> AuthProvider:
 
 
 UserDep = Annotated[User, Depends(get_current_user)]
-UserOrNoneDep = Annotated[User, Depends(get_current_user_or_none)]
+UserOrNoneDep = Annotated[User | None, Depends(get_current_user_or_none)]
 AuthDep = Annotated[AuthProvider, Depends(get_auth_provider)]

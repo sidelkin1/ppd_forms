@@ -26,7 +26,7 @@ async def get_fields(
     redis: RedisDAO,
 ) -> list[UneftFieldDB]:
     task = TaskFields(assets=UneftAssets.fields)
-    response = FieldsResponse(_file_dir=file_dir, task=task, job=job_stamp)
+    response = FieldsResponse(task=task, job=job_stamp)
     fields = await redis.result(response)
     return fields
 
@@ -53,8 +53,6 @@ async def reservoir_list(
     fields = await get_fields(path.file_dir, JobStamp(user_id=user_id), redis)
     check_field_exists(field_id, fields)
     task = TaskReservoirs(assets=UneftAssets.reservoirs, field_id=field_id)
-    response = ReservoirsResponse(
-        _file_dir=path.file_dir, task=task, job=JobStamp(user_id=user_id)
-    )
+    response = ReservoirsResponse(task=task, job=JobStamp(user_id=user_id))
     reservoirs = await redis.result(response)
     return reservoirs

@@ -1,5 +1,6 @@
 from typing import Any, cast
 
+from app.api.dependencies.path import PathProvider
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 from app.core.models.schemas import (
     DatabaseResponse,
@@ -20,42 +21,60 @@ registry = WorkRegistry()
 
 @registry.add("excel:ns_ppd:refresh")
 async def refresh_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_inj_loader.refresh()
 
 
 @registry.add("excel:ns_ppd:reload")
 async def reload_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_inj_loader.reload()
 
 
 @registry.add("excel:ns_oil:refresh")
 async def refresh_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_oil_loader.refresh()
 
 
 @registry.add("excel:ns_oil:reload")
 async def reload_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_oil_loader.reload()
 
 
 @registry.add("excel:inj_db:refresh")
 async def refresh_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.inj_well_database_loader.refresh()
 
 
 @registry.add("excel:inj_db:reload")
 async def reload_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.inj_well_database_loader.reload()
 
@@ -64,14 +83,20 @@ async def reload_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
 async def refresh_neighbs(
     response: ExcelResponse, ctx: dict[str, Any]
 ) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.neighborhood_loader.refresh()
 
 
 @registry.add("excel:neighbs:reload")
 async def reload_neighbs(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["file_local_dao"](response.path) as holder:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["file_local_dao"](path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.neighborhood_loader.reload()
 
@@ -110,10 +135,13 @@ async def refresh_opp(response: DatabaseResponse, ctx: dict[str, Any]) -> None:
 async def create_profile_report(
     response: ReportResponse, ctx: dict[str, Any]
 ) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
     async with ctx["local_pool_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await profile_report(
-            response.path,
+            path_provider.file_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.well_profile_reporter,
@@ -126,10 +154,13 @@ async def create_profile_report(
 async def create_first_rate_loss_report(
     response: OilLossResponse, ctx: dict[str, Any]
 ) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
     async with ctx["local_pool_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
-            response.path,
+            path_provider.file_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.first_rate_loss_reporter,
@@ -142,10 +173,13 @@ async def create_first_rate_loss_report(
 async def create_max_rate_loss_report(
     response: OilLossResponse, ctx: dict[str, Any]
 ) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
     async with ctx["local_pool_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
-            response.path,
+            path_provider.file_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.max_rate_loss_reporter,
@@ -158,10 +192,13 @@ async def create_max_rate_loss_report(
 async def create_opp_per_year_report(
     response: ReportResponse, ctx: dict[str, Any]
 ) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
     async with ctx["ofm_pool_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await opp_per_year_report(
-            response.path,
+            path_provider.file_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.opp_per_year_reporter,

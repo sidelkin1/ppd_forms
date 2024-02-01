@@ -5,13 +5,13 @@ import pytest
 from arq.worker import Function, func
 
 from app.core.models.dto import TaskBase, UneftFieldDB, UneftReservoirDB
-from app.core.models.schemas import TaskResponse
+from app.core.models.schemas import BaseResponse
 
 
 @pytest.fixture(scope="session")
 def work_ok() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: TaskResponse[TaskBase]
+        ctx: dict[str, Any], response: BaseResponse[TaskBase]
     ) -> str:
         return "OK!"
 
@@ -21,7 +21,7 @@ def work_ok() -> Function:
 @pytest.fixture(scope="session")
 def work_error() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: TaskResponse[TaskBase]
+        ctx: dict[str, Any], response: BaseResponse[TaskBase]
     ) -> None:
         raise ValueError("Error!")
 
@@ -31,7 +31,7 @@ def work_error() -> Function:
 @pytest.fixture(scope="session")
 def work_long() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: TaskResponse[TaskBase]
+        ctx: dict[str, Any], response: BaseResponse[TaskBase]
     ) -> None:
         await asyncio.sleep(3600)
 
@@ -41,7 +41,7 @@ def work_long() -> Function:
 @pytest.fixture(scope="session")
 def work_uneft() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: TaskResponse[TaskBase]
+        ctx: dict[str, Any], response: BaseResponse[TaskBase]
     ) -> Any:
         result = {
             "uneft:fields": [

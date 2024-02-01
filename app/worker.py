@@ -7,9 +7,10 @@ from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
 from app.api.dependencies.db import DbProvider
+from app.api.dependencies.path import PathProvider
 from app.core.config.parsers.logging_config import setup_logging
 from app.core.config.settings import get_settings
-from app.core.models.schemas import TaskResponse
+from app.core.models.schemas import BaseResponse
 from app.core.services.entrypoints.arq import registry
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.factories.local import (
@@ -24,7 +25,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-async def perform_work(ctx: dict[str, Any], response: TaskResponse) -> None:
+async def perform_work(ctx: dict[str, Any], response: BaseResponse) -> None:
     return await registry[response.task.route_url](response, ctx)
 
 
@@ -36,6 +37,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     provider = DbProvider(local_pool=local_pool, ofm_pool=ofm_pool)
     ctx["settings"] = settings
     ctx["provider"] = provider
+    ctx["path_provider"] = PathProvider(settings)
     ctx["pool"] = ProcessPoolManager(settings)
     ctx["local_dao"] = asynccontextmanager(provider.local_dao)
     ctx["ofm_dao"] = asynccontextmanager(provider.ofm_dao)

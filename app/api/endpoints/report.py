@@ -31,9 +31,7 @@ async def generate_oil_loss_report(
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    response = OilLossResponse(
-        _file_dir=path.file_dir, task=task, job=JobStamp(user_id=user_id)
-    )
+    response = OilLossResponse(task=task, job=JobStamp(user_id=user_id))
     await redis.enqueue_task(response)
     return response
 
@@ -56,9 +54,7 @@ async def generate_report(
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    response = ReportResponse(
-        _file_dir=path.file_dir, task=task, job=JobStamp(user_id=user_id)
-    )
+    response = ReportResponse(task=task, job=JobStamp(user_id=user_id))
     await redis.enqueue_task(response)
     return response
 

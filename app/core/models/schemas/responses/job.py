@@ -5,7 +5,6 @@ from arq.jobs import Job, JobResult
 from app.core.models.dto import JobStamp, TaskBase
 from app.core.models.enums import JobStatus
 from app.core.models.schemas.responses.base import BaseResponse
-from app.core.models.schemas.responses.task import TaskResponse
 
 
 class JobResponse(BaseResponse[dict[str, Any] | None]):
@@ -19,7 +18,7 @@ class JobResponse(BaseResponse[dict[str, Any] | None]):
             )
         else:
             info = cast(JobResult, await job.info())
-            response: TaskResponse[TaskBase] = info.args[0]
+            response: BaseResponse[TaskBase] = info.args[0]
             task = response.task.model_dump()
             job_stamp = response.job
             if status is JobStatus.in_progress:

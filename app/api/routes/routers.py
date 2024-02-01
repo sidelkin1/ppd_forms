@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.api.endpoints.auth import router as auth_router
 from app.api.endpoints.database import router as database_router
 from app.api.endpoints.excel import router as excel_router
 from app.api.endpoints.home import router as home_router
@@ -16,3 +17,4 @@ main_router.include_router(report_router, prefix="/reports", tags=["reports"])
 main_router.include_router(job_router, prefix="/jobs", tags=["jobs"])
 main_router.include_router(excel_router, prefix="/excel", tags=["excel"])
 main_router.include_router(uneft_router, prefix="/uneft", tags=["uneft"])
+main_router.include_router(auth_router, prefix="/auth", tags=["auth"])

@@ -1,5 +1,3 @@
-import os
-
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -25,7 +23,7 @@ def main() -> FastAPI:
         description=settings.app_description,
         lifespan=lifespan,
     )
-    app.add_middleware(SessionMiddleware, secret_key=os.urandom(32))
+    app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.state.settings = settings  # needed for lifespan

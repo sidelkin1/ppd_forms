@@ -2,6 +2,12 @@ from arq import ArqRedis
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.api.dependencies.auth import (
+    AuthProvider,
+    get_auth_provider,
+    get_current_user,
+    get_current_user_or_none,
+)
 from app.api.dependencies.dao.provider import DbProvider, dao_provider
 from app.api.dependencies.job import (
     create_job_stamp,
@@ -51,6 +57,13 @@ def setup(
     ).local_dao
     app.dependency_overrides[redis_provider] = RedisProvider(pool=redis).dao
     app.dependency_overrides[settings_provider] = lambda: settings
+
+    auth_provider = AuthProvider(settings)
+    app.dependency_overrides[get_current_user] = auth_provider.get_current_user
+    app.dependency_overrides[
+        get_current_user_or_none
+    ] = auth_provider.get_current_user_or_none
+    app.dependency_overrides[get_auth_provider] = lambda: auth_provider
 
     app.dependency_overrides[new_job_provider] = create_job_stamp
     app.dependency_overrides[current_job_provider] = get_current_job

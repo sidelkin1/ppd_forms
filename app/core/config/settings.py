@@ -1,9 +1,11 @@
+from datetime import timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, cast
 
 from arq.connections import RedisSettings
 from pydantic import (
+    AnyUrl,
     DirectoryPath,
     FilePath,
     PostgresDsn,
@@ -85,6 +87,25 @@ class Settings(BaseSettings):
             host=cast(str, info.data.get("redis_host")),
             port=cast(int, info.data.get("redis_port")),
         )
+
+    ldap_host: str | None = None
+    ldap_port: int | None = None
+    ldap_url: AnyUrl = None  # type: ignore[assignment]
+
+    @field_validator("ldap_url", mode="before")
+    @classmethod
+    def assemble_ldap_connection(cls, v: Any, info: ValidationInfo) -> Any:
+        return v or AnyUrl.build(
+            scheme="ldap",
+            host=cast(str, info.data.get("ldap_host")),
+            port=info.data.get("ldap_port"),
+        )
+
+    app_default_username: str | None = None
+    app_default_password: str | None = None
+
+    token_expire_time: timedelta = timedelta(days=7)
+    secret_key: str
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

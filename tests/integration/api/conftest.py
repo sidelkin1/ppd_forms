@@ -8,9 +8,10 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
-from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import dependencies
+from app.api.dependencies.auth import get_current_user
+from app.api.models.user import User
 from app.api.routes.routers import main_router
 from app.core.config.settings import Settings
 from app.infrastructure.db.factories.local import (
@@ -44,14 +45,16 @@ def test_client(app: FastAPI) -> Generator[TestClient, None, None]:
 
 
 @pytest.fixture(scope="session")
-def app(settings: Settings, secret_key: int) -> FastAPI:
+def app(settings: Settings) -> FastAPI:
     pool = create_local_pool(settings)
     redis = create_redis_pool(settings)
     app = FastAPI()
-    app.add_middleware(SessionMiddleware, secret_key=secret_key)
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     dependencies.setup(app, pool, redis, settings)
+    app.dependency_overrides[get_current_user] = lambda: User(
+        username="test_user"
+    )
     return app
 
 

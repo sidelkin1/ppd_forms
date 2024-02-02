@@ -1,9 +1,9 @@
 from fastapi import APIRouter, UploadFile, status
 
+from app.api.dependencies.auth import UserDep
 from app.api.dependencies.db import HolderDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
-from app.api.dependencies.session import UserIdDep
 from app.api.utils.upload_file import save_upload_file
 from app.core.models.dto import JobStamp, TaskExcel
 from app.core.models.enums import ExcelTableName, LoadMode
@@ -14,8 +14,8 @@ router = APIRouter()
 
 
 @router.post("/", response_model=dict)
-async def upload_file(file: UploadFile, user_id: UserIdDep, path: PathDep):
-    await save_upload_file(file, path.upload_dir(user_id))
+async def upload_file(file: UploadFile, user: UserDep, path: PathDep):
+    await save_upload_file(file, path.upload_dir(user.username))
     return {"filename": file.filename}
 
 
@@ -29,12 +29,11 @@ async def load_database(
     table: ExcelTableName,
     mode: LoadMode,
     excel: ExcelPath,
-    user_id: UserIdDep,
+    user: UserDep,
     redis: RedisDep,
-    path: PathDep,
 ):
     task = TaskExcel(table=table, mode=mode, file=excel.file)
-    response = ExcelResponse(task=task, job=JobStamp(user_id=user_id))
+    response = ExcelResponse(task=task, job=JobStamp(user_id=user.username))
     await redis.enqueue_task(response)
     return response
 

@@ -2,8 +2,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+from app.api.dependencies.auth import UserOrNoneDep
 from app.api.dependencies.path import PathDep
-from app.api.dependencies.session import UserIdDep
+from app.api.utils.redirect import build_redirect_response
 from app.core.config.parsers.file_reader import read_config
 
 templates = Jinja2Templates(directory="app/templates")
@@ -16,26 +17,22 @@ async def home():
 
 
 @router.get("/reports", response_class=HTMLResponse)
-async def reports(
-    request: Request,
-    user_id: UserIdDep,
-    path: PathDep,
-):
+async def reports(request: Request, user: UserOrNoneDep, path: PathDep):
+    if user is None:
+        return build_redirect_response(request, "login_page")
     reports = read_config(path.report_config_file)
     return templates.TemplateResponse(
         "reports/report_list.html",
-        context={"request": request, "reports": reports},
+        {"request": request, "reports": reports, "user": user},
     )
 
 
 @router.get("/tables", response_class=HTMLResponse)
-async def tables(
-    request: Request,
-    user_id: UserIdDep,
-    path: PathDep,
-):
+async def tables(request: Request, user: UserOrNoneDep, path: PathDep):
+    if user is None:
+        return build_redirect_response(request, "login_page")
     tables = read_config(path.table_config_file)
     return templates.TemplateResponse(
         "tables/table_list.html",
-        context={"request": request, "tables": tables},
+        {"request": request, "tables": tables, "user": user},
     )

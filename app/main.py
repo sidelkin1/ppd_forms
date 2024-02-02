@@ -1,10 +1,8 @@
 import logging
-import os
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import dependencies
 from app.api.routes.routers import main_router
@@ -30,7 +28,6 @@ def main() -> FastAPI:
         description=settings.app_description,
         lifespan=lifespan,
     )
-    app.add_middleware(SessionMiddleware, secret_key=os.urandom(32))
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.state.settings = settings  # needed for lifespan

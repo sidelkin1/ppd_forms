@@ -1,10 +1,7 @@
-from pathlib import Path
-
 from fastapi import APIRouter
 
-from app.api.dependencies.path import PathDep
+from app.api.dependencies.auth import UserDep
 from app.api.dependencies.redis import RedisDep
-from app.api.dependencies.session import UserIdDep
 from app.api.utils.validators import check_field_exists
 from app.core.models.dto import (
     JobStamp,
@@ -21,9 +18,7 @@ router = APIRouter()
 
 
 async def get_fields(
-    file_dir: Path,
-    job_stamp: JobStamp,
-    redis: RedisDAO,
+    job_stamp: JobStamp, redis: RedisDAO
 ) -> list[UneftFieldDB]:
     task = TaskFields(assets=UneftAssets.fields)
     response = FieldsResponse(task=task, job=job_stamp)
@@ -32,27 +27,20 @@ async def get_fields(
 
 
 @router.get("/fields", response_model=list[UneftFieldDB])
-async def field_list(
-    user_id: UserIdDep,
-    redis: RedisDep,
-    path: PathDep,
-):
-    fields = await get_fields(path.file_dir, JobStamp(user_id=user_id), redis)
+async def field_list(user: UserDep, redis: RedisDep):
+    fields = await get_fields(JobStamp(user_id=user.username), redis)
     return fields
 
 
 @router.get(
     "/fields/{field_id}/reservoirs", response_model=list[UneftReservoirDB]
 )
-async def reservoir_list(
-    field_id: int,
-    user_id: UserIdDep,
-    redis: RedisDep,
-    path: PathDep,
-):
-    fields = await get_fields(path.file_dir, JobStamp(user_id=user_id), redis)
+async def reservoir_list(field_id: int, user: UserDep, redis: RedisDep):
+    fields = await get_fields(JobStamp(user_id=user.username), redis)
     check_field_exists(field_id, fields)
     task = TaskReservoirs(assets=UneftAssets.reservoirs, field_id=field_id)
-    response = ReservoirsResponse(task=task, job=JobStamp(user_id=user_id))
+    response = ReservoirsResponse(
+        task=task, job=JobStamp(user_id=user.username)
+    )
     reservoirs = await redis.result(response)
     return reservoirs

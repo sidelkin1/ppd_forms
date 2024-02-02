@@ -1,8 +1,11 @@
+import logging
 import secrets
 
 from ldap3 import ALL, Connection, Server
 from ldap3.core.exceptions import LDAPExceptionError
 from pydantic import AnyUrl
+
+logger = logging.getLogger(__name__)
 
 
 def default_verify(
@@ -36,7 +39,7 @@ def ldap_verify(url: AnyUrl, username: str, password: str) -> bool:
         if conn.result["result"] == 0:
             return True
     except LDAPExceptionError as error:
-        print(error)  # TODO log
+        logger.error("Not authenticated", exc_info=error)
     finally:
         if conn is not None:
             conn.unbind()

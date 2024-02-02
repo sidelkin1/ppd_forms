@@ -34,7 +34,7 @@ class JobTracker:
             while True:
                 await self.websocket.receive()
         except Exception as error:
-            logger.error(f"Webosocket error: {error}")
+            logger.error("Webosocket error", exc_info=error)
 
     async def _job_result(self) -> None:
         if self.response.job.status is JobStatus.not_found:
@@ -45,7 +45,7 @@ class JobTracker:
         except Exception as error:
             self.response.job.status = JobStatus.error
             self.response.job.message = str(error)
-            logger.error(f"Job error: {error}")
+            logger.error("Job error", exc_info=error)
         else:
             self.response.job.status = JobStatus.completed
             self.response.job.message = "Job is completed"
@@ -63,9 +63,7 @@ class JobTracker:
         if self.socket_task.done():
             try:
                 await self.job.abort()
-            except Exception:
-                logger.error(
-                    f"Exception while aborting job: {self.job.job_id}"
-                )
+            except Exception as error:
+                logger.error("Exception while aborting job", exc_info=error)
         else:
             await self.send_response()

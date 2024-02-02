@@ -95,7 +95,7 @@ exclude_lines = [
 "**/migrations/versions/*" = ["N999"]
 
 [tool.mypy]
-exclude = ["**/Scripts/*"]
+exclude = ["/Scripts/"]
 
 [[tool.mypy.overrides]]
 module = "app.infrastructure.db.migrations.versions.*"

@@ -15,7 +15,7 @@ from app.infrastructure.db.factories.ofm import create_engine
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-max_tries = 10
+max_tries = 5
 wait_seconds = 1
 
 

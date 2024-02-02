@@ -3,7 +3,6 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from app.api.dependencies.auth import UserOrNoneDep
-from app.api.dependencies.user import UserIdDep
 from app.api.utils.redirect import build_redirect_response
 
 templates = Jinja2Templates(directory="app/templates")
@@ -16,7 +15,7 @@ async def home():
 
 
 @router.get("/reports", response_class=HTMLResponse)
-async def reports(request: Request, user_id: UserIdDep, user: UserOrNoneDep):
+async def reports(request: Request, user: UserOrNoneDep):
     if user is None:
         return build_redirect_response(request, "login_page")
     reports = (
@@ -71,7 +70,7 @@ async def reports(request: Request, user_id: UserIdDep, user: UserOrNoneDep):
 
 
 @router.get("/tables", response_class=HTMLResponse)
-async def tables(request: Request, user_id: UserIdDep, user: UserOrNoneDep):
+async def tables(request: Request, user: UserOrNoneDep):
     if user is None:
         return build_redirect_response(request, "login_page")
     tables = (

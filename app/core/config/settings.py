@@ -92,7 +92,7 @@ class Settings(BaseSettings):
     app_default_username: str | None = None
     app_default_password: str | None = None
 
-    token_expire_time: timedelta = timedelta(seconds=60)
+    token_expire_time: timedelta = timedelta(days=7)
     secret_key: str
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

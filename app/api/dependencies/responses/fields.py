@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.api.dependencies.auth import UserDep
 from app.api.dependencies.settings import SettingsDep
-from app.api.dependencies.user import UserIdDep
 from app.core.models.dto import JobStamp, TaskFields
 from app.core.models.enums import UneftAssets
 from app.core.models.schemas import FieldsResponse
@@ -13,13 +13,10 @@ def task_fields_provider() -> FieldsResponse:
     raise NotImplementedError
 
 
-async def get_fields(
-    user_id: UserIdDep,
-    settings: SettingsDep,
-) -> FieldsResponse:
+async def get_fields(user: UserDep, settings: SettingsDep) -> FieldsResponse:
     task = TaskFields(assets=UneftAssets.fields)
     return FieldsResponse(
-        settings.file_dir, task=task, job=JobStamp(user_id=user_id)
+        settings.file_dir, task=task, job=JobStamp(user_id=user.username)
     )
 
 

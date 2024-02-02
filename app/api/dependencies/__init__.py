@@ -38,10 +38,8 @@ from app.api.dependencies.settings import settings_provider
 from app.api.dependencies.user import (
     get_file_path,
     get_or_create_directory,
-    get_or_create_user_id,
     user_directory_provider,
     user_file_provider,
-    user_id_provider,
 )
 from app.core.config.settings import Settings
 
@@ -70,7 +68,6 @@ def setup(
     app.dependency_overrides[job_response_provider] = get_job_response
     app.dependency_overrides[job_tracker_provider] = get_job_tracker
 
-    app.dependency_overrides[user_id_provider] = get_or_create_user_id
     app.dependency_overrides[user_directory_provider] = get_or_create_directory
     app.dependency_overrides[user_file_provider] = get_file_path
 

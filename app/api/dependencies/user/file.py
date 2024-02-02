@@ -3,8 +3,8 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.api.dependencies.auth import UserDep
 from app.api.dependencies.settings import SettingsDep
-from app.api.dependencies.user.session import UserIdDep
 
 
 def user_file_provider() -> Path:
@@ -12,9 +12,9 @@ def user_file_provider() -> Path:
 
 
 async def get_file_path(
-    file_id: str, user_id: UserIdDep, settings: SettingsDep
+    file_id: str, user: UserDep, settings: SettingsDep
 ) -> Path:
-    results_dir = settings.file_dir / user_id / "results"
+    results_dir = settings.file_dir / user.username / "results"
     return (results_dir / file_id).with_suffix(".csv")
 
 

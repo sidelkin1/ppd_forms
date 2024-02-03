@@ -7,10 +7,16 @@ from app.core.config.settings import Settings
 
 @pytest.mark.parametrize(
     "url",
-    ["excel/ns_ppd", "excel/ns_oil", "database/report", "database/profile"],
+    [
+        "/excel/ns_ppd",
+        "/excel/ns_oil",
+        "/database/report",
+        "/database/profile",
+        "/logout",
+    ],
 )
 @pytest.mark.asyncio(scope="session")
-async def test_api_not_authorized(anon_client: AsyncClient, url: str):
+async def test_api_not_authenticated(anon_client: AsyncClient, url: str):
     resp = await anon_client.get(url)
     assert not resp.is_success
     assert resp.status_code == status.HTTP_401_UNAUTHORIZED
@@ -18,7 +24,7 @@ async def test_api_not_authorized(anon_client: AsyncClient, url: str):
 
 @pytest.mark.parametrize("url", ["/reports", "/tables"])
 @pytest.mark.asyncio(scope="session")
-async def test_home_not_authorized(anon_client: AsyncClient, url: str):
+async def test_home_not_authenticated(anon_client: AsyncClient, url: str):
     resp = await anon_client.get(url)
     assert resp.is_redirect
     assert "/login" in resp.headers["Location"]
@@ -38,6 +44,8 @@ async def test_login(anon_client: AsyncClient, settings: Settings):
     assert (
         f"Bearer {token_data['access_token']}" in resp.cookies["access_token"]
     )
+    resp = await anon_client.post("/auth/revoke")
+    assert resp.is_success
 
 
 @pytest.mark.asyncio(scope="session")

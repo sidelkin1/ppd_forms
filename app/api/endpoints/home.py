@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 
-from app.api.dependencies.auth import AuthDep, UserOrNoneDep
+from app.api.dependencies.auth import AuthDep, UserDep, UserOrNoneDep
 from app.api.dependencies.path import PathDep
 from app.api.endpoints.auth import revoke, token
 from app.api.utils.redirect import build_redirect_response
@@ -53,11 +53,11 @@ async def login_page(
 
 
 @router.get("/logout")
-async def logout_page(request: Request):
+async def logout_page(request: Request, user: UserDep):
     response = templates.TemplateResponse(
         "auth/logout.html", {"request": request}
     )
-    await revoke(response)
+    await revoke(response, user)
     return response
 
 

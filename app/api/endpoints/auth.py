@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.dependencies.auth import AuthDep
+from app.api.dependencies.auth import AuthDep, UserDep
 from app.api.models.auth import Token
 
 router = APIRouter()
@@ -24,6 +24,6 @@ async def token(
 
 
 @router.post("/revoke", response_model=dict)
-async def revoke(response: Response):
+async def revoke(response: Response, user: UserDep):
     response.delete_cookie(key="access_token", httponly=True)
     return {"message": "Выход из учетной записи!"}

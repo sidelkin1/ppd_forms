@@ -4,7 +4,12 @@ from httpx import AsyncClient
 
 @pytest.mark.parametrize(
     "url",
-    ["excel/ns_ppd", "excel/ns_oil", "database/report", "database/profile"],
+    [
+        "/excel/ns_ppd",
+        "/excel/ns_oil",
+        "/database/report",
+        "/database/profile",
+    ],
 )
 @pytest.mark.asyncio(scope="session")
 async def test_get_dates(client: AsyncClient, url: str):

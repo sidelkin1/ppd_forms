@@ -44,6 +44,6 @@ async def load_database(
 
 
 @router.get("/{table}", response_model=dict)
-async def get_dates(table: OfmTableName, holder: HolderDep):
+async def get_dates(table: OfmTableName, holder: HolderDep, user: UserDep):
     min_date, max_date = await date_range(table, holder)
     return {"min_date": min_date, "max_date": max_date}

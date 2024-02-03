@@ -21,8 +21,3 @@ def file_dir(tmp_path_factory) -> Path:
 @pytest.fixture(scope="session")
 def result_dir(base_dir: Path) -> Path:
     return base_dir / "tests" / "fixtures" / "resources" / "results"
-
-
-@pytest.fixture(scope="session")
-def secret_key() -> int:
-    return 42

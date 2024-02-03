@@ -133,6 +133,9 @@ def settings(
         neighborhood_path=data_dir / "neighborhood.csv",
         new_strategy_inj_path=data_dir / "new_strategy_inj.csv",
         new_strategy_oil_path=data_dir / "new_strategy_oil.csv",
+        secret_key="secret_key",
+        app_default_username="test_admin",
+        app_default_password="test_password",
     )  # type: ignore[call-arg]
 
 

@@ -10,7 +10,8 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 from app.api import dependencies
-from app.api.dependencies.auth import get_current_user
+from app.api.dependencies.auth import AuthProvider
+from app.api.models.auth import Token
 from app.api.models.user import User
 from app.api.routes.routers import main_router
 from app.core.config.settings import Settings
@@ -33,7 +34,19 @@ from tests.fixtures.worker_fixtures import (  # noqa
 
 
 @pytest_asyncio.fixture(scope="session")
-async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
+async def client(
+    app: FastAPI, token: Token
+) -> AsyncGenerator[AsyncClient, None]:
+    async with AsyncClient(
+        app=app,
+        base_url="http://test",
+        cookies={"access_token": f"Bearer {token.access_token}"},
+    ) as ac:
+        yield ac
+
+
+@pytest_asyncio.fixture(scope="session")
+async def anon_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
 
@@ -52,9 +65,6 @@ def app(settings: Settings) -> FastAPI:
     app.include_router(main_router)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     dependencies.setup(app, pool, redis, settings)
-    app.dependency_overrides[get_current_user] = lambda: User(
-        username="test_user"
-    )
     return app
 
 
@@ -86,3 +96,18 @@ async def worker(
     yield create
     if worker_:
         await worker_.close()
+
+
+@pytest.fixture(scope="session")
+def auth(settings: Settings) -> AuthProvider:
+    return AuthProvider(settings)
+
+
+@pytest.fixture(scope="session")
+def user() -> User:
+    return User(username="test_user")
+
+
+@pytest.fixture(scope="session")
+def token(user: User, auth: AuthProvider) -> Token:
+    return auth.create_user_token(user)

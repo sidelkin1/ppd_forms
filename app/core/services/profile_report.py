@@ -26,7 +26,7 @@ def _group_diff_absorb(df: pd.DataFrame) -> pd.DataFrame:
 
 def _calc_layer_rate(df: pd.DataFrame, rate: str) -> pd.DataFrame:
     df = df.eval(f"{rate}_layer={rate}_all*diff_absorp/100")
-    df[f"{rate}_layer"].fillna(df[rate], inplace=True)
+    df[f"{rate}_layer"] = df[f"{rate}_layer"].fillna(df[rate])
     df[rate] = df[rate].mul(df["1/num_layer"], fill_value=1)
     return df
 
@@ -42,7 +42,7 @@ def _calc_layer_rates(df: pd.DataFrame) -> pd.DataFrame:
 def _process_data(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
     df["layer"] = df["layer"].str.split(delimiter)
     df = df.explode("layer")
-    df["layer"].fillna("", inplace=True)
+    df["layer"] = df["layer"].fillna("")
     df = _group_diff_absorb(df)
     df = _calc_layer_rates(df)
     return df

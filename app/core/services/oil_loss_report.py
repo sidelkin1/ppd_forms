@@ -13,7 +13,7 @@ from app.infrastructure.db.dao.sql.reporters import (
 
 
 def _prepare_ns_ppd(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
-    df["reservoir_neighbs"].fillna(df["reservoir"], inplace=True)
+    df["reservoir_neighbs"] = df["reservoir_neighbs"].fillna(df["reservoir"])
     df["reservoir"] = df["reservoir_neighbs"].str.split(delimiter)
     df.drop(columns=["reservoir_neighbs"], inplace=True)
     df = df.explode("reservoir")
@@ -45,10 +45,10 @@ def _gather_neighbs(
         how="left",
         suffixes=("", "_gid"),
     )
-    df["neighbs"].fillna(df["neighbs_gid"], inplace=True)
+    df["neighbs"] = df["neighbs"].fillna(df["neighbs_gid"])
     df.drop(columns=["neighbs_gid"], inplace=True)
-    df["gtm_date"].fillna("", inplace=True)
-    df["neighbs"].fillna("", inplace=True)
+    df["gtm_date"] = df["gtm_date"].fillna("")
+    df["neighbs"] = df["neighbs"].fillna("")
     df["neighbs"] = df["neighbs"].str.split(delimiter)
     df = df.explode("neighbs")
     return df
@@ -67,8 +67,8 @@ def _join_inj_mer(
         how="left",
         suffixes=("", "_mer"),
     )
-    df["dat_rep_mer"].fillna("", inplace=True)
-    df["inj_rate"].fillna(0, inplace=True)
+    df["dat_rep_mer"] = df["dat_rep_mer"].fillna("")
+    df["inj_rate"] = df["inj_rate"].fillna(0)
     df.rename(
         columns={
             "dat_rep_mer": f"{period}_inj_date",
@@ -94,10 +94,10 @@ def _join_prod_mer(
         how="left",
         suffixes=("", "_mer"),
     )
-    df["dat_rep_mer"].fillna("", inplace=True)
-    df["oil_rate"].fillna(0, inplace=True)
-    df["liq_rate"].fillna(0, inplace=True)
-    df["watercut"].fillna(0, inplace=True)
+    df["dat_rep_mer"] = df["dat_rep_mer"].fillna("")
+    df["oil_rate"] = df["oil_rate"].fillna(0)
+    df["liq_rate"] = df["liq_rate"].fillna(0)
+    df["watercut"] = df["watercut"].fillna(0)
     df.drop(columns=["well_mer"], inplace=True)
     df.rename(
         columns={
@@ -122,8 +122,8 @@ def _join_mer(df: pd.DataFrame, df_mer: pd.DataFrame) -> pd.DataFrame:
 def _calc_loss(df: pd.DataFrame) -> pd.DataFrame:
     df["start_oilcut"] = df["start_oil_rate"] / df["start_liq_rate"]
     df["end_oilcut"] = df["end_oil_rate"] / df["end_liq_rate"]
-    df["start_oilcut"].fillna(df["end_oilcut"].fillna(0), inplace=True)
-    df["end_oilcut"].fillna(df["start_oilcut"].fillna(0), inplace=True)
+    df["start_oilcut"] = df["start_oilcut"].fillna(df["end_oilcut"].fillna(0))
+    df["end_oilcut"] = df["end_oilcut"].fillna(df["start_oilcut"].fillna(0))
     df["dW"] = df["end_inj_rate"] - df["start_inj_rate"]
     df["dQoil"] = df["end_oil_rate"] - df["start_oil_rate"]
     df["dQoil(dQliq)"] = (

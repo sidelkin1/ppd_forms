@@ -24,7 +24,7 @@ async def test_job_ok(
     worker_ = worker(functions=[work_ok])
     await worker_.main()
     assert await job.result() == "OK!"
-    resp = await client.get(f"jobs/{response.job.job_id}")
+    resp = await client.get(f"/jobs/{response.job.job_id}")
     assert resp.is_success
     data = resp.json()
     assert data == response_ok.model_dump(exclude_none=True)
@@ -48,7 +48,7 @@ async def test_job_error(
     await worker_.main()
     with pytest.raises(ValueError):
         await job.result()
-    resp = await client.get(f"jobs/{response.job.job_id}")
+    resp = await client.get(f"/jobs/{response.job.job_id}")
     assert resp.is_success
     data = resp.json()
     assert data == response_error.model_dump(exclude_none=True)
@@ -57,7 +57,7 @@ async def test_job_error(
 @pytest.mark.asyncio(scope="session")
 async def test_job_is_not_found(client: AsyncClient):
     job_id = "unknown_job_id"
-    resp = await client.get(f"jobs/{job_id}")
+    resp = await client.get(f"/jobs/{job_id}")
     assert resp.is_success
     data = resp.json()
     assert data == {

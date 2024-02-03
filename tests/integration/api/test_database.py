@@ -14,7 +14,7 @@ async def test_load_database_success(
     client: AsyncClient, arq_redis: ArqRedis, task_database: TaskDatabase
 ):
     resp = await client.post(
-        f"database/{task_database.table.value}/{task_database.mode.value}",
+        f"/database/{task_database.table.value}/{task_database.mode.value}",
         json={
             "date_from": task_database.date_from.isoformat(),
             "date_to": task_database.date_to.isoformat(),
@@ -32,7 +32,7 @@ async def test_load_database_unknown_table(
     client: AsyncClient, task_database: TaskDatabase
 ):
     resp = await client.post(
-        f"database/unknown/{task_database.mode.value}",
+        f"/database/unknown/{task_database.mode.value}",
         json={
             "date_from": task_database.date_from.isoformat(),
             "date_to": task_database.date_to.isoformat(),
@@ -47,7 +47,7 @@ async def test_load_database_unknown_mode(
     client: AsyncClient, task_database: TaskDatabase
 ):
     resp = await client.post(
-        f"database/{task_database.table.value}/unknown",
+        f"/database/{task_database.table.value}/unknown",
         json={
             "date_from": task_database.date_from.isoformat(),
             "date_to": task_database.date_to.isoformat(),
@@ -62,7 +62,7 @@ async def test_load_database_no_dates(
     client: AsyncClient, task_database: TaskDatabase
 ):
     resp = await client.post(
-        f"database/{task_database.table.value}/{task_database.mode.value}"
+        f"/database/{task_database.table.value}/{task_database.mode.value}"
     )
     assert not resp.is_success
     assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -73,7 +73,7 @@ async def test_load_database_dates_not_ordered(
     client: AsyncClient, task_database: TaskDatabase
 ):
     resp = await client.post(
-        f"database/{task_database.table.value}/{task_database.mode.value}",
+        f"/database/{task_database.table.value}/{task_database.mode.value}",
         json={
             "date_from": task_database.date_to.isoformat(),
             "date_to": task_database.date_from.isoformat(),
@@ -88,7 +88,7 @@ async def test_load_database_dates_wrong_format(
     client: AsyncClient, task_database: TaskDatabase
 ):
     resp = await client.post(
-        f"database/{task_database.table.value}/{task_database.mode.value}",
+        f"/database/{task_database.table.value}/{task_database.mode.value}",
         json={
             "date_from": datetime.now().isoformat(),
             "date_to": datetime.now().isoformat(),
@@ -103,7 +103,7 @@ async def test_reload_profile_not_allowed(
     client: AsyncClient, task_database: TaskDatabase
 ):
     resp = await client.post(
-        "database/profile/reload",
+        "/database/profile/reload",
         json={
             "date_from": task_database.date_from.isoformat(),
             "date_to": task_database.date_to.isoformat(),

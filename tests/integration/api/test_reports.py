@@ -11,14 +11,14 @@ from app.core.models.dto import TaskOilLoss, TaskReport
 
 def get_correct_url(task: TaskReport | TaskOilLoss) -> str:
     if isinstance(task, TaskOilLoss):
-        return f"reports/{task.name.value}/{task.mode.value}"
-    return f"reports/{task.name.value}"
+        return f"/reports/{task.name.value}/{task.mode.value}"
+    return f"/reports/{task.name.value}"
 
 
 def get_unknown_name_url(task: TaskReport | TaskOilLoss) -> str:
     if isinstance(task, TaskOilLoss):
-        return f"reports/{task.name.value}/unknown"
-    return "reports/unknown"
+        return f"/reports/{task.name.value}/unknown"
+    return "/reports/unknown"
 
 
 @pytest.mark.parametrize("task", ["task_report", "task_oil_loss"])
@@ -108,7 +108,7 @@ async def test_generate_oil_loss_report_unknown_mode(
     client: AsyncClient, task_oil_loss: TaskOilLoss
 ):
     resp = await client.post(
-        f"reports/{task_oil_loss.name.value}/unknown",
+        f"/reports/{task_oil_loss.name.value}/unknown",
         json={
             "date_from": task_oil_loss.date_from.isoformat(),
             "date_to": task_oil_loss.date_to.isoformat(),

@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio(scope="session")
 async def test_uneft_unknown_asset(client: AsyncClient):
-    resp = await client.get("uneft/unknown")
+    resp = await client.get("/uneft/unknown")
     assert not resp.is_success
 
 
@@ -21,7 +21,7 @@ async def test_field_list_success(
 ):
     worker_ = worker(functions=[work_uneft], burst=False)
     asyncio.create_task(worker_.main())
-    resp = await client.get("uneft/fields")
+    resp = await client.get("/uneft/fields")
     assert resp.is_success
     data = resp.json()
     assert data == [{"id": 1, "name": "F1"}, {"id": 2, "name": "F2"}]
@@ -37,7 +37,7 @@ async def test_reservoir_list_success(
 ):
     worker_ = worker(functions=[work_uneft], burst=False)
     asyncio.create_task(worker_.main())
-    resp = await client.get(f"uneft/fields/{field_id}/reservoirs")
+    resp = await client.get(f"/uneft/fields/{field_id}/reservoirs")
     assert resp.is_success
     data = resp.json()
     assert data == [{"id": 1, "name": "R1"}, {"id": 2, "name": "R2"}]
@@ -51,6 +51,6 @@ async def test_reservoir_list_unknown_field(
 ):
     worker_ = worker(functions=[work_uneft], burst=False)
     asyncio.create_task(worker_.main())
-    resp = await client.get("uneft/fields/100/reservoirs")
+    resp = await client.get("/uneft/fields/100/reservoirs")
     assert not resp.is_success
     assert resp.status_code == status.HTTP_404_NOT_FOUND

@@ -28,7 +28,7 @@ async def test_job_ok(
     await worker_.main()
     assert await job.result() == "OK!"
     with test_client.websocket_connect(
-        f"jobs/{response.job.job_id}/ws"
+        f"/jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
         assert data == response_ok.model_dump(exclude_none=True)
@@ -53,7 +53,7 @@ async def test_job_error(
     with pytest.raises(ValueError):
         await job.result()
     with test_client.websocket_connect(
-        f"jobs/{response.job.job_id}/ws"
+        f"/jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
         assert data == response_error.model_dump(exclude_none=True)
@@ -72,7 +72,7 @@ async def test_job_abort(
     )
     worker_ = worker(functions=[work_long], allow_abort_jobs=True)
     asyncio.create_task(worker_.main())
-    with test_client.websocket_connect(f"jobs/{response.job.job_id}/ws"):
+    with test_client.websocket_connect(f"/jobs/{response.job.job_id}/ws"):
         await asyncio.sleep(0.1)
     with pytest.raises(asyncio.CancelledError):
         await job.result()
@@ -80,7 +80,7 @@ async def test_job_abort(
 
 def test_job_is_not_found(test_client: TestClient):
     job_id = "unknown_job_id"
-    with test_client.websocket_connect(f"jobs/{job_id}/ws") as websocket:
+    with test_client.websocket_connect(f"/jobs/{job_id}/ws") as websocket:
         data = websocket.receive_json()
         assert data == {
             "job": {

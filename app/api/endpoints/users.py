@@ -1,0 +1,11 @@
+from fastapi import APIRouter
+
+from app.api.dependencies.auth import UserDep
+from app.api.models.user import User
+
+router = APIRouter()
+
+
+@router.get("/me", response_model=User)
+async def get_me(user: UserDep):
+    return user

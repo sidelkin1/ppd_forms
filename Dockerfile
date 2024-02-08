@@ -11,15 +11,9 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+RUN poetry install --with web --no-root && rm -rf $POETRY_CACHE_DIR
 
-# Used own image due to error 'Request has been forbidden by antivirus'
-# FROM python:3.11-slim-bookworm as runtime
-
-# RUN apt-get update && \
-#     apt-get install -y curl
-
-FROM sidelkin/python311-slim-bookworm-curl:latest
+FROM python:3.11-slim-bookworm as runtime
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"

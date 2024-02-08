@@ -15,7 +15,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+RUN poetry install --with worker --no-root && rm -rf $POETRY_CACHE_DIR
 
 FROM oraclelinux:8 as runtime
 

@@ -13,6 +13,10 @@ class MonthlyReportDAO(MainTableDAO[MonthlyReport, MonthlyReportDB]):
         "water_v",
         "water",
         "days",
+        "cum_oil_v",
+        "cum_water_v",
+        "cum_water",
+        "oil_fvf",
     ]
 
     def __init__(self, session: AsyncSession) -> None:

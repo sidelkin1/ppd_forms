@@ -10,8 +10,10 @@ from app.infrastructure.db.dao.sql.querysets.common import (
 )
 from app.infrastructure.db.models.ofm.base import Base
 from app.infrastructure.db.models.ofm.reflected import (
+    HeaderId,
     MonthlyInj,
     MonthlyProd,
+    Reservoir,
     WellStockHistExt,
 )
 
@@ -32,6 +34,9 @@ class RateColumn(str, Enum):
     OIL_V = ("oil_v", WellMode.INJECTION)
     WATER_V = ("water_v", WellMode.INJECTION)
     WATER = ("water", WellMode.PRODUCTION)
+    CUM_OIL_V = ("cum_oil_v", WellMode.INJECTION)
+    CUM_WATER_V = ("cum_water_v", WellMode.INJECTION)
+    CUM_WATER = ("cum_water", WellMode.PRODUCTION)
 
     def __call__(
         self, model: type[Base], mode: WellMode
@@ -52,12 +57,21 @@ def _select_separate_well_rates(model: type[Base], wmode: WellMode) -> Select:
         RateColumn.OIL_V(model, wmode),
         RateColumn.WATER_V(model, wmode),
         RateColumn.WATER(model, wmode),
+        RateColumn.CUM_OIL_V(model, wmode),
+        RateColumn.CUM_WATER_V(model, wmode),
+        RateColumn.CUM_WATER(model, wmode),
         model.days,
+        Reservoir.oil_compressibility.label("oil_fvf"),
     ).where(
         model.dat_rep >= bindparam("date_from"),
         model.dat_rep <= bindparam("date_to"),
         model.prod_uwi == WellStockHistExt.uwi,
         model.dat_rep == WellStockHistExt.status_date,
+        model.field == HeaderId.field,
+        model.uniqueid == HeaderId.uniqueid,
+        model.field == Reservoir.field,
+        model.cid == Reservoir.cid,
+        HeaderId.district_id == Reservoir.district_id,
     )
 
 
@@ -79,7 +93,11 @@ def select_well_rates() -> Select:
         func.sum(subq.c.oil_v).label("oil_v"),
         func.sum(subq.c.water_v).label("water_v"),
         func.sum(subq.c.water).label("water"),
+        func.sum(subq.c.cum_oil_v).label("cum_oil_v"),
+        func.sum(subq.c.cum_water_v).label("cum_water_v"),
+        func.sum(subq.c.cum_water).label("cum_water"),
         func.sum(subq.c.days).label("days"),
+        func.min(subq.c.oil_fvf).label("oil_fvf"),
     ).group_by(
         subq.c.field,
         subq.c.well_name,

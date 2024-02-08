@@ -15,5 +15,9 @@ class MonthlyReportDB(BaseModel):
     water_v: float
     water: float
     days: float
+    cum_oil_v: float
+    cum_water_v: float
+    cum_water: float
+    oil_fvf: float | None
 
     model_config = ConfigDict(extra="forbid", from_attributes=True)

@@ -7,6 +7,7 @@ from app.infrastructure.db.dao.sql.reporters.querysets import (
     select_monthly_report_for_max_rate,
     select_neighborhood,
     select_new_strategy_inj,
+    select_new_strategy_oil,
 )
 
 
@@ -17,6 +18,7 @@ class FirstRateLossReporter(LocalBaseDAO):
                 "inj_db": select_inj_well_database(),
                 "neighbs": select_neighborhood(),
                 "ns_ppd": select_new_strategy_inj(),
+                "ns_oil": select_new_strategy_oil(),
                 "mer": select_monthly_report_for_first_rate(),
             },
             pool,
@@ -30,6 +32,7 @@ class MaxRateLossReporter(LocalBaseDAO):
                 "inj_db": select_inj_well_database(),
                 "neighbs": select_neighborhood(),
                 "ns_ppd": select_new_strategy_inj(),
+                "ns_oil": select_new_strategy_oil(),
                 "mer": select_monthly_report_for_max_rate(),
             },
             pool,

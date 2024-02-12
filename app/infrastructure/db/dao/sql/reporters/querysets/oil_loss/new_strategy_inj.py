@@ -27,6 +27,7 @@ def select_new_strategy_inj() -> Select:
         NewStrategyInj.well,
         NewStrategyInj.reservoir,
         NewStrategyInj.gtm_date,
+        NewStrategyInj.gtm_group,
         NewStrategyInj.reservoir_neighbs,
         NewStrategyInj.neighbs,
     ).where(

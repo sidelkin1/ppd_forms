@@ -3,6 +3,7 @@ from collections.abc import Callable
 
 import pytest
 from arq.connections import ArqRedis
+from arq.jobs import JobStatus as ArqJobStatus
 from arq.worker import Function, Worker
 from fastapi.testclient import TestClient
 
@@ -70,6 +71,9 @@ async def test_job_abort(
     job = await arq_redis.enqueue_job(
         work_long.name, response, _job_id=response.job.job_id
     )
+    async with asyncio.timeout(10):
+        while ArqJobStatus.queued is not await job.status():
+            await asyncio.sleep(0.1)
     worker_ = worker(functions=[work_long], allow_abort_jobs=True)
     asyncio.create_task(worker_.main())
     with test_client.websocket_connect(f"/jobs/{response.job.job_id}/ws"):

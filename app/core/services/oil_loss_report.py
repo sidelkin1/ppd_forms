@@ -1,5 +1,6 @@
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -163,6 +164,52 @@ def _calc_loss(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _agg_oil_loss(df: pd.DataFrame) -> pd.DataFrame:
+    cols = ["field", "well", "neighbs"]
+    d: dict[str, Any] = {
+        "reservoir_all": ("reservoir", lambda s: s.str.cat(sep=",")),
+        "neighbs_loss_all": ("dQoil", "sum"),
+        "neighbs_loss_liq": ("dQoil(dQliq)", "sum"),
+        "neighbs_loss_wcut": ("dQoil(dWcut)", "sum"),
+    }
+    return df.groupby(cols, as_index=False).agg(**d)
+
+
+def _format_neighbs_loss(df: pd.DataFrame) -> pd.DataFrame:
+    for neighbs in [
+        "neighbs_loss_all",
+        "neighbs_loss_liq",
+        "neighbs_loss_wcut",
+    ]:
+        df[neighbs] = df[["neighbs", neighbs]].agg(
+            lambda s: "{} ({:.1f})".format(*s), axis=1
+        )
+    return df
+
+
+def _agg_neighbs_loss(df: pd.DataFrame) -> pd.DataFrame:
+    cols = ["field", "well"]
+    d: dict[str, Any] = {
+        "reservoir_all": "first",
+        "neighbs_loss_all": lambda s: s.str.cat(sep=","),
+        "neighbs_loss_liq": lambda s: s.str.cat(sep=","),
+        "neighbs_loss_wcut": lambda s: s.str.cat(sep=","),
+    }
+    return df.groupby(cols, as_index=False).agg(d)
+
+
+def _join_pivot(df: pd.DataFrame) -> pd.DataFrame:
+    df_pivot = _agg_oil_loss(df)
+    df_pivot = _format_neighbs_loss(df_pivot)
+    df_pivot = _agg_neighbs_loss(df_pivot)
+    df = pd.merge(df, df_pivot, on=["field", "well"], how="left")
+    df["reservoir_all"] = df["reservoir_all"].fillna("")
+    df["neighbs_loss_all"] = df["neighbs_loss_all"].fillna("")
+    df["neighbs_loss_liq"] = df["neighbs_loss_liq"].fillna("")
+    df["neighbs_loss_wcut"] = df["neighbs_loss_wcut"].fillna("")
+    return df
+
+
 def _process_data(
     dfs: dict[str, pd.DataFrame], delimiter: str
 ) -> pd.DataFrame:
@@ -172,6 +219,7 @@ def _process_data(
     df = _join_ns_oil(df, dfs["ns_oil"])
     df = _join_mer(df, dfs["mer"])
     df = _calc_loss(df)
+    df = _join_pivot(df)
     return df
 
 

@@ -21,7 +21,7 @@ def get_current_user() -> User:
     raise NotImplementedError
 
 
-def get_current_user_or_none() -> User:
+def get_current_user_or_none() -> User | None:
     raise NotImplementedError
 
 

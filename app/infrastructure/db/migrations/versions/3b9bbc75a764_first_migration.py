@@ -1,8 +1,8 @@
 """First migration
 
-Revision ID: 7160ec9cbd37
+Revision ID: 3b9bbc75a764
 Revises: 000000000000
-Create Date: 2024-01-09 22:25:06.634459
+Create Date: 2024-02-07 10:08:51.126993
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import app.infrastructure.db.migrations.types
 
 
 # revision identifiers, used by Alembic.
-revision = '7160ec9cbd37'
+revision = '3b9bbc75a764'
 down_revision = '000000000000'
 branch_labels = None
 depends_on = None
@@ -27,8 +27,8 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk__injwelldatabase')),
     sa.UniqueConstraint('field', 'well', name=op.f('uq__injwelldatabase__field'))
     )
-    op.create_index(op.f('ix__injwelldatabase_field'), 'injwelldatabase', ['field'], unique=False)
-    op.create_index(op.f('ix__injwelldatabase_well'), 'injwelldatabase', ['well'], unique=False)
+    op.create_index(op.f('ix__injwelldatabase__field'), 'injwelldatabase', ['field'], unique=False)
+    op.create_index(op.f('ix__injwelldatabase__well'), 'injwelldatabase', ['well'], unique=False)
     op.create_table('monthlyreport',
     sa.Column('field', app.infrastructure.db.migrations.types.FieldType(length=50), nullable=False),
     sa.Column('well_name', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
@@ -40,15 +40,19 @@ def upgrade() -> None:
     sa.Column('water_v', sa.Float(), nullable=False),
     sa.Column('water', sa.Float(), nullable=False),
     sa.Column('days', sa.Float(), nullable=False),
+    sa.Column('cum_oil_v', sa.Float(), nullable=False),
+    sa.Column('cum_water_v', sa.Float(), nullable=False),
+    sa.Column('cum_water', sa.Float(), nullable=False),
+    sa.Column('oil_fvf', sa.Float(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__monthlyreport')),
     sa.UniqueConstraint('field', 'well_name', 'cid', 'dat_rep', name=op.f('uq__monthlyreport__field'))
     )
-    op.create_index(op.f('ix__monthlyreport_cid'), 'monthlyreport', ['cid'], unique=False)
-    op.create_index(op.f('ix__monthlyreport_cid_all'), 'monthlyreport', ['cid_all'], unique=False)
-    op.create_index(op.f('ix__monthlyreport_dat_rep'), 'monthlyreport', ['dat_rep'], unique=False)
-    op.create_index(op.f('ix__monthlyreport_field'), 'monthlyreport', ['field'], unique=False)
-    op.create_index(op.f('ix__monthlyreport_well_name'), 'monthlyreport', ['well_name'], unique=False)
+    op.create_index(op.f('ix__monthlyreport__cid'), 'monthlyreport', ['cid'], unique=False)
+    op.create_index(op.f('ix__monthlyreport__cid_all'), 'monthlyreport', ['cid_all'], unique=False)
+    op.create_index(op.f('ix__monthlyreport__dat_rep'), 'monthlyreport', ['dat_rep'], unique=False)
+    op.create_index(op.f('ix__monthlyreport__field'), 'monthlyreport', ['field'], unique=False)
+    op.create_index(op.f('ix__monthlyreport__well_name'), 'monthlyreport', ['well_name'], unique=False)
     op.create_table('neighborhood',
     sa.Column('field', app.infrastructure.db.migrations.types.FieldType(length=50), nullable=False),
     sa.Column('reservoir', app.infrastructure.db.migrations.types.ResevoirType(length=100), nullable=False),
@@ -59,9 +63,9 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk__neighborhood')),
     sa.UniqueConstraint('field', 'reservoir', 'well', name=op.f('uq__neighborhood__field'))
     )
-    op.create_index(op.f('ix__neighborhood_field'), 'neighborhood', ['field'], unique=False)
-    op.create_index(op.f('ix__neighborhood_reservoir'), 'neighborhood', ['reservoir'], unique=False)
-    op.create_index(op.f('ix__neighborhood_well'), 'neighborhood', ['well'], unique=False)
+    op.create_index(op.f('ix__neighborhood__field'), 'neighborhood', ['field'], unique=False)
+    op.create_index(op.f('ix__neighborhood__reservoir'), 'neighborhood', ['reservoir'], unique=False)
+    op.create_index(op.f('ix__neighborhood__well'), 'neighborhood', ['well'], unique=False)
     op.create_table('newstrategyinj',
     sa.Column('field', app.infrastructure.db.migrations.types.FieldType(length=50), nullable=False),
     sa.Column('well', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
@@ -79,9 +83,9 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk__newstrategyinj')),
     sa.UniqueConstraint('field', 'well', 'gtm_date', name=op.f('uq__newstrategyinj__field'))
     )
-    op.create_index(op.f('ix__newstrategyinj_field'), 'newstrategyinj', ['field'], unique=False)
-    op.create_index(op.f('ix__newstrategyinj_gtm_date'), 'newstrategyinj', ['gtm_date'], unique=False)
-    op.create_index(op.f('ix__newstrategyinj_well'), 'newstrategyinj', ['well'], unique=False)
+    op.create_index(op.f('ix__newstrategyinj__field'), 'newstrategyinj', ['field'], unique=False)
+    op.create_index(op.f('ix__newstrategyinj__gtm_date'), 'newstrategyinj', ['gtm_date'], unique=False)
+    op.create_index(op.f('ix__newstrategyinj__well'), 'newstrategyinj', ['well'], unique=False)
     op.create_table('newstrategyoil',
     sa.Column('field', app.infrastructure.db.migrations.types.FieldType(length=50), nullable=False),
     sa.Column('well', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
@@ -94,9 +98,9 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk__newstrategyoil')),
     sa.UniqueConstraint('field', 'well', 'vnr_date', name=op.f('uq__newstrategyoil__field'))
     )
-    op.create_index(op.f('ix__newstrategyoil_field'), 'newstrategyoil', ['field'], unique=False)
-    op.create_index(op.f('ix__newstrategyoil_vnr_date'), 'newstrategyoil', ['vnr_date'], unique=False)
-    op.create_index(op.f('ix__newstrategyoil_well'), 'newstrategyoil', ['well'], unique=False)
+    op.create_index(op.f('ix__newstrategyoil__field'), 'newstrategyoil', ['field'], unique=False)
+    op.create_index(op.f('ix__newstrategyoil__vnr_date'), 'newstrategyoil', ['vnr_date'], unique=False)
+    op.create_index(op.f('ix__newstrategyoil__well'), 'newstrategyoil', ['well'], unique=False)
     op.create_table('fieldreplace',
     sa.Column('group', sa.String(length=20), nullable=False),
     sa.Column('replace', sa.String(length=100), nullable=False),
@@ -143,44 +147,46 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__wellprofile'))
     )
-    op.create_index(op.f('ix__wellprofile_cid_all'), 'wellprofile', ['cid_all'], unique=False)
-    op.create_index(op.f('ix__wellprofile_field'), 'wellprofile', ['field'], unique=False)
-    op.create_index(op.f('ix__wellprofile_rec_date'), 'wellprofile', ['rec_date'], unique=False)
-    op.create_index(op.f('ix__wellprofile_uwi'), 'wellprofile', ['uwi', 'rec_date'], unique=False)
-    op.create_index(op.f('ix__wellprofile_well_name'), 'wellprofile', ['well_name'], unique=False)
+    op.create_index(op.f('ix__wellprofile__cid_all'), 'wellprofile', ['cid_all'], unique=False)
+    op.create_index(op.f('ix__wellprofile__field'), 'wellprofile', ['field'], unique=False)
+    op.create_index(op.f('ix__wellprofile__rec_date'), 'wellprofile', ['rec_date'], unique=False)
+    op.create_index(op.f('ix__wellprofile__uwi'), 'wellprofile', ['uwi'], unique=False)
+    op.create_index(op.f('ix__wellprofile__uwi_rec_date'), 'wellprofile', ['uwi', 'rec_date'], unique=False)
+    op.create_index(op.f('ix__wellprofile__well_name'), 'wellprofile', ['well_name'], unique=False)
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_index(op.f('ix__wellprofile_well_name'), table_name='wellprofile')
-    op.drop_index(op.f('ix__wellprofile_uwi'), table_name='wellprofile')
-    op.drop_index(op.f('ix__wellprofile_rec_date'), table_name='wellprofile')
-    op.drop_index(op.f('ix__wellprofile_field'), table_name='wellprofile')
-    op.drop_index(op.f('ix__wellprofile_cid_all'), table_name='wellprofile')
+    op.drop_index(op.f('ix__wellprofile__well_name'), table_name='wellprofile')
+    op.drop_index(op.f('ix__wellprofile__uwi_rec_date'), table_name='wellprofile')
+    op.drop_index(op.f('ix__wellprofile__uwi'), table_name='wellprofile')
+    op.drop_index(op.f('ix__wellprofile__rec_date'), table_name='wellprofile')
+    op.drop_index(op.f('ix__wellprofile__field'), table_name='wellprofile')
+    op.drop_index(op.f('ix__wellprofile__cid_all'), table_name='wellprofile')
     op.drop_table('wellprofile')
     op.drop_table('reservoirreplace', schema='utils')
     op.drop_table('layerreplace', schema='utils')
     op.drop_table('fieldreplace', schema='utils')
-    op.drop_index(op.f('ix__newstrategyoil_well'), table_name='newstrategyoil')
-    op.drop_index(op.f('ix__newstrategyoil_vnr_date'), table_name='newstrategyoil')
-    op.drop_index(op.f('ix__newstrategyoil_field'), table_name='newstrategyoil')
+    op.drop_index(op.f('ix__newstrategyoil__well'), table_name='newstrategyoil')
+    op.drop_index(op.f('ix__newstrategyoil__vnr_date'), table_name='newstrategyoil')
+    op.drop_index(op.f('ix__newstrategyoil__field'), table_name='newstrategyoil')
     op.drop_table('newstrategyoil')
-    op.drop_index(op.f('ix__newstrategyinj_well'), table_name='newstrategyinj')
-    op.drop_index(op.f('ix__newstrategyinj_gtm_date'), table_name='newstrategyinj')
-    op.drop_index(op.f('ix__newstrategyinj_field'), table_name='newstrategyinj')
+    op.drop_index(op.f('ix__newstrategyinj__well'), table_name='newstrategyinj')
+    op.drop_index(op.f('ix__newstrategyinj__gtm_date'), table_name='newstrategyinj')
+    op.drop_index(op.f('ix__newstrategyinj__field'), table_name='newstrategyinj')
     op.drop_table('newstrategyinj')
-    op.drop_index(op.f('ix__neighborhood_well'), table_name='neighborhood')
-    op.drop_index(op.f('ix__neighborhood_reservoir'), table_name='neighborhood')
-    op.drop_index(op.f('ix__neighborhood_field'), table_name='neighborhood')
+    op.drop_index(op.f('ix__neighborhood__well'), table_name='neighborhood')
+    op.drop_index(op.f('ix__neighborhood__reservoir'), table_name='neighborhood')
+    op.drop_index(op.f('ix__neighborhood__field'), table_name='neighborhood')
     op.drop_table('neighborhood')
-    op.drop_index(op.f('ix__monthlyreport_well_name'), table_name='monthlyreport')
-    op.drop_index(op.f('ix__monthlyreport_field'), table_name='monthlyreport')
-    op.drop_index(op.f('ix__monthlyreport_dat_rep'), table_name='monthlyreport')
-    op.drop_index(op.f('ix__monthlyreport_cid_all'), table_name='monthlyreport')
-    op.drop_index(op.f('ix__monthlyreport_cid'), table_name='monthlyreport')
+    op.drop_index(op.f('ix__monthlyreport__well_name'), table_name='monthlyreport')
+    op.drop_index(op.f('ix__monthlyreport__field'), table_name='monthlyreport')
+    op.drop_index(op.f('ix__monthlyreport__dat_rep'), table_name='monthlyreport')
+    op.drop_index(op.f('ix__monthlyreport__cid_all'), table_name='monthlyreport')
+    op.drop_index(op.f('ix__monthlyreport__cid'), table_name='monthlyreport')
     op.drop_table('monthlyreport')
-    op.drop_index(op.f('ix__injwelldatabase_well'), table_name='injwelldatabase')
-    op.drop_index(op.f('ix__injwelldatabase_field'), table_name='injwelldatabase')
+    op.drop_index(op.f('ix__injwelldatabase__well'), table_name='injwelldatabase')
+    op.drop_index(op.f('ix__injwelldatabase__field'), table_name='injwelldatabase')
     op.drop_table('injwelldatabase')
     # ### end Alembic commands ###

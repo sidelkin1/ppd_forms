@@ -40,6 +40,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         user_module_prefix="app.infrastructure.db.migrations.types.",
+        include_schemas=True,
     )
 
     with context.begin_transaction():
@@ -51,6 +52,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         user_module_prefix="app.infrastructure.db.migrations.types.",
+        include_schemas=True,
     )
 
     with context.begin_transaction():

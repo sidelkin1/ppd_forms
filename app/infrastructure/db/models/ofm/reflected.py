@@ -49,7 +49,7 @@ class WellLogResultLayers(Reflected, Base):
 
 
 class WellOrapMd(Reflected, Base):
-    # https://docs.sqlalchemy.org/en/14/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
     uwi = Column(String, primary_key=True)
     reservoir_id = Column(Integer, primary_key=True)
 
@@ -60,3 +60,17 @@ class WellOrapMd(Reflected, Base):
 class WellPerforations(Reflected, Base):
     __tablename__ = "well_perforations"
     __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class Reservoir(Reflected, Base):
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    field = Column(String, primary_key=True)
+    cid = Column(String, primary_key=True)
+
+    __tablename__ = "reservoir"
+    __table_args__ = {"schema": "unofm"}
+
+
+class HeaderId(Reflected, Base):
+    __tablename__ = "headerid"
+    __table_args__ = {"schema": "unofm"}

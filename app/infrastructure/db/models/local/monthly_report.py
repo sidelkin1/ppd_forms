@@ -20,10 +20,18 @@ class MonthlyReport(date_stamp_factory("dat_rep"), Base):
     water_v: Mapped[float]
     water: Mapped[float]
     days: Mapped[float]
+    cum_oil_v: Mapped[float]
+    cum_water_v: Mapped[float]
+    cum_water: Mapped[float]
+    oil_fvf: Mapped[float | None]
 
     @hybrid_property
     def liquid(self) -> float:
         return self.oil_v + self.water_v
+
+    @hybrid_property
+    def cum_liq(self) -> float:
+        return self.cum_oil_v + self.cum_water_v
 
     @hybrid_property
     def oil_rate(self) -> float:

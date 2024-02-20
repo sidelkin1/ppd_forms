@@ -21,6 +21,10 @@ class MonthlyReportMock(MonthlyReportDAO):
                 water_v=3,
                 water=0,
                 days=1,
+                cum_oil_v=2,
+                cum_water_v=3,
+                cum_water=0,
+                oil_fvf=1,
             )
         ]
 

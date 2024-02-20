@@ -14,7 +14,7 @@ git clone https://github.com/sidelkin1/ppd_forms
 2. Активируйте venv и установите зависимости:
 ```
 python -m venv venv
-. venv/bin/activate
+. venv/Scripts/activate
 pip install poetry
 poetry install --with web,worker,dev --no-root
 ```

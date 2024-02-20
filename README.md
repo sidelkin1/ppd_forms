@@ -16,7 +16,7 @@ git clone https://github.com/sidelkin1/ppd_forms
 python -m venv venv
 . venv/bin/activate
 pip install poetry
-poetry install --with dev
+poetry install --with web,worker,dev --no-root
 ```
 
 3. Создайте в корневой директории файл `.env` на базе файла `.env.example`

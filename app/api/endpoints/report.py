@@ -5,9 +5,15 @@ from app.api.dependencies.auth import UserDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.utils.validators import check_file_exists
-from app.core.models.dto import JobStamp, TaskOilLoss, TaskReport
+from app.core.models.dto import JobStamp, TaskMatrix, TaskOilLoss, TaskReport
 from app.core.models.enums import LossMode, ReportName
-from app.core.models.schemas import DateRange, OilLossResponse, ReportResponse
+from app.core.models.schemas import (
+    DateRange,
+    MatrixEffect,
+    MatrixResponse,
+    OilLossResponse,
+    ReportResponse,
+)
 
 router = APIRouter()
 
@@ -31,6 +37,30 @@ async def generate_oil_loss_report(
         date_to=date_range.date_to,
     )
     response = OilLossResponse(task=task, job=JobStamp(user_id=user.username))
+    await redis.enqueue_task(response)
+    return response
+
+
+@router.post(
+    "/matrix",
+    status_code=status.HTTP_201_CREATED,
+    response_model=MatrixResponse,
+    response_model_exclude_none=True,
+)
+async def generate_matrix_report(
+    matrix_effect: MatrixEffect,
+    user: UserDep,
+    redis: RedisDep,
+):
+    task = TaskMatrix(
+        name=ReportName.matrix,
+        date_from=matrix_effect.date_from,
+        date_to=matrix_effect.date_to,
+        base_period=matrix_effect.base_period,
+        pred_period=matrix_effect.pred_period,
+        excludes=matrix_effect.excludes,
+    )
+    response = MatrixResponse(task=task, job=JobStamp(user_id=user.username))
     await redis.enqueue_task(response)
     return response
 

@@ -216,6 +216,10 @@ class HolderDAO:
         return reporters.OppPerYearReporter(self.ofm_pool)
 
     @property
+    def matrix_reporter(self) -> reporters.MatrixReporter:
+        return reporters.MatrixReporter(self.local_pool)
+
+    @property
     def new_strategy_inj_loader(self) -> loaders.NewStrategyInjLoader:
         return loaders.NewStrategyInjLoader(
             self.excel_new_strategy_inj, self.local_new_strategy_inj

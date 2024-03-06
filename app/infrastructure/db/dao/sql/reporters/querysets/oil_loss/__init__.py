@@ -5,3 +5,4 @@ from .monthly_report import (
 )
 from .neighborhood import select_neighborhood
 from .new_strategy_inj import select_new_strategy_inj
+from .new_strategy_oil import select_new_strategy_oil

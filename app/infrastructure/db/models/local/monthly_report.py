@@ -8,6 +8,8 @@ from app.infrastructure.db.models.local.base import Base
 from app.infrastructure.db.models.local.mixins import date_stamp_factory
 from app.infrastructure.db.types import types
 
+FVF_DEFAULT_VALUE: float = 1
+
 
 class MonthlyReport(date_stamp_factory("dat_rep"), Base):
     field: Mapped[types.field_type]
@@ -26,12 +28,31 @@ class MonthlyReport(date_stamp_factory("dat_rep"), Base):
     oil_fvf: Mapped[float | None]
 
     @hybrid_property
+    def oil_fvf_or_default(self) -> float:
+        return FVF_DEFAULT_VALUE if self.oil_fvf is None else self.oil_fvf
+
+    @oil_fvf_or_default.inplace.expression
+    @classmethod
+    def _oil_fvf_or_default_expression(cls) -> Label[float]:
+        return func.coalesce(  # type: ignore
+            cls.oil_fvf, cast(FVF_DEFAULT_VALUE, Float)
+        ).label("_oil_fvf")
+
+    @hybrid_property
     def liquid(self) -> float:
         return self.oil_v + self.water_v
 
     @hybrid_property
-    def cum_liq(self) -> float:
+    def liquid_res(self) -> float:
+        return self.oil_v * self.oil_fvf_or_default + self.water_v
+
+    @hybrid_property
+    def cum_liquid(self) -> float:
         return self.cum_oil_v + self.cum_water_v
+
+    @hybrid_property
+    def cum_liquid_res(self) -> float:
+        return self.cum_oil_v * self.oil_fvf_or_default + self.cum_water_v
 
     @hybrid_property
     def oil_rate(self) -> float:

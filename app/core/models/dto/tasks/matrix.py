@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import PositiveInt
 
 from app.core.models.dto.tasks.report import TaskReport
@@ -10,3 +12,4 @@ class TaskMatrix(
     base_period: PositiveInt
     pred_period: PositiveInt
     excludes: list[ExcludeGTM]
+    on_date: date

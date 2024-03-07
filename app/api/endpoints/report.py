@@ -59,6 +59,7 @@ async def generate_matrix_report(
         base_period=matrix_effect.base_period,
         pred_period=matrix_effect.pred_period,
         excludes=matrix_effect.excludes,
+        on_date=matrix_effect.on_date,
     )
     response = MatrixResponse(task=task, job=JobStamp(user_id=user.username))
     await redis.enqueue_task(response)

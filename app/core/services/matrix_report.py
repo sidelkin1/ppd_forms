@@ -108,7 +108,7 @@ def _get_base_neighbs(df: pd.DataFrame, delete_gtm: str) -> pd.DataFrame:
 def _fill_cum_values(df: pd.DataFrame, column: str) -> pd.DataFrame:
     cols = ["field", "well", "reservoir", "gtm_date", "neighbs"]
     df[column] = df.groupby(cols)[column].ffill()
-    df[column] = df.groupby(cols)[column].bfill()
+    df[column] = df.groupby(cols)[column].bfill()  # FIXME bad decision
     df[column] = df[column].fillna(0)
     return df
 

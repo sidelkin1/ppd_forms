@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% from '/macros/forms.html' import form_date_range %}
-{% from 'reports/macros/forms.html' import form_oil_loss %}
+{% from 'reports/macros/forms.html' import form_oil_loss, form_matrix %}
 {% from '/macros/accordion.html' import accordion_form %}
 
 {% block content %}
@@ -24,6 +24,8 @@
                         ) %}
                             {% if report.path == "oil_loss" %}
                                 {{ form_oil_loss(report, "Выгрузить", "loadOilLoss") }}
+                            {% elif report.path == "matrix" %}
+                                {{ form_matrix(report, "Выгрузить", "loadMatrix") }}
                             {% else %}
                                 {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
                             {% endif %}

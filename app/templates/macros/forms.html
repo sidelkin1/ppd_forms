@@ -18,11 +18,13 @@
 {%- endmacro %}
 
 {% macro date_range(name, button_text, button_func) -%}
-    <div class="input-group mb-1">
-        <input type="date" class="form-control" id="{{ name }}Start" name="start"/>
+    <div class="form-floating mb-3">
+        <input type="date" class="form-control" id="{{ name }}Start" name="start" placeholder/>
+        <label for="{{ name }}Start">Начальная дата</label>
     </div>
-    <div class="input-group mb-1">
-        <input type="date" class="form-control" id="{{ name }}End" name="end"/>
+    <div class="form-floating mb-3">
+        <input type="date" class="form-control" id="{{ name }}End" name="end" placeholder/>
+        <label for="{{ name }}Start">Конечная дата</label>
     </div>
 {%- endmacro %}
 

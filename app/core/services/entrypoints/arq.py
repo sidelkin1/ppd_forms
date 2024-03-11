@@ -6,11 +6,13 @@ from app.core.models.schemas import (
     DatabaseResponse,
     ExcelResponse,
     FieldsResponse,
+    MatrixResponse,
     OilLossResponse,
     ReportResponse,
     ReservoirsResponse,
 )
 from app.core.services.entrypoints.registry import WorkRegistry
+from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
@@ -202,6 +204,29 @@ async def create_opp_per_year_report(
             response.task.date_from,
             response.task.date_to,
             holder.opp_per_year_reporter,
+            ctx["pool"],
+            ctx["settings"],
+        )
+
+
+@registry.add("report:matrix")
+async def create_matrix_report(
+    response: MatrixResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    async with ctx["local_pool_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        await matrix_report(
+            path_provider.file_path(user_id, file_id),
+            response.task.date_from,
+            response.task.date_to,
+            response.task.base_period,
+            response.task.pred_period,
+            response.task.excludes,
+            response.task.on_date,
+            holder.matrix_reporter,
             ctx["pool"],
             ctx["settings"],
         )

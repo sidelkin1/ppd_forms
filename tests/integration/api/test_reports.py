@@ -9,13 +9,13 @@ from httpx import AsyncClient
 from app.core.models.dto import TaskOilLoss, TaskReport
 
 
-def get_correct_url(task: TaskReport | TaskOilLoss) -> str:
+def get_correct_url(task: TaskReport) -> str:
     if isinstance(task, TaskOilLoss):
         return f"/reports/{task.name.value}/{task.mode.value}"
     return f"/reports/{task.name.value}"
 
 
-def get_unknown_name_url(task: TaskReport | TaskOilLoss) -> str:
+def get_unknown_name_url(task: TaskReport) -> str:
     if isinstance(task, TaskOilLoss):
         return f"/reports/{task.name.value}/unknown"
     return "/reports/unknown"
@@ -26,7 +26,7 @@ def get_unknown_name_url(task: TaskReport | TaskOilLoss) -> str:
 async def test_generate_report_success(
     client: AsyncClient, arq_redis: ArqRedis, task: str, request
 ):
-    task_report: TaskReport | TaskOilLoss = request.getfixturevalue(task)
+    task_report: TaskReport = request.getfixturevalue(task)
     resp = await client.post(
         get_correct_url(task_report),
         json={
@@ -46,7 +46,7 @@ async def test_generate_report_success(
 async def test_generate_report_unknown_name(
     client: AsyncClient, task: str, request
 ):
-    task_report: TaskReport | TaskOilLoss = request.getfixturevalue(task)
+    task_report: TaskReport = request.getfixturevalue(task)
     resp = await client.post(
         get_unknown_name_url(task_report),
         json={
@@ -63,7 +63,7 @@ async def test_generate_report_unknown_name(
 async def test_generate_report_no_dates(
     client: AsyncClient, task: str, request
 ):
-    task_report: TaskReport | TaskOilLoss = request.getfixturevalue(task)
+    task_report: TaskReport = request.getfixturevalue(task)
     resp = await client.post(get_correct_url(task_report))
     assert not resp.is_success
     assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -74,7 +74,7 @@ async def test_generate_report_no_dates(
 async def test_generate_report_dates_not_ordered(
     client: AsyncClient, task: str, request
 ):
-    task_report: TaskReport | TaskOilLoss = request.getfixturevalue(task)
+    task_report: TaskReport = request.getfixturevalue(task)
     resp = await client.post(
         get_correct_url(task_report),
         json={
@@ -91,7 +91,7 @@ async def test_generate_report_dates_not_ordered(
 async def test_generate_report_dates_wrong_format(
     client: AsyncClient, task: str, request
 ):
-    task_report: TaskReport | TaskOilLoss = request.getfixturevalue(task)
+    task_report: TaskReport = request.getfixturevalue(task)
     resp = await client.post(
         get_correct_url(task_report),
         json={

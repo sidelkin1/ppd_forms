@@ -13,15 +13,24 @@ from app.core.models.enums import (
     OfmTableName,
     ReportName,
 )
+from app.core.models.schemas import DateRange
 
 
 @pytest.fixture(scope="session")
-def task_database() -> TaskDatabase:
+def date_range() -> DateRange:
+    return DateRange(
+        date_from="2020-01-01",
+        date_to="2020-12-31",
+    )
+
+
+@pytest.fixture(scope="session")
+def task_database(date_range: DateRange) -> TaskDatabase:
     return TaskDatabase(
         table=OfmTableName.profile,
         mode=LoadMode.refresh,
-        date_from="2020-01-01",
-        date_to="2020-12-31",
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
     )
 
 
@@ -35,19 +44,19 @@ def task_excel() -> TaskExcel:
 
 
 @pytest.fixture(scope="session")
-def task_report() -> TaskReport:
+def task_report(date_range: DateRange) -> TaskReport:
     return TaskReport(
         name=ReportName.opp_per_year,
-        date_from="2020-01-01",
-        date_to="2020-12-31",
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
     )
 
 
 @pytest.fixture(scope="session")
-def task_oil_loss() -> TaskOilLoss:
+def task_oil_loss(date_range: DateRange) -> TaskOilLoss:
     return TaskOilLoss(
         name=ReportName.oil_loss,
         mode=LossMode.first_rate,
-        date_from="2020-01-01",
-        date_to="2020-12-31",
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
     )

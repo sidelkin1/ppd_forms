@@ -39,7 +39,7 @@ class WellType(BaseType):
 
 
 class MultiWellType(BaseType):
-    mapper = WellMapper(delimiter=settings.delimiter)
+    mapper = WellMapper(unique=True, delimiter=settings.delimiter)
 
 
 class LayerType(BaseType):

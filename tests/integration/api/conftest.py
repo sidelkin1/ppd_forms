@@ -21,8 +21,10 @@ from app.infrastructure.db.factories.local import (
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from tests.fixtures.task_fixtures import (  # noqa
     date_range,
+    matrix_effect,
     task_database,
     task_excel,
+    task_matrix,
     task_oil_loss,
     task_report,
 )

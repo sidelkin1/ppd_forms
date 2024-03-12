@@ -24,7 +24,11 @@ def get_unknown_name_url(task: TaskReport) -> str:
 
 @pytest.mark.parametrize(
     "task,schema",
-    [("task_report", "date_range"), ("task_oil_loss", "date_range")],
+    [
+        ("task_report", "date_range"),
+        ("task_oil_loss", "date_range"),
+        ("task_matrix", "matrix_effect"),
+    ],
 )
 @pytest.mark.asyncio(scope="session")
 async def test_generate_report_success(
@@ -45,7 +49,11 @@ async def test_generate_report_success(
 
 @pytest.mark.parametrize(
     "task,schema",
-    [("task_report", "date_range"), ("task_oil_loss", "date_range")],
+    [
+        ("task_report", "date_range"),
+        ("task_oil_loss", "date_range"),
+        ("task_matrix", "matrix_effect"),
+    ],
 )
 @pytest.mark.asyncio(scope="session")
 async def test_generate_report_unknown_name(
@@ -61,7 +69,9 @@ async def test_generate_report_unknown_name(
     assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-@pytest.mark.parametrize("task", ["task_report", "task_oil_loss"])
+@pytest.mark.parametrize(
+    "task", ["task_report", "task_oil_loss", "task_matrix"]
+)
 @pytest.mark.asyncio(scope="session")
 async def test_generate_report_no_dates(
     client: AsyncClient, task: str, request
@@ -74,7 +84,11 @@ async def test_generate_report_no_dates(
 
 @pytest.mark.parametrize(
     "task,schema",
-    [("task_report", "date_range"), ("task_oil_loss", "date_range")],
+    [
+        ("task_report", "date_range"),
+        ("task_oil_loss", "date_range"),
+        ("task_matrix", "matrix_effect"),
+    ],
 )
 @pytest.mark.asyncio(scope="session")
 async def test_generate_report_dates_not_ordered(
@@ -98,7 +112,11 @@ async def test_generate_report_dates_not_ordered(
 
 @pytest.mark.parametrize(
     "task,schema",
-    [("task_report", "date_range"), ("task_oil_loss", "date_range")],
+    [
+        ("task_report", "date_range"),
+        ("task_oil_loss", "date_range"),
+        ("task_matrix", "matrix_effect"),
+    ],
 )
 @pytest.mark.asyncio(scope="session")
 async def test_generate_report_dates_wrong_format(

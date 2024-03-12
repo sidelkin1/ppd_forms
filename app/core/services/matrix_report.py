@@ -214,7 +214,9 @@ def _agg_oil_loss(df: pd.DataFrame) -> pd.DataFrame:
         "neighbs_loss_liq": ("dQoil(dQliq)", "sum"),
         "neighbs_loss_wcut": ("dQoil(dWcut)", "sum"),
     }
-    return df.groupby(cols, as_index=False).agg(**d)
+    return (
+        df.loc[df["neighbs"] != "", :].groupby(cols, as_index=False).agg(**d)
+    )
 
 
 def _format_neighbs_loss(df: pd.DataFrame) -> pd.DataFrame:

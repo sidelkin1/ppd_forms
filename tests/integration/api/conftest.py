@@ -9,11 +9,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from app.api import dependencies
+from app.api import dependencies, endpoints
 from app.api.dependencies.auth import AuthProvider
 from app.api.models.auth import Token
 from app.api.models.user import User
-from app.api.routes.routers import main_router
 from app.core.config.settings import Settings
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
@@ -65,7 +64,7 @@ def app(settings: Settings) -> FastAPI:
     pool = create_local_pool(settings)
     redis = create_redis_pool(settings)
     app = FastAPI()
-    app.include_router(main_router)
+    endpoints.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     dependencies.setup(app, pool, redis, settings)
     return app

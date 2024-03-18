@@ -4,8 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api import dependencies
-from app.api.routes.routers import main_router
+from app.api import dependencies, endpoints
 from app.core.config.parsers.logging_config import setup_logging
 from app.core.config.settings import get_settings
 from app.infrastructure.db.factories.local import (
@@ -28,7 +27,7 @@ def main() -> FastAPI:
         description=settings.app_description,
         lifespan=lifespan,
     )
-    app.include_router(main_router)
+    endpoints.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     app.state.settings = settings  # needed for lifespan
 

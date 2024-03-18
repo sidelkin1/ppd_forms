@@ -5,7 +5,7 @@ from app.api.dependencies.redis import RedisDep
 from app.api.utils.tracker import JobTracker
 from app.core.models.schemas import JobResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 
 @router.get(

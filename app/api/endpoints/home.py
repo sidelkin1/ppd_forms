@@ -12,7 +12,7 @@ from app.api.utils.redirect import build_redirect_response
 from app.core.config.parsers.file_reader import read_config
 
 templates = Jinja2Templates(directory="app/templates")
-router = APIRouter()
+router = APIRouter(tags=["home"])
 
 
 @router.get("/", response_class=HTMLResponse)

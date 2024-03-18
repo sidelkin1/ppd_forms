@@ -8,7 +8,7 @@ from app.core.models.enums import LoadMode, OfmTableName
 from app.core.models.schemas import DatabaseResponse, DateRange
 from app.core.services.date_range import date_range
 
-router = APIRouter()
+router = APIRouter(prefix="/database", tags=["database"])
 
 
 @router.post("/profile/reload", deprecated=True)

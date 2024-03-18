@@ -14,7 +14,7 @@ from app.core.models.enums import UneftAssets
 from app.core.models.schemas import FieldsResponse, ReservoirsResponse
 from app.infrastructure.redis.dao import RedisDAO
 
-router = APIRouter()
+router = APIRouter(prefix="/uneft", tags=["uneft"])
 
 
 async def get_fields(

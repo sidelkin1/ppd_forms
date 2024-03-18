@@ -15,7 +15,7 @@ from app.core.models.schemas import (
     ReportResponse,
 )
 
-router = APIRouter()
+router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.post(

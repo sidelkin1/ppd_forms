@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.api.dependencies.auth import UserDep
 from app.api.models.user import User
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/me", response_model=User)

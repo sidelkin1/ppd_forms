@@ -10,7 +10,7 @@ from app.core.models.enums import ExcelTableName, LoadMode
 from app.core.models.schemas import ExcelPath, ExcelResponse
 from app.core.services.date_range import date_range
 
-router = APIRouter()
+router = APIRouter(prefix="/excel", tags=["excel"])
 
 
 @router.post("/", response_model=dict)

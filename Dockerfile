@@ -24,5 +24,5 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x backend-start.sh
-ENTRYPOINT [ "/app/backend-start.sh" ]
+RUN chmod +x scripts/backend-start.sh
+ENTRYPOINT [ "/app/scripts/backend-start.sh" ]

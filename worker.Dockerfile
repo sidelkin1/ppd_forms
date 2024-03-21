@@ -38,5 +38,5 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x worker-start.sh
-ENTRYPOINT [ "/app/worker-start.sh" ]
+RUN chmod +x scripts/worker-start.sh
+ENTRYPOINT [ "/app/scripts/worker-start.sh" ]

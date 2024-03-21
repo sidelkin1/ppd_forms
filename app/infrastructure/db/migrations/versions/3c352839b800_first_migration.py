@@ -1,8 +1,8 @@
 """First migration
 
-Revision ID: 3b9bbc75a764
+Revision ID: 3c352839b800
 Revises: 000000000000
-Create Date: 2024-02-07 10:08:51.126993
+Create Date: 2024-03-21 13:32:02.071185
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import app.infrastructure.db.migrations.types
 
 
 # revision identifiers, used by Alembic.
-revision = '3b9bbc75a764'
+revision = '3c352839b800'
 down_revision = '000000000000'
 branch_labels = None
 depends_on = None
@@ -43,7 +43,7 @@ def upgrade() -> None:
     sa.Column('cum_oil_v', sa.Float(), nullable=False),
     sa.Column('cum_water_v', sa.Float(), nullable=False),
     sa.Column('cum_water', sa.Float(), nullable=False),
-    sa.Column('oil_fvf', sa.Float(), nullable=False),
+    sa.Column('oil_fvf', sa.Float(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__monthlyreport')),
     sa.UniqueConstraint('field', 'well_name', 'cid', 'dat_rep', name=op.f('uq__monthlyreport__field'))

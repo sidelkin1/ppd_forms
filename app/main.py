@@ -5,41 +5,45 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api import dependencies, endpoints
-from app.core.config.parsers.logging_config import setup_logging
-from app.core.config.settings import get_settings
+from app.api.dependencies.db import DbProvider
+from app.core.config.settings import Settings
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
-from app.lifespan import lifespan
+from app.initial_data import initialize_mapper
 
 logger = logging.getLogger(__name__)
 
 
-def main() -> FastAPI:
-    settings = get_settings()
-    setup_logging(settings.logging_config_file)
+async def init_mapper(settings: Settings) -> None:
+    pool = create_local_pool(settings)
+    provider = DbProvider(local_pool=pool)
+    await initialize_mapper(provider)
+
+
+def init_api(settings: Settings) -> FastAPI:
     pool = create_local_pool(settings)
     redis = create_redis_pool(settings)
-
     app = FastAPI(
         title=settings.app_title,
         description=settings.app_description,
-        lifespan=lifespan,
     )
     endpoints.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
-    app.state.settings = settings  # needed for lifespan
-
     dependencies.setup(app, pool, redis, settings)
-
-    logger.info("app prepared")
+    logger.info("App prepared")
     return app
 
 
-def run() -> None:
-    uvicorn.run("app.main:main", factory=True)
-
-
-if __name__ == "__main__":
-    run()
+async def run_api(app: FastAPI, settings: Settings) -> None:
+    config = uvicorn.Config(
+        app,
+        host=settings.api_host,
+        port=settings.api_port,
+        log_level=logging.INFO,
+        log_config=None,
+    )
+    server = uvicorn.Server(config)
+    logger.info("Running API")
+    await server.serve()

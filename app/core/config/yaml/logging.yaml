@@ -21,6 +21,7 @@ root:
   level: DEBUG
   handlers: [console]
 loggers:
-  pyrogram:
-    level: WARNING
+  arq:
+    handlers: []
+    propagate: true
 disable_existing_loggers: false

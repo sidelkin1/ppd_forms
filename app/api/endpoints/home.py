@@ -9,7 +9,7 @@ from app.api.dependencies.auth import AuthDep, UserDep, UserOrNoneDep
 from app.api.dependencies.path import PathDep
 from app.api.endpoints.auth import revoke, token
 from app.api.utils.redirect import build_redirect_response
-from app.core.config.parsers.file_reader import read_config
+from app.core.config.parsers import read_config
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(tags=["home"])

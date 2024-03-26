@@ -41,9 +41,6 @@ class Settings(BaseSettings):
     table_config_file: FilePath = (
         app_dir / "core" / "config" / "yaml" / "tables.yaml"
     )
-    logging_config_file: FilePath = (
-        app_dir / "core" / "config" / "yaml" / "logging.yaml"
-    )
 
     app_title: str = "Стандартные формы для ППД"
     app_description: str = "Приложение для создания типовых отчетов ППД"
@@ -109,6 +106,10 @@ class Settings(BaseSettings):
 
     api_host: str = "127.0.0.1"
     api_port: int = 8000
+
+    render_json_logs: bool = False
+    log_path: Path | None = None
+    log_level: str = "DEBUG"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

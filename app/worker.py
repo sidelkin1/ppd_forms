@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 from app.api.dependencies.db import DbProvider
 from app.api.dependencies.path import PathProvider
-from app.core.config.parsers.logging_config import setup_logging
 from app.core.config.settings import get_settings
 from app.core.models.schemas import BaseResponse
 from app.core.services.entrypoints.arq import registry
@@ -18,6 +17,7 @@ from app.infrastructure.db.factories.local import (
 )
 from app.infrastructure.db.factories.ofm import create_pool as create_ofm_pool
 from app.infrastructure.db.models import ofm
+from app.infrastructure.log.main import configure_logging
 from app.initial_data import initialize_mapper
 
 load_dotenv()
@@ -31,7 +31,7 @@ async def perform_work(ctx: dict[str, Any], response: BaseResponse) -> None:
 
 async def startup(ctx: dict[str, Any]) -> None:
     settings = get_settings()
-    setup_logging(settings.logging_config_file)
+    configure_logging(settings)
     local_pool = create_local_pool(settings)
     ofm_pool = create_ofm_pool(settings) if ofm.setup(settings) else None
     provider = DbProvider(local_pool=local_pool, ofm_pool=ofm_pool)

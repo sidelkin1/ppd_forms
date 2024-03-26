@@ -1,5 +1,4 @@
 import logging
-import warnings
 
 import oracledb.exceptions as oracle_exc
 import sqlalchemy.exc as sqlalchemy_exc

@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from app.core.config.parsers.logging_config import setup_logging
 from app.core.config.settings import get_settings
+from app.infrastructure.log.main import configure_logging
 from app.main import init_api, init_mapper, run_api
 
 logger = logging.getLogger(__name__)
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 async def main() -> None:
     settings = get_settings()
-    setup_logging(settings.logging_config_file)
+    configure_logging(settings)
     logger.info("Launch app")
     await init_mapper(settings)
     app = init_api(settings)

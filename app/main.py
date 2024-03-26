@@ -41,7 +41,7 @@ async def run_api(app: FastAPI, settings: Settings) -> None:
         app,
         host=settings.api_host,
         port=settings.api_port,
-        log_level=logging.INFO,
+        log_level=logging.getLevelName(settings.log_level),
         log_config=None,
     )
     server = uvicorn.Server(config)

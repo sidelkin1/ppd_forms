@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 
-from app.api.endpoints.auth import router as auth_router
-from app.api.endpoints.database import router as database_router
-from app.api.endpoints.excel import router as excel_router
-from app.api.endpoints.home import router as home_router
-from app.api.endpoints.job import router as job_router
-from app.api.endpoints.report import router as report_router
-from app.api.endpoints.uneft import router as uneft_router
-from app.api.endpoints.users import router as users_router
+from .auth import router as auth_router
+from .database import router as database_router
+from .excel import router as excel_router
+from .home import router as home_router
+from .job import router as job_router
+from .report import router as report_router
+from .uneft import router as uneft_router
+from .users import router as users_router
 
 
 def setup(app: FastAPI) -> None:

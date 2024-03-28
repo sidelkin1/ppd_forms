@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api import dependencies, endpoints
+from app.api import dependencies, endpoints, middlewares
 from app.api.dependencies.db import DbProvider
 from app.core.config.settings import Settings
 from app.infrastructure.db.factories.local import (
@@ -30,6 +30,7 @@ def init_api(settings: Settings) -> FastAPI:
         description=settings.app_description,
     )
     endpoints.setup(app)
+    middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     dependencies.setup(app, pool, redis, settings)
     logger.info("App prepared")

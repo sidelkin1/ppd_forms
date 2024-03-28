@@ -1,5 +1,8 @@
+import asyncio
+
 import pytest
-from fastapi import status
+from fastapi import WebSocketDisconnect, status
+from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 from app.core.config.settings import Settings
@@ -20,6 +23,15 @@ async def test_api_not_authenticated(anon_client: AsyncClient, url: str):
     resp = await anon_client.get(url)
     assert not resp.is_success
     assert resp.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_websocket_not_authenticated(anon_test_client: TestClient):
+    with pytest.raises(WebSocketDisconnect) as exc_info:
+        with anon_test_client.websocket_connect("/jobs/111/ws"):
+            await asyncio.sleep(0.1)
+    assert exc_info.value.code == status.WS_1008_POLICY_VIOLATION
+    assert exc_info.value.reason == "Not authenticated"
 
 
 @pytest.mark.parametrize("url", ["/reports", "/tables"])

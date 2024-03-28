@@ -2,17 +2,18 @@ from arq import ArqRedis
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.api.dependencies.auth import (
+from app.core.config.settings import Settings
+from app.infrastructure.redis.factory import redismaker
+
+from .auth import (
     AuthProvider,
     get_auth_provider,
     get_current_user,
     get_current_user_or_none,
 )
-from app.api.dependencies.db import DbProvider, dao_provider
-from app.api.dependencies.path import PathProvider, get_path_provider
-from app.api.dependencies.redis import RedisProvider, redis_provider
-from app.core.config.settings import Settings
-from app.infrastructure.redis.factory import redismaker
+from .db import DbProvider, dao_provider
+from .path import PathProvider, get_path_provider
+from .redis import RedisProvider, redis_provider
 
 
 def setup(

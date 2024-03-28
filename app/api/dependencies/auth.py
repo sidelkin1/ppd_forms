@@ -2,8 +2,16 @@ import logging
 from datetime import datetime, timedelta
 from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+import structlog
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocketException,
+    status,
+)
 from jose import JWTError, jwt
+from starlette.requests import HTTPConnection
 
 from app.api.dependencies.oauth2 import OAuth2PasswordBearerWithCookie
 from app.api.models.auth import Token
@@ -64,14 +72,25 @@ class AuthProvider:
             data={"sub": user.username}, expires_delta=self.token_expire_time
         )
 
-    async def get_current_user(
-        self, token: Annotated[str, Depends(oauth2_scheme)]
-    ) -> User:
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+    def get_credentials_exception(self, request: HTTPConnection) -> Exception:
+        assert request.scope["type"] in ("http", "websocket")
+        if request.scope["type"] == "http":
+            return HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Could not validate credentials",
         )
+
+    async def get_current_user(
+        self,
+        token: Annotated[str, Depends(oauth2_scheme)],
+        request: HTTPConnection,
+    ) -> User:
+        credentials_exception = self.get_credentials_exception(request)
         logger.debug("try to check token %s", token)
         try:
             payload = jwt.decode(
@@ -87,14 +106,20 @@ class AuthProvider:
         except Exception as error:
             logger.warning("some jwt error", exc_info=error)
             raise
+        structlog.contextvars.bind_contextvars(user_id=username)
         return User(username=username)
 
-    async def get_current_user_or_none(self, request: Request) -> User | None:
+    async def get_current_user_or_none(
+        self, request: HTTPConnection
+    ) -> User | None:
         try:
             token = cast(str, await oauth2_scheme(request))
-            user = await self.get_current_user(token)
+            user = await self.get_current_user(token, request)
         except HTTPException:
             user = None
+        structlog.contextvars.bind_contextvars(
+            user_id=user.username if user else None
+        )
         return user
 
 

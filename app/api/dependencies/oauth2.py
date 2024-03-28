@@ -1,9 +1,10 @@
 from typing import Any, cast
 
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, WebSocketException, status
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security import OAuth2
 from fastapi.security.utils import get_authorization_scheme_param
+from starlette.requests import HTTPConnection
 
 
 class OAuth2PasswordBearerWithCookie(OAuth2):
@@ -23,16 +24,28 @@ class OAuth2PasswordBearerWithCookie(OAuth2):
             flows=flows, scheme_name=scheme_name, auto_error=auto_error
         )
 
-    async def __call__(self, request: Request) -> str | None:
+    def get_authorization_exception(
+        self, request: HTTPConnection
+    ) -> Exception:
+        assert request.scope["type"] in ("http", "websocket")
+        if request.scope["type"] == "http":
+            return HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Not authenticated",
+        )
+
+    async def __call__(self, request: HTTPConnection) -> str | None:
         authorization = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(authorization)
+        authorization_exception = self.get_authorization_exception(request)
         if not authorization or scheme.lower() != "bearer":
             if self.auto_error:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Not authenticated",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
+                raise authorization_exception
             else:
                 return None
         return param

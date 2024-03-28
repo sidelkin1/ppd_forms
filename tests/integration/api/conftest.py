@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from app.api import dependencies, endpoints
+from app.api import dependencies, endpoints, middlewares
 from app.api.dependencies.auth import AuthProvider
 from app.api.models.auth import Token
 from app.api.models.user import User
@@ -54,7 +54,19 @@ async def anon_client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest.fixture(scope="session")
-def test_client(app: FastAPI) -> Generator[TestClient, None, None]:
+def test_client(
+    app: FastAPI, token: Token
+) -> Generator[TestClient, None, None]:
+    with TestClient(
+        app=app,
+        base_url="http://test",
+        cookies={"access_token": f"Bearer {token.access_token}"},
+    ) as client:
+        yield client
+
+
+@pytest.fixture(scope="session")
+def anon_test_client(app: FastAPI) -> Generator[TestClient, None, None]:
     with TestClient(app=app, base_url="http://test") as client:
         yield client
 
@@ -65,6 +77,7 @@ def app(settings: Settings) -> FastAPI:
     redis = create_redis_pool(settings)
     app = FastAPI()
     endpoints.setup(app)
+    middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     dependencies.setup(app, pool, redis, settings)
     return app

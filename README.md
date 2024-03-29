@@ -21,9 +21,14 @@ poetry install --with web,worker,dev --no-root
 
 3. Создайте в корневой директории файл `.env` на базе файла `.env.example`
 
-4. Поднимите контейнеры с сервисами и локальной базой данных:
+4. Проведите миграции в локальной БД
 ```
-docker-compose -f docker-compose-local.yml up -d --build
+docker-compose --profile migration -f docker-compose-local.yml up -d --build
+```
+
+5. Поднимите контейнеры с сервисами и локальной базой данных:
+```
+docker-compose --profile api -f docker-compose-local.yml up -d --build
 ```
 
 ### Особенности работы проекта в контейнерах

@@ -3,6 +3,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any, cast
 
+import structlog
 from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
@@ -25,7 +26,11 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-async def perform_work(ctx: dict[str, Any], response: BaseResponse) -> None:
+async def perform_work(
+    ctx: dict[str, Any], response: BaseResponse, log_ctx: dict[str, Any]
+) -> Any:
+    structlog.contextvars.bind_contextvars(**log_ctx)
+    logger.info("Started job", extra={"job": response})
     return await registry[response.task.route_url](response, ctx)
 
 

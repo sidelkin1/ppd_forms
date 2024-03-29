@@ -1,5 +1,6 @@
 from typing import Any
 
+import structlog
 from arq import ArqRedis
 from arq.jobs import Job
 
@@ -11,8 +12,9 @@ class RedisDAO:
         self.redis = redis
 
     async def enqueue_task(self, response: BaseResponse) -> Job | None:
+        ctx = structlog.contextvars.get_contextvars()
         return await self.redis.enqueue_job(
-            "perform_work", response, _job_id=response.job.job_id
+            "perform_work", response, ctx, _job_id=response.job.job_id
         )
 
     async def result(self, response: BaseResponse) -> Any:

@@ -41,7 +41,9 @@ def work_long() -> Function:
 @pytest.fixture(scope="session")
 def work_uneft() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: BaseResponse[TaskBase]
+        ctx: dict[str, Any],
+        response: BaseResponse[TaskBase],
+        log_ctx: dict[str, Any],
     ) -> Any:
         result = {
             "uneft:fields": [

@@ -19,7 +19,7 @@ def configure_logging(settings: Settings) -> None:
     arq_logger.handlers.clear()
     arq_logger.propagate = True
 
-    common_processors: tuple = (
+    common_processors = (
         structlog.stdlib.add_log_level,
         structlog.stdlib.add_logger_name,
         structlog.stdlib.ExtraAdder(),
@@ -34,8 +34,7 @@ def configure_logging(settings: Settings) -> None:
         ),
     )
     if settings.render_json_logs:
-        common_processors = (
-            *common_processors,
+        common_processors += (  # type: ignore
             structlog.processors.dict_tracebacks,
         )
     structlog_processors = (

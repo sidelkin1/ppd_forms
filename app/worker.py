@@ -30,7 +30,9 @@ async def perform_work(
     ctx: dict[str, Any], response: BaseResponse, log_ctx: dict[str, Any]
 ) -> Any:
     structlog.contextvars.bind_contextvars(**log_ctx)
-    logger.info("Started job", extra={"job": response})
+    logger.info(
+        "Started job", extra={"task": response.task, "job": response.job}
+    )
     return await registry[response.task.route_url](response, ctx)
 
 

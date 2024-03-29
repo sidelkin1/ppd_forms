@@ -18,7 +18,9 @@ router = APIRouter(prefix="/jobs", tags=["jobs"])
 )
 async def get_job_status(job_id: str, user: UserDep, job: CurrentJobDep):
     response = await JobResponse.from_job(job)
-    logger.debug("Current job", extra={"job": response})
+    logger.debug(
+        "Current job", extra={"task": response.task, "job": response.job}
+    )
     return response
 
 
@@ -27,6 +29,8 @@ async def websocket_endpoint(
     websocket: WebSocket, job_id: str, user: UserDep, job: CurrentJobDep
 ):
     response = await JobResponse.from_job(job)
-    logger.debug("Current job", extra={"job": response})
+    logger.debug(
+        "Current job", extra={"task": response.task, "job": response.job}
+    )
     async with JobTracker(websocket, job, response) as tracker:
         await tracker.status()

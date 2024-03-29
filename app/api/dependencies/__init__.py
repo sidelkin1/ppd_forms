@@ -12,6 +12,7 @@ from .auth import (
     get_current_user_or_none,
 )
 from .db import DbProvider, dao_provider
+from .job import JobProvider, get_current_job, get_job_provider, get_new_job
 from .path import PathProvider, get_path_provider
 from .redis import RedisProvider, redis_provider
 
@@ -36,3 +37,8 @@ def setup(
         get_current_user_or_none
     ] = auth_provider.get_current_user_or_none
     app.dependency_overrides[get_auth_provider] = lambda: auth_provider
+
+    job_provider = JobProvider()
+    app.dependency_overrides[get_new_job] = job_provider.create
+    app.dependency_overrides[get_current_job] = job_provider.current
+    app.dependency_overrides[get_job_provider] = lambda: job_provider

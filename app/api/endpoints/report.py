@@ -2,10 +2,11 @@ from fastapi import APIRouter, status
 from fastapi.responses import FileResponse
 
 from app.api.dependencies.auth import UserDep
+from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.utils.validators import check_file_exists
-from app.core.models.dto import JobStamp, TaskMatrix, TaskOilLoss, TaskReport
+from app.core.models.dto import TaskMatrix, TaskOilLoss, TaskReport
 from app.core.models.enums import LossMode, ReportName
 from app.core.models.schemas import (
     DateRange,
@@ -29,6 +30,7 @@ async def generate_oil_loss_report(
     date_range: DateRange,
     user: UserDep,
     redis: RedisDep,
+    job: NewJobDep,
 ):
     task = TaskOilLoss(
         name=ReportName.oil_loss,
@@ -36,7 +38,7 @@ async def generate_oil_loss_report(
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    response = OilLossResponse(task=task, job=JobStamp(user_id=user.username))
+    response = OilLossResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 
@@ -51,6 +53,7 @@ async def generate_matrix_report(
     matrix_effect: MatrixEffect,
     user: UserDep,
     redis: RedisDep,
+    job: NewJobDep,
 ):
     task = TaskMatrix(
         name=ReportName.matrix,
@@ -61,7 +64,7 @@ async def generate_matrix_report(
         excludes=matrix_effect.excludes,
         on_date=matrix_effect.on_date,
     )
-    response = MatrixResponse(task=task, job=JobStamp(user_id=user.username))
+    response = MatrixResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 
@@ -77,13 +80,14 @@ async def generate_report(
     date_range: DateRange,
     user: UserDep,
     redis: RedisDep,
+    job: NewJobDep,
 ):
     task = TaskReport(
         name=name,
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    response = ReportResponse(task=task, job=JobStamp(user_id=user.username))
+    response = ReportResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

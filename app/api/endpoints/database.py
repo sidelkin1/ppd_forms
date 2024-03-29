@@ -2,8 +2,9 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.db import HolderDep
+from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis import RedisDep
-from app.core.models.dto import JobStamp, TaskDatabase
+from app.core.models.dto import TaskDatabase
 from app.core.models.enums import LoadMode, OfmTableName
 from app.core.models.schemas import DatabaseResponse, DateRange
 from app.core.services.date_range import date_range
@@ -31,6 +32,7 @@ async def load_database(
     date_range: DateRange,
     user: UserDep,
     redis: RedisDep,
+    job: NewJobDep,
 ):
     task = TaskDatabase(
         table=table,
@@ -38,7 +40,7 @@ async def load_database(
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    response = DatabaseResponse(task=task, job=JobStamp(user_id=user.username))
+    response = DatabaseResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

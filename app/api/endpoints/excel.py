@@ -2,10 +2,11 @@ from fastapi import APIRouter, UploadFile, status
 
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.db import HolderDep
+from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.utils.upload_file import save_upload_file
-from app.core.models.dto import JobStamp, TaskExcel
+from app.core.models.dto import TaskExcel
 from app.core.models.enums import ExcelTableName, LoadMode
 from app.core.models.schemas import ExcelPath, ExcelResponse
 from app.core.services.date_range import date_range
@@ -31,9 +32,10 @@ async def load_database(
     excel: ExcelPath,
     user: UserDep,
     redis: RedisDep,
+    job: NewJobDep,
 ):
     task = TaskExcel(table=table, mode=mode, file=excel.file)
-    response = ExcelResponse(task=task, job=JobStamp(user_id=user.username))
+    response = ExcelResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

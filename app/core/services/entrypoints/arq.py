@@ -1,8 +1,7 @@
 from typing import Any, cast
 
 from app.api.dependencies.path import PathProvider
-from app.core.models.dto import UneftFieldDB, UneftReservoirDB
-from app.core.models.schemas import (
+from app.api.models.responses import (
     DatabaseResponse,
     ExcelResponse,
     FieldsResponse,
@@ -11,6 +10,7 @@ from app.core.models.schemas import (
     ReportResponse,
     ReservoirsResponse,
 )
+from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report

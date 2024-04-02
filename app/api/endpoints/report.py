@@ -5,16 +5,15 @@ from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
-from app.api.utils.validators import check_file_exists
-from app.core.models.dto import TaskMatrix, TaskOilLoss, TaskReport
-from app.core.models.enums import LossMode, ReportName
-from app.core.models.schemas import (
-    DateRange,
-    MatrixEffect,
+from app.api.models.responses import (
     MatrixResponse,
     OilLossResponse,
     ReportResponse,
 )
+from app.api.utils.validators import check_file_exists
+from app.core.models.dto import TaskMatrix, TaskOilLoss, TaskReport
+from app.core.models.enums import LossMode, ReportName
+from app.core.models.schemas import DateRange, MatrixEffect
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

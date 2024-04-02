@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 
 from app.api.dependencies.db import DbProvider
 from app.api.dependencies.path import PathProvider
+from app.api.models.responses import BaseResponse
 from app.core.config.settings import get_settings
-from app.core.models.schemas import BaseResponse
 from app.core.services.entrypoints.arq import registry
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.factories.local import (

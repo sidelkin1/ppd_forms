@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import JobDep, NewJobDep
 from app.api.dependencies.redis import RedisDep
+from app.api.models.responses import FieldsResponse, ReservoirsResponse
 from app.api.utils.validators import check_field_exists
 from app.core.models.dto import (
     JobStamp,
@@ -14,7 +15,6 @@ from app.core.models.dto import (
     UneftReservoirDB,
 )
 from app.core.models.enums import UneftAssets
-from app.core.models.schemas import FieldsResponse, ReservoirsResponse
 from app.infrastructure.redis.dao import RedisDAO
 
 logger = logging.getLogger(__name__)

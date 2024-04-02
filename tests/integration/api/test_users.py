@@ -2,7 +2,7 @@ import pytest
 from fastapi import status
 from httpx import AsyncClient
 
-from app.api.models.user import User
+from app.api.models.auth import User
 
 
 @pytest.mark.asyncio(scope="session")

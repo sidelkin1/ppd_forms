@@ -1,5 +1,5 @@
+from app.api.models.responses import BaseResponse
 from app.core.models.dto import JobStamp, TaskBase
-from app.core.models.schemas import BaseResponse
 
 
 class TaskTest(TaskBase, task_id="test"):

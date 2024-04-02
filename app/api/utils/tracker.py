@@ -4,8 +4,8 @@ import logging
 from arq.jobs import Job
 from fastapi import WebSocket
 
+from app.api.models.responses import JobResponse
 from app.core.models.enums import JobStatus
-from app.core.models.schemas import JobResponse
 
 logger = logging.getLogger(__name__)
 

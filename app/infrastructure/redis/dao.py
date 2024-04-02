@@ -4,7 +4,7 @@ import structlog
 from arq import ArqRedis
 from arq.jobs import Job
 
-from app.core.models.schemas import BaseResponse
+from app.api.models.responses import BaseResponse
 
 
 class RedisDAO:

@@ -2,9 +2,9 @@ from typing import Any, Self, cast
 
 from arq.jobs import Job, JobResult
 
+from app.api.models.responses.base import BaseResponse
 from app.core.models.dto import JobStamp, TaskBase
 from app.core.models.enums import JobStatus
-from app.core.models.schemas.responses.base import BaseResponse
 
 
 class JobResponse(BaseResponse[dict[str, Any] | None]):

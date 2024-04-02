@@ -4,8 +4,8 @@ from typing import Any
 import pytest
 from arq.worker import Function, func
 
+from app.api.models.responses import BaseResponse
 from app.core.models.dto import TaskBase, UneftFieldDB, UneftReservoirDB
-from app.core.models.schemas import BaseResponse
 
 
 @pytest.fixture(scope="session")

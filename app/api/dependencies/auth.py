@@ -14,8 +14,7 @@ from jose import JWTError, jwt
 from starlette.requests import HTTPConnection
 
 from app.api.dependencies.oauth2 import OAuth2PasswordBearerWithCookie
-from app.api.models.auth import Token
-from app.api.models.user import User
+from app.api.models.auth import Token, User
 from app.api.utils.auth import default_verify, ldap_verify
 from app.api.utils.dateutil import tz_utc
 from app.core.config.settings import Settings

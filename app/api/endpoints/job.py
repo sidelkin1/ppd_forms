@@ -4,8 +4,8 @@ from fastapi import APIRouter, WebSocket
 
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import CurrentJobDep
+from app.api.models.responses import JobResponse
 from app.api.utils.tracker import JobTracker
-from app.core.models.schemas import JobResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jobs", tags=["jobs"])

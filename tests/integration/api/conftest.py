@@ -11,8 +11,7 @@ from httpx import AsyncClient
 
 from app.api import dependencies, endpoints, middlewares
 from app.api.dependencies.auth import AuthProvider
-from app.api.models.auth import Token
-from app.api.models.user import User
+from app.api.models.auth import Token, User
 from app.core.config.settings import Settings
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,

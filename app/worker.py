@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from typing import Any, cast
 
 import structlog
+from arq import cron
 from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
@@ -11,6 +12,11 @@ from app.api.dependencies.db import DbProvider
 from app.api.dependencies.path import PathProvider
 from app.api.models.responses import BaseResponse
 from app.core.config.settings import get_settings
+from app.core.services.cron.clean_files import cron_clean_files
+from app.core.services.cron.refresh_table import (
+    cron_refresh_mer,
+    cron_refresh_opp,
+)
 from app.core.services.entrypoints.arq import registry
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.factories.local import (
@@ -66,6 +72,11 @@ async def shutdown(ctx: dict[str, Any]) -> None:
 
 class WorkerSettings:
     functions = [perform_work]
+    cron_jobs = [
+        cron(cron_refresh_opp, day=11, max_tries=3),
+        cron(cron_refresh_mer, day=11, max_tries=3),
+        cron(cron_clean_files, month={3, 6, 9, 12}),
+    ]
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = RedisSettings(

@@ -11,10 +11,9 @@ python = ">=3.11,<3.13"
 python-dateutil = "^2.8.2"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.25"}
 asyncpg = "^0.28.0"
-arq = "^0.25.0"
+arq = "0.26.0b1"
 pydantic = "^2.3.0"
 pydantic-settings = "^2.0.3"
-redis = {version = "5.0.0", extras = ["hiredis"]}
 fastapi = "^0.103.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 ldap3 = "^2.9.1"

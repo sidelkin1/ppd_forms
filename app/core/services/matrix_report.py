@@ -4,11 +4,11 @@ from typing import Any
 
 import pandas as pd
 
-from app.core.config.settings import Settings
 from app.core.models.enums import ExcludeGTM
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.sql.reporters import MatrixReporter
+from app.infrastructure.files.config.models.csv import CsvSettings
 
 
 def _add_months(s: pd.Series, n: int) -> pd.Series:
@@ -305,7 +305,8 @@ async def matrix_report(
     on_date: date,
     dao: MatrixReporter,
     pool: ProcessPoolManager,
-    settings: Settings,
+    delimiter: str,
+    csv_config: CsvSettings,
 ) -> None:
     dfs = await dao.read_all(
         date_from=date_from,
@@ -320,6 +321,6 @@ async def matrix_report(
         pred_period,
         excludes,
         on_date,
-        settings.delimiter,
+        delimiter,
     )
-    await save_to_csv(df, path, settings.csv_encoding, settings.csv_delimiter)
+    await save_to_csv(df, path, csv_config.encoding, csv_config.delimiter)

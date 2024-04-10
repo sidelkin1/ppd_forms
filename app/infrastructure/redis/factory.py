@@ -4,15 +4,17 @@ from typing import TypeVar
 
 from arq import ArqRedis
 from arq import create_pool as create_redis_pool
-from arq.connections import RedisSettings
+from arq.connections import RedisSettings as ArqRedisSettings
 
-from app.core.config.settings import Settings
+from app.infrastructure.redis.config.main import RedisSettings
 
 T = TypeVar("T")
 redismaker = Callable[[], _AsyncGeneratorContextManager[T]]
 
 
-def create_redis_maker(redis_settings: RedisSettings) -> redismaker[ArqRedis]:
+def create_redis_maker(
+    redis_settings: ArqRedisSettings,
+) -> redismaker[ArqRedis]:
     @asynccontextmanager
     async def decorator() -> AsyncGenerator[ArqRedis, None]:
         redis = await create_redis_pool(redis_settings)
@@ -24,5 +26,5 @@ def create_redis_maker(redis_settings: RedisSettings) -> redismaker[ArqRedis]:
     return decorator
 
 
-def create_pool(settings: Settings) -> redismaker[ArqRedis]:
-    return create_redis_maker(settings.redis_settings)
+def create_pool(settings: RedisSettings) -> redismaker[ArqRedis]:
+    return create_redis_maker(settings.arq_settings)

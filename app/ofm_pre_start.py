@@ -9,7 +9,7 @@ from tenacity import (
     wait_fixed,
 )
 
-from app.core.config.settings import get_settings
+from app.infrastructure.db.config.main import get_oracle_settings
 from app.infrastructure.db.factories.ofm import create_engine
 
 logging.basicConfig(level=logging.INFO)
@@ -28,8 +28,8 @@ wait_seconds = 1
 def init() -> None:
     engine = None
     try:
-        settings = get_settings()
-        engine = create_engine(settings)
+        oracle_config = get_oracle_settings()
+        engine = create_engine(oracle_config)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1 FROM DUAL"))
     except Exception as e:

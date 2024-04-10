@@ -5,13 +5,13 @@ from pathlib import Path
 import pytest
 from csv_diff import compare, load_csv
 
-from app.core.config.settings import Settings
 from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.sql.reporters import LocalBaseDAO
+from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
 
 
@@ -50,7 +50,6 @@ async def test_reports(
     pool_holder: HolderDAO,
     process_pool: ProcessPoolManager,
     tmp_path: Path,
-    settings: Settings,
     dao: str,
     service: Callable[..., Awaitable],
     expected_report: str,
@@ -60,6 +59,7 @@ async def test_reports(
     date_from = date(2000, 1, 1)
     date_to = date(2001, 1, 1)
     dao_: LocalBaseDAO = getattr(pool_holder, dao)
+    csv_config = CsvSettings()
     if dao == "matrix_reporter":
         await service(
             path,
@@ -71,10 +71,15 @@ async def test_reports(
             date_to,
             dao_,
             process_pool,
-            settings,
+            ",",
+            csv_config,
         )
+    elif dao == "opp_per_year_reporter":
+        await service(path, date_from, date_to, dao_, process_pool, csv_config)
     else:
-        await service(path, date_from, date_to, dao_, process_pool, settings)
+        await service(
+            path, date_from, date_to, dao_, process_pool, ",", csv_config
+        )
     diff = compare(
         load_csv(open(result_dir / expected_report)), load_csv(open(path))
     )

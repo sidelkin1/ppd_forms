@@ -4,13 +4,13 @@ from typing import Any
 
 import pandas as pd
 
-from app.core.config.settings import Settings
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.sql.reporters import (
     FirstRateLossReporter,
     MaxRateLossReporter,
 )
+from app.infrastructure.files.config.models.csv import CsvSettings
 
 
 def _prepare_ns_ppd(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
@@ -229,8 +229,9 @@ async def oil_loss_report(
     date_to: date,
     dao: FirstRateLossReporter | MaxRateLossReporter,
     pool: ProcessPoolManager,
-    settings: Settings,
+    delimiter: str,
+    csv_config: CsvSettings,
 ) -> None:
     dfs = await dao.read_all(date_from=date_from, date_to=date_to)
-    df = await pool.run(_process_data, dfs, settings.delimiter)
-    await save_to_csv(df, path, settings.csv_encoding, settings.csv_delimiter)
+    df = await pool.run(_process_data, dfs, delimiter)
+    await save_to_csv(df, path, csv_config.encoding, csv_config.delimiter)

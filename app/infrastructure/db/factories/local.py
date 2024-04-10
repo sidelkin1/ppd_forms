@@ -5,16 +5,18 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.core.config.settings import Settings
+from app.infrastructure.db.config.models.local import PostgresSettings
 
 
-def create_pool(settings: Settings) -> async_sessionmaker[AsyncSession]:
+def create_pool(
+    settings: PostgresSettings,
+) -> async_sessionmaker[AsyncSession]:
     engine = create_engine(settings)
     return create_session_maker(engine)
 
 
-def create_engine(settings: Settings) -> AsyncEngine:
-    return create_async_engine(str(settings.local_database_url))
+def create_engine(settings: PostgresSettings) -> AsyncEngine:
+    return create_async_engine(str(settings.url))
 
 
 def create_session_maker(

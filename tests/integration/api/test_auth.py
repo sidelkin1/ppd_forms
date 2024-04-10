@@ -5,7 +5,7 @@ from fastapi import WebSocketDisconnect, status
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
-from app.core.config.settings import Settings
+from app.api.config.models.auth import AuthSettings
 
 
 @pytest.mark.parametrize(
@@ -43,10 +43,10 @@ async def test_home_not_authenticated(anon_client: AsyncClient, url: str):
 
 
 @pytest.mark.asyncio(scope="session")
-async def test_login(anon_client: AsyncClient, settings: Settings):
+async def test_login(anon_client: AsyncClient, auth_config: AuthSettings):
     data = {
-        "username": settings.app_default_username,
-        "password": settings.app_default_password,
+        "username": auth_config.basic.username,
+        "password": auth_config.basic.password,
     }
     resp = await anon_client.post("/auth/token", data=data)
     assert resp.is_success

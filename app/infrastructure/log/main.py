@@ -4,13 +4,13 @@ import structlog
 from sqlalchemy import log as sa_log
 from structlog.processors import CallsiteParameter, CallsiteParameterAdder
 
-from app.core.config.settings import Settings
+from app.infrastructure.log.config.main import LogSettings
 from app.infrastructure.log.processors import get_render_processor
 
 logger = logging.getLogger(__name__)
 
 
-def configure_logging(settings: Settings) -> None:
+def configure_logging(settings: LogSettings) -> None:
     # Mute SQLAlchemy default logger handler
     sa_log._add_default_handler = lambda _: None  # type: ignore
 

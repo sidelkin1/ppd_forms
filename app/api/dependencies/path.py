@@ -3,14 +3,14 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.core.config.settings import Settings
+from app.infrastructure.files.config.models.paths import Paths
 
 
 class PathProvider:
-    def __init__(self, settings: Settings) -> None:
-        self.file_dir = settings.file_dir
-        self.report_config_file = settings.report_config_file
-        self.table_config_file = settings.table_config_file
+    def __init__(self, paths: Paths) -> None:
+        self.file_dir = paths.file_dir
+        self.report_config_file = paths.report_config
+        self.table_config_file = paths.table_config
 
     def user_dir(self, user_id: str) -> Path:
         directory = self.file_dir / user_id

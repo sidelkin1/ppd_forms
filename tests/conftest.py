@@ -2,22 +2,32 @@ from pathlib import Path
 
 import pytest
 
-
-@pytest.fixture(scope="session")
-def base_dir() -> Path:
-    return Path(__file__).resolve().parent.parent
-
-
-@pytest.fixture(scope="session")
-def data_dir(base_dir: Path) -> Path:
-    return base_dir / "tests" / "fixtures" / "resources" / "data"
+from app.api.config.models.auth import AuthSettings
+from app.api.config.models.basic import BasicAuthSettings
+from app.infrastructure.files.config.models.paths import Paths
 
 
 @pytest.fixture(scope="session")
-def file_dir(tmp_path_factory) -> Path:
-    return tmp_path_factory.mktemp("files")
+def auth_config() -> AuthSettings:
+    return AuthSettings(
+        secret_key="secret_key",
+        basic=BasicAuthSettings(  # type: ignore[call-arg]
+            app_default_username="test_admin",
+            app_default_password="test_password",
+        ),
+    )
 
 
 @pytest.fixture(scope="session")
-def result_dir(base_dir: Path) -> Path:
-    return base_dir / "tests" / "fixtures" / "resources" / "results"
+def paths(tmp_path_factory) -> Paths:
+    base_dir = Path(__file__).resolve().parent.parent
+    return Paths(
+        base_dir=base_dir,
+        data_dir=base_dir / "tests" / "fixtures" / "resources" / "data",
+        file_dir=tmp_path_factory.mktemp("files"),
+    )
+
+
+@pytest.fixture(scope="session")
+def result_dir(paths: Paths) -> Path:
+    return paths.base_dir / "tests" / "fixtures" / "resources" / "results"

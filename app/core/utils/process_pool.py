@@ -4,15 +4,13 @@ from collections.abc import Callable
 from concurrent.futures.process import ProcessPoolExecutor
 from typing import ParamSpec, TypeVar
 
-from app.core.config.settings import Settings
-
 T = TypeVar("T")
 P = ParamSpec("P")
 
 
 class ProcessPoolManager:
-    def __init__(self, settings: Settings) -> None:
-        self.pool = ProcessPoolExecutor(max_workers=settings.max_workers)
+    def __init__(self, *, max_workers: int) -> None:
+        self.pool = ProcessPoolExecutor(max_workers=max_workers)
 
     async def run(
         self, func: Callable[P, T], *args: P.args, **kwargs: P.kwargs

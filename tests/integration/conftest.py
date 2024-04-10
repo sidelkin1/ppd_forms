@@ -1,14 +1,14 @@
 import logging
 import os
 from collections.abc import AsyncGenerator, Generator
-from pathlib import Path
 
 import pytest
 import pytest_asyncio
 from alembic.command import upgrade
 from alembic.config import Config as AlembicConfig
 from arq import create_pool as create_redis
-from arq.connections import ArqRedis, RedisSettings
+from arq.connections import ArqRedis
+from arq.connections import RedisSettings as ArqRedisSettings
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -20,9 +20,11 @@ from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
 from app.api.dependencies.db import DbProvider
-from app.core.config.settings import Settings
 from app.core.utils.process_pool import ProcessPoolManager
+from app.infrastructure.db.config.models.local import PostgresSettings
+from app.infrastructure.files.config.models.paths import Paths
 from app.infrastructure.holder import HolderDAO
+from app.infrastructure.redis.config.main import RedisSettings
 from app.initial_data import (
     initialize_all,
     initialize_mapper,
@@ -44,10 +46,8 @@ async def pool_holder(pool: sessionmaker) -> HolderDAO:
 
 
 @pytest.fixture(scope="session")
-def process_pool(
-    settings: Settings,
-) -> Generator[ProcessPoolManager, None, None]:
-    pool = ProcessPoolManager(settings)
+def process_pool() -> Generator[ProcessPoolManager, None, None]:
+    pool = ProcessPoolManager(max_workers=1)
     yield pool
     pool.close()
 
@@ -91,16 +91,16 @@ def postgres_url() -> Generator[str, None, None]:
 
 @pytest_asyncio.fixture
 async def arq_redis(
-    redis_settings: RedisSettings,
+    arq_settings: ArqRedisSettings,
 ) -> AsyncGenerator[ArqRedis, None]:
-    redis = await create_redis(redis_settings)
+    redis = await create_redis(arq_settings)
     await redis.flushall()
     yield redis
     await redis.close()
 
 
 @pytest.fixture(scope="session")
-def redis_settings() -> Generator[RedisSettings, None, None]:
+def arq_settings() -> Generator[ArqRedisSettings, None, None]:
     redis_container = RedisContainer("redis:latest")
     if (
         os.name == "nt"
@@ -110,47 +110,32 @@ def redis_settings() -> Generator[RedisSettings, None, None]:
         redis_container.start()
         url = redis_container.get_container_host_ip()
         port = redis_container.get_exposed_port(redis_container.port_to_expose)
-        settings = RedisSettings(host=url, port=int(port))
+        settings = ArqRedisSettings(host=url, port=int(port))
         yield settings
     finally:
         redis_container.stop()
 
 
 @pytest.fixture(scope="session")
-def settings(
-    postgres_url: str,
-    redis_settings: RedisSettings,
-    data_dir: Path,
-    file_dir: Path,
-) -> Settings:
-    return Settings(
-        local_database_url=postgres_url,
-        file_dir=file_dir,
-        redis_settings=redis_settings,
-        well_profile_path=data_dir / "well_profile.csv",
-        monthly_report_path=data_dir / "monthly_report.csv",
-        inj_well_database_path=data_dir / "inj_well_database.csv",
-        neighborhood_path=data_dir / "neighborhood.csv",
-        new_strategy_inj_path=data_dir / "new_strategy_inj.csv",
-        new_strategy_oil_path=data_dir / "new_strategy_oil.csv",
-        secret_key="secret_key",
-        app_default_username="test_admin",
-        app_default_password="test_password",
-    )  # type: ignore[call-arg]
+def postgres_config(postgres_url: str) -> PostgresSettings:
+    return PostgresSettings(  # type: ignore[call-arg]
+        local_database_url=postgres_url
+    )
 
 
 @pytest.fixture(scope="session")
-def alembic_config(settings: Settings) -> AlembicConfig:
-    alembic_cfg = AlembicConfig(str(settings.base_dir / "alembic.ini"))
+def redis_config(arq_settings: ArqRedisSettings) -> RedisSettings:
+    return RedisSettings(arq_settings=arq_settings)
+
+
+@pytest.fixture(scope="session")
+def alembic_config(paths: Paths, postgres_url: str) -> AlembicConfig:
+    alembic_cfg = AlembicConfig(str(paths.base_dir / "alembic.ini"))
     alembic_cfg.set_main_option(
         "script_location",
-        str(
-            settings.base_dir / "app" / "infrastructure" / "db" / "migrations"
-        ),
+        str(paths.base_dir / "app" / "infrastructure" / "db" / "migrations"),
     )
-    alembic_cfg.set_main_option(
-        "sqlalchemy.url", str(settings.local_database_url)
-    )
+    alembic_cfg.set_main_option("sqlalchemy.url", postgres_url)
     return alembic_cfg
 
 
@@ -161,9 +146,9 @@ def upgrade_schema_db(alembic_config: AlembicConfig) -> None:
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def initialize_db(
-    upgrade_schema_db, pool: sessionmaker, settings: Settings
+    upgrade_schema_db, pool: sessionmaker, paths: Paths
 ) -> None:
     provider = DbProvider(local_pool=pool)
-    await initialize_replace(provider, settings)
+    await initialize_replace(provider, paths)
     await initialize_mapper(provider)
-    await initialize_all(provider, settings)
+    await initialize_all(provider, paths)

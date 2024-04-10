@@ -2,19 +2,23 @@ import asyncio
 import logging
 
 from app.api.dependencies.db import DbProvider
-from app.core.config.settings import Settings, get_settings
 from app.core.services.entrypoints import db, mapper
+from app.infrastructure.db.config.main import get_postgres_settings
 from app.infrastructure.db.factories.local import create_pool
+from app.infrastructure.files.config.models.paths import Paths
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-async def initialize_replace(provider: DbProvider, settings: Settings) -> None:
+async def initialize_replace(
+    provider: DbProvider,
+    paths: Paths,
+) -> None:
     await asyncio.gather(
-        db.init_field_replace(provider, settings),
-        db.init_reservoir_replace(provider, settings),
-        db.init_layer_replace(provider, settings),
+        db.init_field_replace(provider, paths),
+        db.init_reservoir_replace(provider, paths),
+        db.init_layer_replace(provider, paths),
     )
 
 
@@ -29,33 +33,34 @@ async def initialize_mapper(provider: DbProvider) -> None:
     )
 
 
-async def initialize_main(provider: DbProvider, settings: Settings) -> None:
+async def initialize_main(provider: DbProvider, paths: Paths) -> None:
     await asyncio.gather(
         # db.init_monthly_report(provider, settings),
-        db.init_well_profile(provider, settings),
+        db.init_well_profile(provider, paths),
     )
 
 
-async def initialize_all(provider: DbProvider, settings: Settings) -> None:
+async def initialize_all(provider: DbProvider, paths: Paths) -> None:
     await asyncio.gather(
-        db.init_monthly_report(provider, settings),
-        db.init_well_profile(provider, settings),
-        db.init_inj_well_database(provider, settings),
-        db.init_neighborhood(provider, settings),
-        db.init_new_strategy_inj(provider, settings),
-        db.init_new_strategy_oil(provider, settings),
+        db.init_monthly_report(provider, paths),
+        db.init_well_profile(provider, paths),
+        db.init_inj_well_database(provider, paths),
+        db.init_neighborhood(provider, paths),
+        db.init_new_strategy_inj(provider, paths),
+        db.init_new_strategy_oil(provider, paths),
     )
 
 
 async def main() -> None:  # pragma: no cover
     try:
         logger.info("Создание исходных данных")
-        settings = get_settings()
-        pool = create_pool(settings)
+        postgres_config = get_postgres_settings()
+        pool = create_pool(postgres_config)
         provider = DbProvider(local_pool=pool)
-        await initialize_replace(provider, settings)
+        paths = Paths()
+        await initialize_replace(provider, paths)
         await initialize_mapper(provider)
-        await initialize_main(provider, settings)
+        await initialize_main(provider, paths)
         logger.info("Исходные данные созданы")
     finally:
         await provider.dispose()

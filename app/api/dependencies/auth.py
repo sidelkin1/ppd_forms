@@ -13,11 +13,11 @@ from fastapi import (
 from jose import JWTError, jwt
 from starlette.requests import HTTPConnection
 
+from app.api.config.models.auth import AuthSettings
 from app.api.dependencies.oauth2 import OAuth2PasswordBearerWithCookie
 from app.api.models.auth import Token, User
 from app.api.utils.auth import default_verify, ldap_verify
 from app.api.utils.dateutil import tz_utc
-from app.core.config.settings import Settings
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -33,10 +33,10 @@ def get_current_user_or_none() -> User | None:
 
 
 class AuthProvider:
-    def __init__(self, settings: Settings) -> None:
-        self.ldap_url = settings.ldap_url
-        self.default_username = settings.app_default_username
-        self.default_password = settings.app_default_password
+    def __init__(self, settings: AuthSettings) -> None:
+        self.ldap_url = settings.ldap.url
+        self.default_username = settings.basic.username
+        self.default_password = settings.basic.password
         self.token_expire_time = settings.token_expire_time
         self.secret_key = settings.secret_key
         self.algorithm = "HS256"

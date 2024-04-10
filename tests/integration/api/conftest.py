@@ -10,12 +10,15 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 from app.api import dependencies, endpoints, middlewares
+from app.api.config.models.auth import AuthSettings
 from app.api.dependencies.auth import AuthProvider
 from app.api.models.auth import Token, User
-from app.core.config.settings import Settings
+from app.infrastructure.db.config.models.local import PostgresSettings
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )
+from app.infrastructure.files.config.models.paths import Paths
+from app.infrastructure.redis.config.models.redis import RedisSettings
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from tests.fixtures.task_fixtures import (  # noqa
     date_range,
@@ -71,14 +74,19 @@ def anon_test_client(app: FastAPI) -> Generator[TestClient, None, None]:
 
 
 @pytest.fixture(scope="session")
-def app(settings: Settings) -> FastAPI:
-    pool = create_local_pool(settings)
-    redis = create_redis_pool(settings)
+def app(
+    postgres_config: PostgresSettings,
+    redis_config: RedisSettings,
+    auth_config: AuthSettings,
+    paths: Paths,
+) -> FastAPI:
+    pool = create_local_pool(postgres_config)
+    redis = create_redis_pool(redis_config)
     app = FastAPI()
     endpoints.setup(app)
     middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
-    dependencies.setup(app, pool, redis, settings)
+    dependencies.setup(app, pool, redis, auth_config, paths)
     return app
 
 
@@ -113,8 +121,8 @@ async def worker(
 
 
 @pytest.fixture(scope="session")
-def auth(settings: Settings) -> AuthProvider:
-    return AuthProvider(settings)
+def auth(auth_config: AuthSettings) -> AuthProvider:
+    return AuthProvider(auth_config)
 
 
 @pytest.fixture(scope="session")

@@ -16,8 +16,8 @@ class NewStrategyOilDAO(BaseDAO[NewStrategyOilDB]):
 
     async def get_all(self) -> list[NewStrategyOilDB]:
         df = await self._get_all()
-        df["vnr_date"].fillna(df["start_date"], inplace=True)
-        df["start_date"].fillna(df["vnr_date"], inplace=True)
+        df["vnr_date"] = df["vnr_date"].fillna(df["start_date"])
+        df["start_date"] = df["start_date"].fillna(df["vnr_date"])
         cols = ["start_date", "vnr_date"]
         df.dropna(subset=cols, inplace=True)
         return [

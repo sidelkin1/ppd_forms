@@ -1,6 +1,6 @@
 {% from '/macros/forms.html' import date_range, spinner_button %}
 
-{% macro form_oil_loss(report, button_text, button_func) -%}
+{% macro form_inj_loss(report, button_text, button_func) -%}
     {{ date_range(report.path, button_text, button_func) }}
     <select class="form-select mb-3" id="{{ report.path }}Select">
         {% for option in report.loss_mode %}

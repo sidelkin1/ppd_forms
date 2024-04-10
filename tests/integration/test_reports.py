@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 from csv_diff import compare, load_csv
 
+from app.core.services.inj_loss_report import inj_loss_report
 from app.core.services.matrix_report import matrix_report
-from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
 from app.core.utils.process_pool import ProcessPoolManager
@@ -24,14 +24,14 @@ from app.infrastructure.holder import HolderDAO
             "profile_report.csv",
         ),
         (
-            "first_rate_loss_reporter",
-            oil_loss_report,
-            "first_rate_oil_loss.csv",
+            "first_rate_inj_loss_reporter",
+            inj_loss_report,
+            "first_rate_inj_loss.csv",
         ),
         (
-            "max_rate_loss_reporter",
-            oil_loss_report,
-            "max_rate_oil_loss.csv",
+            "max_rate_inj_loss_reporter",
+            inj_loss_report,
+            "max_rate_inj_loss.csv",
         ),
         (
             "opp_per_year_reporter",

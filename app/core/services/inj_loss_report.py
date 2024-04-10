@@ -7,8 +7,8 @@ import pandas as pd
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.sql.reporters import (
-    FirstRateLossReporter,
-    MaxRateLossReporter,
+    FirstRateInjLossReporter,
+    MaxRateInjLossReporter,
 )
 from app.infrastructure.files.config.models.csv import CsvSettings
 
@@ -165,7 +165,7 @@ def _calc_loss(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _agg_oil_loss(df: pd.DataFrame) -> pd.DataFrame:
+def _agg_inj_loss(df: pd.DataFrame) -> pd.DataFrame:
     cols = ["field", "well", "neighbs"]
     d: dict[str, Any] = {
         "neighbs_loss_all": ("dQoil", "sum"),
@@ -200,7 +200,7 @@ def _agg_neighbs_loss(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _join_pivot(df: pd.DataFrame) -> pd.DataFrame:
-    df_pivot = _agg_oil_loss(df)
+    df_pivot = _agg_inj_loss(df)
     df_pivot = _format_neighbs_loss(df_pivot)
     df_pivot = _agg_neighbs_loss(df_pivot)
     df = pd.merge(df, df_pivot, on=["field", "well"], how="left")
@@ -223,11 +223,11 @@ def _process_data(
     return df
 
 
-async def oil_loss_report(
+async def inj_loss_report(
     path: Path,
     date_from: date,
     date_to: date,
-    dao: FirstRateLossReporter | MaxRateLossReporter,
+    dao: FirstRateInjLossReporter | MaxRateInjLossReporter,
     pool: ProcessPoolManager,
     delimiter: str,
     csv_config: CsvSettings,

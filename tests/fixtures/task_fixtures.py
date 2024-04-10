@@ -3,8 +3,8 @@ import pytest
 from app.core.models.dto import (
     TaskDatabase,
     TaskExcel,
+    TaskInjLoss,
     TaskMatrix,
-    TaskOilLoss,
     TaskReport,
 )
 from app.core.models.enums import (
@@ -66,9 +66,9 @@ def task_report(date_range: DateRange) -> TaskReport:
 
 
 @pytest.fixture(scope="session")
-def task_oil_loss(date_range: DateRange) -> TaskOilLoss:
-    return TaskOilLoss(
-        name=ReportName.oil_loss,
+def task_inj_loss(date_range: DateRange) -> TaskInjLoss:
+    return TaskInjLoss(
+        name=ReportName.inj_loss,
         mode=LossMode.first_rate,
         date_from=date_range.date_from,
         date_to=date_range.date_to,

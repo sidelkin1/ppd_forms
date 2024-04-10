@@ -7,7 +7,7 @@
   description: Количество ОПП за год:<ul><li>общее число исследований</li><li>число
     охваченных скважин</li></ul>
 - title: Потери по базе ГТМ ППД
-  path: oil_loss
+  path: inj_loss
   loss_mode:
   - text: --Выберите режим выгрузки--
     value: --

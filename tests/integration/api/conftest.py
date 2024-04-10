@@ -25,8 +25,8 @@ from tests.fixtures.task_fixtures import (  # noqa
     matrix_effect,
     task_database,
     task_excel,
+    task_inj_loss,
     task_matrix,
-    task_oil_loss,
     task_report,
 )
 from tests.fixtures.worker_fixtures import (  # noqa

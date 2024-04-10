@@ -6,18 +6,18 @@ from arq.jobs import Job, JobStatus
 from fastapi import status
 from httpx import AsyncClient
 
-from app.core.models.dto import TaskOilLoss, TaskReport
+from app.core.models.dto import TaskInjLoss, TaskReport
 from app.core.models.schemas import DateRange
 
 
 def get_correct_url(task: TaskReport) -> str:
-    if isinstance(task, TaskOilLoss):
+    if isinstance(task, TaskInjLoss):
         return f"/reports/{task.name.value}/{task.mode.value}"
     return f"/reports/{task.name.value}"
 
 
 def get_unknown_name_url(task: TaskReport) -> str:
-    if isinstance(task, TaskOilLoss):
+    if isinstance(task, TaskInjLoss):
         return f"/reports/{task.name.value}/unknown"
     return "/reports/unknown"
 
@@ -26,7 +26,7 @@ def get_unknown_name_url(task: TaskReport) -> str:
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_oil_loss", "date_range"),
+        ("task_inj_loss", "date_range"),
         ("task_matrix", "matrix_effect"),
     ],
 )
@@ -51,7 +51,7 @@ async def test_generate_report_success(
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_oil_loss", "date_range"),
+        ("task_inj_loss", "date_range"),
         ("task_matrix", "matrix_effect"),
     ],
 )
@@ -70,7 +70,7 @@ async def test_generate_report_unknown_name(
 
 
 @pytest.mark.parametrize(
-    "task", ["task_report", "task_oil_loss", "task_matrix"]
+    "task", ["task_report", "task_inj_loss", "task_matrix"]
 )
 @pytest.mark.asyncio(scope="session")
 async def test_generate_report_no_dates(
@@ -86,7 +86,7 @@ async def test_generate_report_no_dates(
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_oil_loss", "date_range"),
+        ("task_inj_loss", "date_range"),
         ("task_matrix", "matrix_effect"),
     ],
 )
@@ -114,7 +114,7 @@ async def test_generate_report_dates_not_ordered(
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_oil_loss", "date_range"),
+        ("task_inj_loss", "date_range"),
         ("task_matrix", "matrix_effect"),
     ],
 )
@@ -136,11 +136,11 @@ async def test_generate_report_dates_wrong_format(
 
 
 @pytest.mark.asyncio(scope="session")
-async def test_generate_oil_loss_report_unknown_mode(
-    client: AsyncClient, task_oil_loss: TaskOilLoss, date_range: DateRange
+async def test_generate_inj_loss_report_unknown_mode(
+    client: AsyncClient, task_inj_loss: TaskInjLoss, date_range: DateRange
 ):
     resp = await client.post(
-        f"/reports/{task_oil_loss.name.value}/unknown",
+        f"/reports/{task_inj_loss.name.value}/unknown",
         json=date_range.model_dump(mode="json"),
     )
     assert not resp.is_success

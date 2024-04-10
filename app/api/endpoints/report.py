@@ -6,12 +6,12 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.models.responses import (
+    InjLossResponse,
     MatrixResponse,
-    OilLossResponse,
     ReportResponse,
 )
 from app.api.utils.validators import check_file_exists
-from app.core.models.dto import TaskMatrix, TaskOilLoss, TaskReport
+from app.core.models.dto import TaskInjLoss, TaskMatrix, TaskReport
 from app.core.models.enums import LossMode, ReportName
 from app.core.models.schemas import DateRange, MatrixEffect
 
@@ -19,25 +19,25 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.post(
-    "/oil_loss/{mode}",
+    "/inj_loss/{mode}",
     status_code=status.HTTP_201_CREATED,
-    response_model=OilLossResponse,
+    response_model=InjLossResponse,
     response_model_exclude_none=True,
 )
-async def generate_oil_loss_report(
+async def generate_inj_loss_report(
     mode: LossMode,
     date_range: DateRange,
     user: UserDep,
     redis: RedisDep,
     job: NewJobDep,
 ):
-    task = TaskOilLoss(
-        name=ReportName.oil_loss,
+    task = TaskInjLoss(
+        name=ReportName.inj_loss,
         mode=mode,
         date_from=date_range.date_from,
         date_to=date_range.date_to,
     )
-    response = OilLossResponse(task=task, job=job)
+    response = InjLossResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

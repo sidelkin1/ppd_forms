@@ -87,9 +87,30 @@ async def shutdown(ctx: dict[str, Any]) -> None:
 class WorkerSettings:
     functions = [perform_work]
     cron_jobs = [
-        cron(cron_refresh_opp, day=11, max_tries=3),
-        cron(cron_refresh_mer, day=11, max_tries=3),
-        cron(cron_clean_files, month={3, 6, 9, 12}),
+        cron(
+            cron_refresh_opp,
+            day=11,
+            hour=0,
+            minute=0,
+            second=0,
+            max_tries=3,
+        ),
+        cron(
+            cron_refresh_mer,
+            day=11,
+            hour=0,
+            minute=0,
+            second=0,
+            max_tries=3,
+        ),
+        cron(
+            cron_clean_files,
+            month={3, 6, 9, 12},
+            day=1,
+            hour=0,
+            minute=0,
+            second=0,
+        ),
     ]
     on_startup = startup
     on_shutdown = shutdown

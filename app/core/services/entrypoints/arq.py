@@ -7,6 +7,7 @@ from app.api.models.responses import (
     FieldsResponse,
     InjLossResponse,
     MatrixResponse,
+    OilLossResponse,
     ReportResponse,
     ReservoirsResponse,
 )
@@ -15,6 +16,7 @@ from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.inj_loss_report import inj_loss_report
 from app.core.services.matrix_report import matrix_report
+from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
 from app.infrastructure.files.config.models.csv import CsvSettings
@@ -197,6 +199,46 @@ async def create_max_rate_inj_loss_report(
             holder.max_rate_inj_loss_reporter,
             ctx["pool"],
             app_config.delimiter,
+            csv_config,
+        )
+
+
+@registry.add("report:oil_loss:first_rate")
+async def create_first_rate_oil_loss_report(
+    response: OilLossResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    csv_config: CsvSettings = ctx["csv_config"]
+    async with ctx["local_pool_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        await oil_loss_report(
+            path_provider.file_path(user_id, file_id),
+            response.task.date_from,
+            response.task.date_to,
+            holder.first_rate_oil_loss_reporter,
+            ctx["pool"],
+            csv_config,
+        )
+
+
+@registry.add("report:oil_loss:max_rate")
+async def create_max_rate_oil_loss_report(
+    response: OilLossResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    csv_config: CsvSettings = ctx["csv_config"]
+    async with ctx["local_pool_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        await oil_loss_report(
+            path_provider.file_path(user_id, file_id),
+            response.task.date_from,
+            response.task.date_to,
+            holder.max_rate_oil_loss_reporter,
+            ctx["pool"],
             csv_config,
         )
 

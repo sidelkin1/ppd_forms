@@ -214,6 +214,16 @@ class HolderDAO:
         return reporters.MaxRateInjLossReporter(self.local_pool)
 
     @property
+    def first_rate_oil_loss_reporter(
+        self,
+    ) -> reporters.FirstRateOilLossReporter:
+        return reporters.FirstRateOilLossReporter(self.local_pool)
+
+    @property
+    def max_rate_oil_loss_reporter(self) -> reporters.MaxRateOilLossReporter:
+        return reporters.MaxRateOilLossReporter(self.local_pool)
+
+    @property
     def opp_per_year_reporter(self) -> reporters.OppPerYearReporter:
         return reporters.OppPerYearReporter(self.ofm_pool)
 

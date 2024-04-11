@@ -24,6 +24,8 @@
                         ) %}
                             {% if report.path == "inj_loss" %}
                                 {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
+                            {% elif report.path == "oil_loss" %}
+                                {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
                             {% elif report.path == "matrix" %}
                                 {{ form_matrix(report, "Выгрузить", "loadMatrix") }}
                             {% else %}

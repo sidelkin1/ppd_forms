@@ -207,7 +207,7 @@ def _calc_loss(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _agg_oil_loss(df: pd.DataFrame) -> pd.DataFrame:
+def _agg_inj_loss(df: pd.DataFrame) -> pd.DataFrame:
     cols = ["field", "well", "gtm_date", "neighbs", "date_pred"]
     d: dict[str, Any] = {
         "neighbs_loss_all": ("dQoil", "sum"),
@@ -242,7 +242,7 @@ def _agg_neighbs_loss(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _join_pivot(df: pd.DataFrame) -> pd.DataFrame:
-    df_pivot = _agg_oil_loss(df)
+    df_pivot = _agg_inj_loss(df)
     df_pivot = _format_neighbs_loss(df_pivot)
     df_pivot = _agg_neighbs_loss(df_pivot)
     df = pd.merge(

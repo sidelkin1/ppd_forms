@@ -204,12 +204,24 @@ class HolderDAO:
         return reporters.WellProfileReporter(self.local_pool)
 
     @property
-    def first_rate_loss_reporter(self) -> reporters.FirstRateLossReporter:
-        return reporters.FirstRateLossReporter(self.local_pool)
+    def first_rate_inj_loss_reporter(
+        self,
+    ) -> reporters.FirstRateInjLossReporter:
+        return reporters.FirstRateInjLossReporter(self.local_pool)
 
     @property
-    def max_rate_loss_reporter(self) -> reporters.MaxRateLossReporter:
-        return reporters.MaxRateLossReporter(self.local_pool)
+    def max_rate_inj_loss_reporter(self) -> reporters.MaxRateInjLossReporter:
+        return reporters.MaxRateInjLossReporter(self.local_pool)
+
+    @property
+    def first_rate_oil_loss_reporter(
+        self,
+    ) -> reporters.FirstRateOilLossReporter:
+        return reporters.FirstRateOilLossReporter(self.local_pool)
+
+    @property
+    def max_rate_oil_loss_reporter(self) -> reporters.MaxRateOilLossReporter:
+        return reporters.MaxRateOilLossReporter(self.local_pool)
 
     @property
     def opp_per_year_reporter(self) -> reporters.OppPerYearReporter:

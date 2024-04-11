@@ -27,7 +27,7 @@ async function loadReport(reportName) {
   button.classList.remove("disabled");
 }
 
-async function loadOilLoss(reportName) {
+async function loadInjLoss(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
   const alert = document.getElementById(`${reportName}Danger`);

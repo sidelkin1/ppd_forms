@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% from '/macros/forms.html' import form_date_range %}
-{% from 'reports/macros/forms.html' import form_oil_loss, form_matrix %}
+{% from 'reports/macros/forms.html' import form_inj_loss, form_matrix %}
 {% from '/macros/accordion.html' import accordion_form %}
 
 {% block content %}
@@ -22,8 +22,10 @@
                             "Ошибка при формировании отчета!",
                             need_link=True
                         ) %}
-                            {% if report.path == "oil_loss" %}
-                                {{ form_oil_loss(report, "Выгрузить", "loadOilLoss") }}
+                            {% if report.path == "inj_loss" %}
+                                {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
+                            {% elif report.path == "oil_loss" %}
+                                {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
                             {% elif report.path == "matrix" %}
                                 {{ form_matrix(report, "Выгрузить", "loadMatrix") }}
                             {% else %}

@@ -7,6 +7,7 @@ from csv_diff import compare, load_csv
 
 from app.core.services.inj_loss_report import inj_loss_report
 from app.core.services.matrix_report import matrix_report
+from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
 from app.core.utils.process_pool import ProcessPoolManager
@@ -26,12 +27,22 @@ from app.infrastructure.holder import HolderDAO
         (
             "first_rate_inj_loss_reporter",
             inj_loss_report,
-            "first_rate_inj_loss.csv",
+            "first_rate_inj_loss_report.csv",
         ),
         (
             "max_rate_inj_loss_reporter",
             inj_loss_report,
-            "max_rate_inj_loss.csv",
+            "max_rate_inj_loss_report.csv",
+        ),
+        (
+            "first_rate_oil_loss_reporter",
+            oil_loss_report,
+            "first_rate_oil_loss_report.csv",
+        ),
+        (
+            "max_rate_oil_loss_reporter",
+            oil_loss_report,
+            "max_rate_oil_loss_report.csv",
         ),
         (
             "opp_per_year_reporter",
@@ -74,7 +85,11 @@ async def test_reports(
             ",",
             csv_config,
         )
-    elif dao == "opp_per_year_reporter":
+    elif dao in (
+        "opp_per_year_reporter",
+        "first_rate_oil_loss_reporter",
+        "max_rate_oil_loss_reporter",
+    ):
         await service(path, date_from, date_to, dao_, process_pool, csv_config)
     else:
         await service(

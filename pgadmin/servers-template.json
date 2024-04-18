@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Local DB",
+      "Group": "Servers",
+      "Host": "${DB_HOST}",
+      "Port": ${DB_PORT},
+      "MaintenanceDB": "${POSTGRES_DB}",
+      "Username": "${POSTGRES_USER}",
+      "SSLMode": "prefer"
+    }
+  }
+}

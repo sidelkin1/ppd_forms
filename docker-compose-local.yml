@@ -19,7 +19,14 @@ services:
 
   pgadmin:
     profiles: [ "pgadmin" ]
-    image: dpage/pgadmin4:latest
+    build:
+      context: ./pgadmin/
+      args:
+        DB_HOST: db
+        DB_PORT: ${DB_PORT}
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: unless-stopped
     ports:
       - 5050:80
@@ -55,6 +62,7 @@ services:
     build: ./
     volumes:
       - ./files:/app/files
+      - static_value:/app/app/static/
     environment:
       - DB_HOST=db
       - REDIS_HOST=redis
@@ -63,7 +71,9 @@ services:
     env_file:
       - ./.env
     depends_on:
-      worker:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     entrypoint: /app/scripts/backend-start.sh
 
@@ -98,13 +108,21 @@ services:
       redis:
         condition: service_healthy
     entrypoint: /app/scripts/worker-start.sh
-    healthcheck:
-      test: ["CMD-SHELL", "arq --check app.worker.WorkerSettings"]
-      interval: 50s
-      timeout: 5s
-      retries: 5
+
+  nginx:
+    profiles: [ "nginx" ]
+    image: nginx:1.25.4-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_value:/var/html/static/
+    depends_on:
+      web:
+        condition: service_started
 
 volumes:
   db_data:
   pgadmin_data:
   redis_data:
+  static_value:

@@ -74,6 +74,14 @@ class HolderDAO:
         return ofm.FieldListDAO(self.ofm_session)
 
     @property
+    def ofm_production_field_list(self) -> ofm.ProductionFieldListDAO:
+        return ofm.ProductionFieldListDAO(self.ofm_session)
+
+    @property
+    def ofm_injection_field_list(self) -> ofm.InjectionFieldListDAO:
+        return ofm.InjectionFieldListDAO(self.ofm_session)
+
+    @property
     def ofm_reservoir_list(self) -> ofm.ReservoirListDAO:
         return ofm.ReservoirListDAO(self.ofm_session)
 

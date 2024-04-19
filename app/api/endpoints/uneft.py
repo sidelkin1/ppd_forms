@@ -14,7 +14,7 @@ from app.core.models.dto import (
     UneftFieldDB,
     UneftReservoirDB,
 )
-from app.core.models.enums import UneftAssets
+from app.core.models.enums import UneftAssets, WellStock
 from app.infrastructure.redis.dao import RedisDAO
 
 logger = logging.getLogger(__name__)
@@ -22,9 +22,9 @@ router = APIRouter(prefix="/uneft", tags=["uneft"])
 
 
 async def get_fields(
-    job_stamp: JobStamp, redis: RedisDAO
+    job_stamp: JobStamp, redis: RedisDAO, stock: WellStock = WellStock.all
 ) -> list[UneftFieldDB]:
-    task = TaskFields(assets=UneftAssets.fields)
+    task = TaskFields(assets=UneftAssets.fields, stock=stock)
     response = FieldsResponse(task=task, job=job_stamp)
     fields = await redis.result(response)
     logger.debug("Fetched fields", extra={"fields": fields})
@@ -34,6 +34,20 @@ async def get_fields(
 @router.get("/fields", response_model=list[UneftFieldDB])
 async def field_list(user: UserDep, redis: RedisDep, job: NewJobDep):
     fields = await get_fields(job, redis)
+    return fields
+
+
+@router.get("/fields/production", response_model=list[UneftFieldDB])
+async def production_field_list(
+    user: UserDep, redis: RedisDep, job: NewJobDep
+):
+    fields = await get_fields(job, redis, stock=WellStock.production)
+    return fields
+
+
+@router.get("/fields/injection", response_model=list[UneftFieldDB])
+async def injection_field_list(user: UserDep, redis: RedisDep, job: NewJobDep):
+    fields = await get_fields(job, redis, stock=WellStock.injection)
     return fields
 
 

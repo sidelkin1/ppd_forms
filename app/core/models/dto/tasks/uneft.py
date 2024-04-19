@@ -1,5 +1,5 @@
 from app.core.models.dto.tasks.base import TaskBase
-from app.core.models.enums import TaskId, UneftAssets
+from app.core.models.enums import TaskId, UneftAssets, WellStock
 
 
 class TaskUneft(
@@ -9,9 +9,11 @@ class TaskUneft(
 
 
 class TaskFields(
-    TaskUneft, task_id=TaskId.uneft, route_fields=["task_id", "assets"]
+    TaskUneft,
+    task_id=TaskId.uneft,
+    route_fields=["task_id", "assets", "stock"],
 ):
-    pass
+    stock: WellStock
 
 
 class TaskReservoirs(

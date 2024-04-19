@@ -289,13 +289,33 @@ async def create_matrix_report(
         )
 
 
-@registry.add("uneft:fields")
+@registry.add("uneft:fields:all")
 async def get_fields(
     response: FieldsResponse, ctx: dict[str, Any]
 ) -> list[UneftFieldDB]:
     async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         results = await holder.ofm_field_list.get_by_params()
+    return results
+
+
+@registry.add("uneft:fields:production")
+async def get_production_fields(
+    response: FieldsResponse, ctx: dict[str, Any]
+) -> list[UneftFieldDB]:
+    async with ctx["ofm_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        results = await holder.ofm_production_field_list.get_by_params()
+    return results
+
+
+@registry.add("uneft:fields:injection")
+async def get_injection_fields(
+    response: FieldsResponse, ctx: dict[str, Any]
+) -> list[UneftFieldDB]:
+    async with ctx["ofm_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        results = await holder.ofm_injection_field_list.get_by_params()
     return results
 
 

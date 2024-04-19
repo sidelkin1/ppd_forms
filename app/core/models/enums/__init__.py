@@ -6,3 +6,4 @@ from .report_name import ReportName
 from .table_name import ExcelTableName, OfmTableName
 from .task_id import TaskId
 from .uneft_assets import UneftAssets
+from .well_stock import WellStock

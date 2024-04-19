@@ -1,4 +1,8 @@
-from .field_list import select_fields  # noqa
-from .monthly_report import select_well_rates  # noqa
-from .reservoir_list import select_reservoirs  # noqa
-from .well_profile import select_well_profiles  # noqa
+from .field_list import (
+    select_fields,
+    select_injection_fields,
+    select_production_fields,
+)
+from .monthly_report import select_well_rates
+from .reservoir_list import select_reservoirs
+from .well_profile import select_well_profiles

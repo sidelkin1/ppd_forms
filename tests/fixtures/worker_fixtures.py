@@ -46,7 +46,7 @@ def work_uneft() -> Function:
         log_ctx: dict[str, Any],
     ) -> Any:
         result = {
-            "uneft:fields": [
+            "uneft:fields:all": [
                 UneftFieldDB(id=1, name="F1"),
                 UneftFieldDB(id=2, name="F2"),
             ],

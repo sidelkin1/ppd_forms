@@ -88,7 +88,7 @@
     <li>конечная точка соответствует последней дате интервала</li></ul>
 - title: Отчеты ФНВ (проект)
   path: fnv
-  min_r: 30
+  min_radius: 30
   alternative: true
   fields:
   - text: --Выберите месторождение--

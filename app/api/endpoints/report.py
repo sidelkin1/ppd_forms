@@ -6,6 +6,7 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.models.responses import (
+    FnvResponse,
     InjLossResponse,
     MatrixResponse,
     OilLossResponse,
@@ -13,13 +14,14 @@ from app.api.models.responses import (
 )
 from app.api.utils.validators import check_file_exists
 from app.core.models.dto import (
+    TaskFNV,
     TaskInjLoss,
     TaskMatrix,
     TaskOilLoss,
     TaskReport,
 )
 from app.core.models.enums import LossMode, ReportName
-from app.core.models.schemas import DateRange, MatrixEffect
+from app.core.models.schemas import DateRange, FnvParams, MatrixEffect
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -94,6 +96,29 @@ async def generate_matrix_report(
         on_date=matrix_effect.on_date,
     )
     response = MatrixResponse(task=task, job=job)
+    await redis.enqueue_task(response)
+    return response
+
+
+@router.post(
+    "/fnv",
+    status_code=status.HTTP_201_CREATED,
+    response_model=FnvResponse,
+    response_model_exclude_none=True,
+)
+async def generate_fnv_report(
+    fnv_params: FnvParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskFNV(
+        name=ReportName.fnv,
+        field=fnv_params.field,
+        min_radius=fnv_params.min_radius,
+        alternative=fnv_params.alternative,
+    )
+    response = FnvResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

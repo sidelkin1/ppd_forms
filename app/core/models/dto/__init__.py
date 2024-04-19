@@ -11,6 +11,7 @@ from .jobs.job_stamp import JobStamp
 from .tasks.base import TaskBase
 from .tasks.database import TaskDatabase
 from .tasks.excel import TaskExcel
+from .tasks.fnv import TaskFNV
 from .tasks.inj_loss import TaskInjLoss
 from .tasks.matrix import TaskMatrix
 from .tasks.oil_loss import TaskOilLoss

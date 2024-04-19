@@ -97,3 +97,39 @@ async function loadMatrix(reportName) {
   loader.classList.add("d-none");
   button.classList.remove("disabled");
 }
+
+async function loadFNV(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const minRadius = document.getElementById(`${reportName}MinRadius`).value;
+  const { value: fieldID, text: fieldName } = document.getElementById(
+    `${reportName}Fields`
+  ).selectedOptions[0];
+  const alternative = document.getElementById(
+    `${reportName}Alternative`
+  ).checked;
+  const link = document.getElementById(`${reportName}Link`);
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const url = `/reports/${reportName}`;
+  const data = {
+    field: { id: fieldID, name: fieldName },
+    min_radius: minRadius,
+    alternative: alternative,
+  };
+  console.log(data);
+  const result = await assignWork(reportName, url, data);
+  if (result) {
+    link.href = `/reports/${result.job.file_id}`;
+    await checkStatus(reportName, result.job.job_id);
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}

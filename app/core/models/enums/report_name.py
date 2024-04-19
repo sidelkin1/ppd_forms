@@ -7,3 +7,4 @@ class ReportName(str, Enum):
     oil_loss = "oil_loss"
     opp_per_year = "opp_per_year"
     matrix = "matrix"
+    fnv = "fnv"

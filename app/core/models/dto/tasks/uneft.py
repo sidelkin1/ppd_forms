@@ -9,11 +9,10 @@ class TaskUneft(
 
 
 class TaskFields(
-    TaskUneft,
-    task_id=TaskId.uneft,
-    route_fields=["task_id", "assets", "stock"],
+    TaskUneft, task_id=TaskId.uneft, route_fields=["task_id", "assets"]
 ):
     stock: WellStock
+    field_id: int | None = None
 
 
 class TaskReservoirs(

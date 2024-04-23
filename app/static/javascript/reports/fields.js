@@ -33,4 +33,4 @@ async function loadReportFields(reportFields) {
   }
 }
 
-loadReportFields([["fnv", "fields/injection"]]);
+loadReportFields([["fnv", "fields?stock=injection"]]);

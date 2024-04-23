@@ -78,6 +78,10 @@ class HolderDAO:
         return ofm.ReservoirListDAO(self.ofm_session)
 
     @property
+    def ofm_well_list(self) -> ofm.WellListDAO:
+        return ofm.WellListDAO(self.ofm_session)
+
+    @property
     def csv_monthly_report(self) -> csv.MonthlyReportDAO:
         return csv.MonthlyReportDAO(self.file_path)
 
@@ -273,7 +277,9 @@ class HolderDAO:
 
     @property
     def uneft(self) -> uneft.UneftDAO:
-        return uneft.UneftDAO(self.ofm_field_list, self.ofm_reservoir_list)
+        return uneft.UneftDAO(
+            self.ofm_field_list, self.ofm_reservoir_list, self.ofm_well_list
+        )
 
     async def commit(self) -> None:
         await self.local_session.commit()

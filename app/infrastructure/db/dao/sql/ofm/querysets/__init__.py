@@ -8,4 +8,5 @@ from .field_list import (
 )
 from .monthly_report import select_well_rates
 from .reservoir_list import select_reservoirs
+from .well_list import select_injection_wells, select_production_wells
 from .well_profile import select_well_profiles

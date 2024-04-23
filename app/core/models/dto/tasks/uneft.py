@@ -19,3 +19,10 @@ class TaskReservoirs(
     TaskUneft, task_id=TaskId.uneft, route_fields=["task_id", "assets"]
 ):
     field_id: int
+
+
+class TaskWells(
+    TaskUneft, task_id=TaskId.uneft, route_fields=["task_id", "assets"]
+):
+    stock: WellStock
+    field_id: int

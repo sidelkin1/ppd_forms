@@ -10,4 +10,5 @@ from .task import (
     OilLossResponse,
     ReportResponse,
     ReservoirsResponse,
+    WellsResponse,
 )

@@ -11,9 +11,10 @@ from app.api.models.responses import (
     OilLossResponse,
     ReportResponse,
     ReservoirsResponse,
+    WellsResponse,
 )
 from app.core.config.models.app import AppSettings
-from app.core.models.dto import UneftFieldDB, UneftReservoirDB
+from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.fnv_report import fnv_report
 from app.core.services.inj_loss_report import inj_loss_report
@@ -21,7 +22,7 @@ from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
-from app.core.services.uneft import uneft_fields
+from app.core.services.uneft import uneft_fields, uneft_wells
 from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
 
@@ -331,5 +332,17 @@ async def get_reservoirs(
         holder = cast(HolderDAO, holder)
         results = await holder.ofm_reservoir_list.get_by_params(
             field_id=response.task.field_id
+        )
+    return results
+
+
+@registry.add("uneft:wells")
+async def get_wells(
+    response: WellsResponse, ctx: dict[str, Any]
+) -> list[UneftWellDB]:
+    async with ctx["ofm_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        results = await uneft_wells(
+            response.task.stock, response.task.field_id, holder.uneft
         )
     return results

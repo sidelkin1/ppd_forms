@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app.core.models.dto import UneftFieldDB, UneftReservoirDB
+from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.infrastructure.db.dao.sql import ofm
 from app.infrastructure.db.dao.sql.reporters.ofm import OfmBaseDAO
 
@@ -9,6 +9,7 @@ from app.infrastructure.db.dao.sql.reporters.ofm import OfmBaseDAO
 class UneftDAO(OfmBaseDAO):
     fields: ofm.FieldListDAO
     reservoirs: ofm.ReservoirListDAO
+    wells: ofm.WellListDAO
 
     async def get_fields(self) -> list[UneftFieldDB]:
         return await self.fields.get_fields()
@@ -21,6 +22,12 @@ class UneftDAO(OfmBaseDAO):
 
     async def get_reservoirs(self) -> list[UneftReservoirDB]:
         return await self.reservoirs.get_by_params()
+
+    async def get_production_wells(self, field_id: int) -> list[UneftWellDB]:
+        return await self.wells.get_production_wells(field_id)
+
+    async def get_injection_wells(self, field_id: int) -> list[UneftWellDB]:
+        return await self.wells.get_injection_wells(field_id)
 
     async def get_field(self, field_id: int) -> UneftFieldDB | None:
         return await self.fields.get_field(field_id)

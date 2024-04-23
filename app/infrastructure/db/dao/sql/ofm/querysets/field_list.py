@@ -8,20 +8,21 @@ from app.infrastructure.db.models.ofm.reflected import (
 )
 
 
-def select_fields() -> Select:
-    return (
+def select_fields(with_field_id: bool = False) -> Select:
+    stmt = (
         select(DictG.id, DictG.description.label("name"))
         .where(DictG.grp == 1670, DictG.code.is_not(None))
         .order_by("name")
     )
-
-
-def select_field() -> Select:
-    return select_fields().where(DictG.id == bindparam("field_id"))
-
-
-def select_production_fields() -> Select:
     return (
+        stmt.where(DictG.id == bindparam("field_id"))
+        if with_field_id
+        else stmt
+    )
+
+
+def select_production_fields(with_field_id: bool = False) -> Select:
+    stmt = (
         select(
             MonthlyProd.field.label("id"),
             DictG.description.label("name"),
@@ -30,16 +31,15 @@ def select_production_fields() -> Select:
         .distinct()
         .order_by("name")
     )
-
-
-def select_production_field() -> Select:
-    return select_production_fields().where(
-        MonthlyProd.field == bindparam("field_id")
+    return (
+        stmt.where(MonthlyProd.field == bindparam("field_id"))
+        if with_field_id
+        else stmt
     )
 
 
-def select_injection_fields() -> Select:
-    return (
+def select_injection_fields(with_field_id: bool = False) -> Select:
+    stmt = (
         select(
             MonthlyInj.field.label("id"),
             DictG.description.label("name"),
@@ -48,9 +48,8 @@ def select_injection_fields() -> Select:
         .distinct()
         .order_by("name")
     )
-
-
-def select_injection_field() -> Select:
-    return select_injection_fields().where(
-        MonthlyInj.field == bindparam("field_id")
+    return (
+        stmt.where(MonthlyInj.field == bindparam("field_id"))
+        if with_field_id
+        else stmt
     )

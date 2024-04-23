@@ -4,11 +4,8 @@ from sqlalchemy.orm import Session
 from app.core.models.dto import UneftFieldDB
 from app.infrastructure.db.dao.sql.ofm.base import BaseDAO
 from app.infrastructure.db.dao.sql.ofm.querysets import (
-    select_field,
     select_fields,
-    select_injection_field,
     select_injection_fields,
-    select_production_field,
     select_production_fields,
 )
 
@@ -19,9 +16,9 @@ class FieldListDAO(BaseDAO[UneftFieldDB]):
             "fields": select_fields(),
             "production_fields": select_production_fields(),
             "injection_fields": select_injection_fields(),
-            "field": select_field(),
-            "production_field": select_production_field(),
-            "injection_field": select_injection_field(),
+            "field": select_fields(with_field_id=True),
+            "production_field": select_fields(with_field_id=True),
+            "injection_field": select_fields(with_field_id=True),
         }
         super().__init__(UneftFieldDB, select(), session)
 

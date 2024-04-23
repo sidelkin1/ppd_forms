@@ -1,9 +1,6 @@
 from .field_list import (
-    select_field,
     select_fields,
-    select_injection_field,
     select_injection_fields,
-    select_production_field,
     select_production_fields,
 )
 from .monthly_report import select_well_rates

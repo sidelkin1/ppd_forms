@@ -1,5 +1,7 @@
 FROM oraclelinux:8 as builder
 
+ENV PIP_OPTIONS="--proxy $HTTP_PROXY"
+
 RUN dnf -y module disable python36 && \
     dnf -y install python3.11-3.11.5 python3.11-pip python3.11-setuptools python3.11-wheel && \
     rm -rf /var/cache/dnf
@@ -10,6 +12,7 @@ ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache
+
 
 WORKDIR /app
 

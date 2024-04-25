@@ -119,3 +119,4 @@ class WorkerSettings:
         port=cast(int, os.getenv("REDIS_PORT")),
     )
     allow_abort_jobs = True
+    job_timeout = 1500

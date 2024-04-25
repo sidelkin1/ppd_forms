@@ -1,4 +1,5 @@
 from .base import BaseDAO
+from .fnv import FnvReporter
 from .inj_loss import FirstRateInjLossReporter, MaxRateInjLossReporter
 from .local import LocalBaseDAO
 from .matrix import MatrixReporter

@@ -81,7 +81,7 @@ worker = "arq app.worker.WorkerSettings"
 ofm-pre-start = "python -m app.ofm_pre_start"
 
 [tool.flake8]
-ignore = "W503"
+ignore = ["W503", "E203"]
 max-line-length = 79
 paths = ["./app"]
 max-complexity = 10

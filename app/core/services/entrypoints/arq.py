@@ -300,6 +300,9 @@ async def create_fnv_report(
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     file_id = cast(str, response.job.file_id)
+    async with ctx["ofm_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        wells = await holder.uneft.get_injection_wells(response.task.field.id)
     async with ctx["ofm_pool_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await fnv_report(
@@ -307,6 +310,7 @@ async def create_fnv_report(
             response.task.field,
             response.task.min_radius,
             response.task.alternative,
+            wells,
             holder.fnv_reporter,
             ctx["pool"],
         )

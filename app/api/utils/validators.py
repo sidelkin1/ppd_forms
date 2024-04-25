@@ -13,8 +13,8 @@ def check_file_exists(path: Path) -> None:
         )
 
 
-def check_field_exists(field_id: int, fields: list[UneftFieldDB]) -> None:
-    if not any(field.id == field_id for field in fields):
+def check_field_exists(field: UneftFieldDB | None) -> None:
+    if field is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Месторождение не найдено!",

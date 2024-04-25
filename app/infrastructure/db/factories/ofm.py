@@ -11,7 +11,9 @@ def create_pool(settings: OracleSettings) -> sessionmaker[Session]:
 
 
 def create_engine(settings: OracleSettings) -> Engine:
-    return create_sync_engine(str(settings.url), thick_mode=True)
+    return create_sync_engine(
+        str(settings.url), thick_mode=True, coerce_to_decimal=False
+    )
 
 
 def create_session_maker(engine: Engine) -> sessionmaker[Session]:

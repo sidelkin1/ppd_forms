@@ -6,6 +6,7 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.models.responses import (
+    FnvResponse,
     InjLossResponse,
     MatrixResponse,
     OilLossResponse,
@@ -13,13 +14,14 @@ from app.api.models.responses import (
 )
 from app.api.utils.validators import check_file_exists
 from app.core.models.dto import (
+    TaskFNV,
     TaskInjLoss,
     TaskMatrix,
     TaskOilLoss,
     TaskReport,
 )
-from app.core.models.enums import LossMode, ReportName
-from app.core.models.schemas import DateRange, MatrixEffect
+from app.core.models.enums import FileExtension, LossMode, ReportName
+from app.core.models.schemas import DateRange, FnvParams, MatrixEffect
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -99,6 +101,29 @@ async def generate_matrix_report(
 
 
 @router.post(
+    "/fnv",
+    status_code=status.HTTP_201_CREATED,
+    response_model=FnvResponse,
+    response_model_exclude_none=True,
+)
+async def generate_fnv_report(
+    fnv_params: FnvParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskFNV(
+        name=ReportName.fnv,
+        field=fnv_params.field,
+        min_radius=fnv_params.min_radius,
+        alternative=fnv_params.alternative,
+    )
+    response = FnvResponse(task=task, job=job)
+    await redis.enqueue_task(response)
+    return response
+
+
+@router.post(
     "/{name}",
     status_code=status.HTTP_201_CREATED,
     response_model=ReportResponse,
@@ -121,16 +146,20 @@ async def generate_report(
     return response
 
 
-@router.get("/{file_id}")
-async def download_report(file_id: str, user: UserDep, path: PathDep):
-    file_path = path.file_path(user.username, file_id)
+@router.get("/{file_id}/{ext}")
+async def download_report(
+    file_id: str, ext: FileExtension, user: UserDep, path: PathDep
+):
+    file_path = path.file_path(user.username, file_id, ext=ext.value)
     check_file_exists(file_path)
-    return FileResponse(file_path, media_type="text/csv")
+    return FileResponse(file_path, filename=file_path.name)
 
 
-@router.delete("/{file_id}", response_model=dict)
-async def delete_report(file_id: str, user: UserDep, path: PathDep):
-    file_path = path.file_path(user.username, file_id)
+@router.delete("/{file_id}/{ext}", response_model=dict)
+async def delete_report(
+    file_id: str, ext: FileExtension, user: UserDep, path: PathDep
+):
+    file_path = path.file_path(user.username, file_id, ext=ext.value)
     check_file_exists(file_path)
     file_path.unlink(missing_ok=True)
     return {"message": "Отчет удален!"}

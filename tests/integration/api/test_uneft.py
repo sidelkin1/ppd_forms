@@ -27,20 +27,27 @@ async def test_field_list_success(
     assert data == [{"id": 1, "name": "F1"}, {"id": 2, "name": "F2"}]
 
 
-@pytest.mark.parametrize("field_id", [1, 2])
+@pytest.mark.parametrize(
+    "field_id,expected_data",
+    [
+        (1, [{"id": 1, "name": "R1"}, {"id": 2, "name": "R2"}]),
+        (2, [{"id": 1, "name": "R1"}]),
+    ],
+)
 @pytest.mark.asyncio(scope="session")
 async def test_reservoir_list_success(
     client: AsyncClient,
     worker: Callable[..., Worker],
     work_uneft: Function,
     field_id: int,
+    expected_data: list,
 ):
     worker_ = worker(functions=[work_uneft], burst=False)
     asyncio.create_task(worker_.main())
     resp = await client.get(f"/uneft/fields/{field_id}/reservoirs")
     assert resp.is_success
     data = resp.json()
-    assert data == [{"id": 1, "name": "R1"}, {"id": 2, "name": "R2"}]
+    assert data == expected_data
 
 
 @pytest.mark.asyncio(scope="session")

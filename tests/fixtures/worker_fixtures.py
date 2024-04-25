@@ -4,7 +4,11 @@ from typing import Any
 import pytest
 from arq.worker import Function, func
 
-from app.api.models.responses import BaseResponse
+from app.api.models.responses import (
+    BaseResponse,
+    FieldsResponse,
+    ReservoirsResponse,
+)
 from app.core.models.dto import TaskBase, UneftFieldDB, UneftReservoirDB
 
 
@@ -40,21 +44,38 @@ def work_long() -> Function:
 
 @pytest.fixture(scope="session")
 def work_uneft() -> Function:
+    fake_fields = {
+        1: UneftFieldDB(id=1, name="F1"),
+        2: UneftFieldDB(id=2, name="F2"),
+    }
+    fake_reservoirs = {
+        1: [
+            UneftReservoirDB(id=1, name="R1"),
+            UneftReservoirDB(id=2, name="R2"),
+        ],
+        2: [UneftReservoirDB(id=1, name="R1")],
+    }
+
     async def perform_work(
         ctx: dict[str, Any],
-        response: BaseResponse[TaskBase],
+        response: FieldsResponse | ReservoirsResponse,
         log_ctx: dict[str, Any],
     ) -> Any:
-        result = {
-            "uneft:fields": [
-                UneftFieldDB(id=1, name="F1"),
-                UneftFieldDB(id=2, name="F2"),
-            ],
-            "uneft:reservoirs": [
-                UneftReservoirDB(id=1, name="R1"),
-                UneftReservoirDB(id=2, name="R2"),
-            ],
-        }
-        return result.get(response.task.route_url)
+        match (
+            response.task.route_url,
+            response.__class__.__name__,
+            response.task.field_id,
+        ):
+            case "uneft:fields", FieldsResponse.__name__, None:
+                return list(fake_fields.values())
+            case ("uneft:fields", FieldsResponse.__name__, int() as field_id):
+                return fake_fields.get(field_id, None)
+            case (
+                "uneft:reservoirs",
+                ReservoirsResponse.__name__,
+                int() as field_id,
+            ):
+                return fake_reservoirs.get(field_id, None)
+        raise ValueError("Unknown job!")
 
     return func(perform_work, name="perform_work")

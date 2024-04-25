@@ -18,15 +18,15 @@
 {% macro form_matrix(report, button_text, button_func) -%}
     {{ date_range(report.path, button_text, button_func) }}
     <div class="form-floating mb-3">
-        <input type="date" class="form-control" id="{{ report.path }}Mer" name="mer" placeholder/>
+        <input type="date" class="form-control" id="{{ report.path }}Mer" name="mer" placeholder>
         <label for="{{ report.path }}Mer">На дату МЭР</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}Base" name="base" placeholder/>
+        <input type="number" class="form-control" id="{{ report.path }}Base" name="base" placeholder>
         <label for="{{ report.path }}Base">Базовый период</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}Pred" name="pred" placeholder/>
+        <input type="number" class="form-control" id="{{ report.path }}Pred" name="pred" placeholder>
         <label for="{{ report.path }}Pred">Прогнозный период</label>
     </div>
     <select class="form-select mb-3" id="{{ report.path }}Excludes" multiple size="4">
@@ -40,5 +40,40 @@
             </option>
         {% endfor %}
     </select>
+    {{ spinner_button(report.path, button_text, button_func) }}
+{%- endmacro %}
+
+{% macro form_fnv(report, button_text, button_func) -%}
+    <div class="form-floating mb-3">
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}MinRadius"
+            name="min_radius"
+            value="{{ report.min_radius }}"
+            placeholder
+        >
+        <label for="{{ report.path }}MinRadius">Минимальный радиус</label>
+    </div>
+    <select class="form-select mb-3" id="{{ report.path }}Fields">
+        {% for option in report.fields %}
+            <option
+                value="{{ option.value }}"
+                {% if option.selected %}selected{% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+    <div class="form-check form-check-inline mb-3">
+        <input
+            class="form-check-input"
+            type="checkbox"
+            id="{{ report.path }}Alternative"
+            value="alternative"
+            {% if report.alternative %}checked{% endif %}
+        >
+        <label class="form-check-label" for="{{ report.path }}Alternative">Альтернативная БД</label>
+    </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}

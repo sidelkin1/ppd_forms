@@ -19,7 +19,7 @@ async function loadReport(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}/csv`;
     await checkStatus(reportName, result.job.job_id);
   }
 
@@ -49,7 +49,7 @@ async function loadInjLoss(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}/csv`;
     await checkStatus(reportName, result.job.job_id);
   }
 
@@ -90,7 +90,7 @@ async function loadMatrix(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}/csv`;
     await checkStatus(reportName, result.job.job_id);
   }
 
@@ -126,7 +126,7 @@ async function loadFNV(reportName) {
   console.log(data);
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}/zip`;
     await checkStatus(reportName, result.job.job_id);
   }
 

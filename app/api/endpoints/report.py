@@ -20,7 +20,7 @@ from app.core.models.dto import (
     TaskOilLoss,
     TaskReport,
 )
-from app.core.models.enums import LossMode, ReportName
+from app.core.models.enums import FileExtension, LossMode, ReportName
 from app.core.models.schemas import DateRange, FnvParams, MatrixEffect
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -146,16 +146,20 @@ async def generate_report(
     return response
 
 
-@router.get("/{file_id}")
-async def download_report(file_id: str, user: UserDep, path: PathDep):
-    file_path = path.file_path(user.username, file_id)
+@router.get("/{file_id}/{ext}")
+async def download_report(
+    file_id: str, ext: FileExtension, user: UserDep, path: PathDep
+):
+    file_path = path.file_path(user.username, file_id, ext=ext.value)
     check_file_exists(file_path)
-    return FileResponse(file_path, media_type="text/csv")
+    return FileResponse(file_path, filename=file_path.name)
 
 
-@router.delete("/{file_id}", response_model=dict)
-async def delete_report(file_id: str, user: UserDep, path: PathDep):
-    file_path = path.file_path(user.username, file_id)
+@router.delete("/{file_id}/{ext}", response_model=dict)
+async def delete_report(
+    file_id: str, ext: FileExtension, user: UserDep, path: PathDep
+):
+    file_path = path.file_path(user.username, file_id, ext=ext.value)
     check_file_exists(file_path)
     file_path.unlink(missing_ok=True)
     return {"message": "Отчет удален!"}

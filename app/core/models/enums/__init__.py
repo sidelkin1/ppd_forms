@@ -1,4 +1,5 @@
 from .exclude_gtm import ExcludeGTM
+from .file_extension import FileExtension
 from .job_status import JobStatus
 from .load_mode import LoadMode
 from .loss_mode import LossMode

@@ -123,7 +123,6 @@ async function loadFNV(reportName) {
     min_radius: minRadius,
     alternative: alternative,
   };
-  console.log(data);
   const result = await assignWork(reportName, url, data);
   if (result) {
     link.href = `/reports/${result.job.file_id}/zip`;

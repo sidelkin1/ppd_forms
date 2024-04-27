@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from arq.worker import Function, func
@@ -9,10 +9,12 @@ from app.api.models.responses import (
     FieldsResponse,
     ReservoirsResponse,
 )
-from app.core.models.dto import TaskBase, UneftFieldDB, UneftReservoirDB
+from app.core.models.dto import TaskBase
+from app.core.services.uneft import uneft_fields, uneft_reservoirs
+from app.infrastructure.holder import HolderDAO
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def work_ok() -> Function:
     async def perform_work(
         ctx: dict[str, Any], response: BaseResponse[TaskBase]
@@ -22,7 +24,7 @@ def work_ok() -> Function:
     return func(perform_work, name="work_ok")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def work_error() -> Function:
     async def perform_work(
         ctx: dict[str, Any], response: BaseResponse[TaskBase]
@@ -32,7 +34,7 @@ def work_error() -> Function:
     return func(perform_work, name="work_error")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def work_long() -> Function:
     async def perform_work(
         ctx: dict[str, Any], response: BaseResponse[TaskBase]
@@ -42,40 +44,24 @@ def work_long() -> Function:
     return func(perform_work, name="work_long")
 
 
-@pytest.fixture(scope="session")
-def work_uneft() -> Function:
-    fake_fields = {
-        1: UneftFieldDB(id=1, name="F1"),
-        2: UneftFieldDB(id=2, name="F2"),
-    }
-    fake_reservoirs = {
-        1: [
-            UneftReservoirDB(id=1, name="R1"),
-            UneftReservoirDB(id=2, name="R2"),
-        ],
-        2: [UneftReservoirDB(id=1, name="R1")],
-    }
-
+@pytest.fixture
+def work_uneft(holder: HolderDAO) -> Function:
     async def perform_work(
         ctx: dict[str, Any],
         response: FieldsResponse | ReservoirsResponse,
         log_ctx: dict[str, Any],
     ) -> Any:
-        match (
-            response.task.route_url,
-            response.__class__.__name__,
-            response.task.field_id,
-        ):
-            case "uneft:fields", FieldsResponse.__name__, None:
-                return list(fake_fields.values())
-            case ("uneft:fields", FieldsResponse.__name__, int() as field_id):
-                return fake_fields.get(field_id, None)
-            case (
-                "uneft:reservoirs",
-                ReservoirsResponse.__name__,
-                int() as field_id,
-            ):
-                return fake_reservoirs.get(field_id, None)
+        match response.task.route_url:
+            case "uneft:fields":
+                response = cast(FieldsResponse, response)
+                return await uneft_fields(
+                    response.task.stock, response.task.field_id, holder.uneft
+                )
+            case "uneft:reservoirs":
+                response = cast(ReservoirsResponse, response)
+                return await uneft_reservoirs(
+                    response.task.field_id, holder.uneft
+                )
         raise ValueError("Unknown job!")
 
     return func(perform_work, name="perform_work")

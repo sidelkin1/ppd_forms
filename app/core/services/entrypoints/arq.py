@@ -22,7 +22,7 @@ from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
 from app.core.services.profile_report import profile_report
-from app.core.services.uneft import uneft_fields, uneft_wells
+from app.core.services.uneft import uneft_fields, uneft_reservoirs, uneft_wells
 from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
 
@@ -334,9 +334,7 @@ async def get_reservoirs(
 ) -> list[UneftReservoirDB]:
     async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
-        results = await holder.ofm_reservoir_list.get_by_params(
-            field_id=response.task.field_id
-        )
+        results = await uneft_reservoirs(response.task.field_id, holder.uneft)
     return results
 
 

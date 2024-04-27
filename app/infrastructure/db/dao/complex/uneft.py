@@ -20,8 +20,8 @@ class UneftDAO(OfmBaseDAO):
     async def get_injection_fields(self) -> list[UneftFieldDB]:
         return await self.fields.get_injection_fields()
 
-    async def get_reservoirs(self) -> list[UneftReservoirDB]:
-        return await self.reservoirs.get_by_params()
+    async def get_reservoirs(self, field_id: int) -> list[UneftReservoirDB]:
+        return await self.reservoirs.get_reservoirs(field_id)
 
     async def get_production_wells(self, field_id: int) -> list[UneftWellDB]:
         return await self.wells.get_production_wells(field_id)

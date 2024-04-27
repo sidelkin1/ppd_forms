@@ -1,6 +1,6 @@
 from typing import cast
 
-from app.core.models.dto import UneftFieldDB, UneftWellDB
+from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.models.enums import WellStock
 from app.infrastructure.db.dao.complex.uneft import UneftDAO
 
@@ -22,6 +22,12 @@ async def uneft_fields(
         case WellStock.injection, field_id:
             return await dao.get_injection_field(cast(int, field_id))
     raise ValueError("Unsupported input arguments!")
+
+
+async def uneft_reservoirs(
+    field_id: int, dao: UneftDAO
+) -> list[UneftReservoirDB]:
+    return await dao.get_reservoirs(field_id)
 
 
 async def uneft_wells(

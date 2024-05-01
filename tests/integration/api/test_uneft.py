@@ -29,7 +29,7 @@ async def test_field_list_success(
     client: AsyncClient,
     worker: Callable[..., Worker],
     work_uneft: Function,
-    stock: WellStock,
+    stock: WellStock | None,
     field_id: int | None,
     expected_data: list | dict,
 ):

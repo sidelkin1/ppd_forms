@@ -150,7 +150,7 @@ def _fill_events(
     return profile
 
 
-def _normilize_profile(profile: pd.DataFrame) -> pd.DataFrame:
+def _normalize_profile(profile: pd.DataFrame) -> pd.DataFrame:
     i_col_start = profile.columns.get_loc("h_eff")
     for name, values in profile.iloc[:, i_col_start + 1 :].items():
         total = np.sum(values)
@@ -165,7 +165,7 @@ def _get_profile(
     poro: pd.DataFrame, events: pd.DataFrame, logger: logging.Logger
 ) -> pd.DataFrame:
     profile = _prepare_profile(poro, events, logger)
-    profile = _normilize_profile(profile)
+    profile = _normalize_profile(profile)
     return profile
 
 
@@ -319,11 +319,11 @@ async def _process_well(
     events = await dao.events(alternative, well.uwi)
     if alternative:
         events["type_action"] = events["type_action"].map(
-            lambda x: "SQUEEZE"
-            if "заливка" in x.lower()
-            else "PERFORATION"
-            if x != "GDI"
-            else "GDI"
+            lambda x: (
+                "SQUEEZE"
+                if "заливка" in x.lower()
+                else "PERFORATION" if x != "GDI" else "GDI"
+            )
         )
     logger.info("События: %s", well.uwi)
     contours = await _calc_profile(well, poro, events, min_radius, dao, logger)

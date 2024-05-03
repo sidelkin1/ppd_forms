@@ -1,10 +1,14 @@
+import logging
 from collections.abc import Awaitable, Callable
 from datetime import date
+from filecmp import cmpfiles
 from pathlib import Path
 
 import pytest
 from csv_diff import compare, load_csv
 
+from app.core.models.dto import UneftFieldDB, UneftWellDB
+from app.core.services.fnv_report import fnv_report
 from app.core.services.inj_loss_report import inj_loss_report
 from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report
@@ -100,3 +104,35 @@ async def test_reports(
     )
     for value in diff.values():
         assert not value
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_fnv_report(
+    pool_holder: HolderDAO,
+    process_pool: ProcessPoolManager,
+    tmp_path: Path,
+    result_dir: Path,
+    caplog,
+):
+    caplog.set_level(logging.DEBUG)
+    fnv_dir = result_dir / "fnv"
+    field = UneftFieldDB(id=1, name="F1")
+    min_radius = 0
+    alternative = False
+    wells = [
+        UneftWellDB(uwi="F1W1", name="W1"),
+        UneftWellDB(uwi="F1W2", name="W2"),
+    ]
+    await fnv_report(
+        tmp_path,
+        field,
+        min_radius,
+        alternative,
+        wells,
+        pool_holder.fnv_reporter,
+        process_pool,
+    )
+    parts = ["/".join(file.parts[-2:]) for file in fnv_dir.glob("*/*.txt")]
+    _, mismatch, errors = cmpfiles(tmp_path, fnv_dir, parts)
+    assert not mismatch
+    assert not errors

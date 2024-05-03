@@ -322,7 +322,9 @@ async def _process_well(
             lambda x: (
                 "SQUEEZE"
                 if "заливка" in x.lower()
-                else "PERFORATION" if x != "GDI" else "GDI"
+                else "PERFORATION"
+                if x != "GDI"
+                else "GDI"
             )
         )
     logger.info("События: %s", well.uwi)

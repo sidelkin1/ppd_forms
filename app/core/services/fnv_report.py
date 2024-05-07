@@ -35,21 +35,7 @@ def _configure_logging(log_name: str, path: Path) -> logging.Logger:
     return logger
 
 
-def _prepare_profile(
-    df_poro: pd.DataFrame, df_events: pd.DataFrame, logger: logging.Logger
-) -> pd.DataFrame:
-    poro = df_poro.copy()
-    events = df_events.copy()
-    poro["ktop"] = poro["ktop"] * 100
-    poro["kbot"] = poro["kbot"] * 100
-    poro["ktop"] = poro["ktop"].fillna(0).astype("int")
-    poro["kbot"] = poro["kbot"].fillna(0).astype("int")
-    events["top"] = events["top"] * 100
-    events["base"] = events["base"] * 100
-    events["top"] = events["top"].fillna(0).astype("int")
-    events["base"] = events["base"].fillna(0).astype("int")
-    events["date_op"] = events["date_op"].dt.strftime("%Y-%m-%d")
-    events["prof"] = events["prof"] * 0.01  # переводим в д.ед.
+def _prepare_profile(poro: pd.DataFrame) -> pd.DataFrame:
     hmin = poro["ktop"].min()
     hmax = poro["kbot"].max()
     profile = pd.DataFrame(
@@ -67,8 +53,6 @@ def _prepare_profile(
     profile["MD"] = range(hmin, hmax)
     profile["h_eff"] = 0.0
     profile["layer_name"] = ""
-    profile = _fill_properties(profile, poro)
-    profile = _fill_events(profile, events, logger)
     return profile
 
 
@@ -164,7 +148,15 @@ def _normalize_profile(profile: pd.DataFrame) -> pd.DataFrame:
 def _get_profile(
     poro: pd.DataFrame, events: pd.DataFrame, logger: logging.Logger
 ) -> pd.DataFrame:
-    profile = _prepare_profile(poro, events, logger)
+    poro["ktop"] = poro["ktop"].mul(100).fillna(0).astype("int")
+    poro["kbot"] = poro["kbot"].mul(100).fillna(0).astype("int")
+    events["top"] = events["top"].mul(100).fillna(0).astype("int")
+    events["base"] = events["base"].mul(100).fillna(0).astype("int")
+    events["date_op"] = events["date_op"].dt.strftime("%Y-%m-%d")
+    events["prof"] = events["prof"] * 0.01
+    profile = _prepare_profile(poro)
+    profile = _fill_properties(profile, poro)
+    profile = _fill_events(profile, events, logger)
     profile = _normalize_profile(profile)
     return profile
 
@@ -195,14 +187,11 @@ async def _calc_injection(
         # она была добавлена в WellProfile.init() последним столбцом
         current = profile.columns[index]
         # закачка за период между событиями
-        totwat_ = await dao.totwat(
+        totwat = await dao.totwat(
             well.uwi, profile.columns[index], profile.columns[index + 1]
         )
-        totwat = totwat_.iloc[0, 0]
-        # если пустое значение - заменяем на 0
-        totwat = 0 if totwat is None else totwat
         # профиль притока по интервалу = доля закачки * на закачку
-        profile[current] = profile[current] * totwat  # type: ignore
+        profile[current] = profile[current] * totwat
         # сделать список названий пластов с непустым притоком в log_df
         log_df = profile[profile[current] != 0]["layer_name"].unique()
         logger.info(
@@ -317,16 +306,6 @@ async def _process_well(
         raise FnvException("нет пористости")
     logger.info("\n%s", poro)
     events = await dao.events(alternative, well.uwi)
-    if alternative:
-        events["type_action"] = events["type_action"].map(
-            lambda x: (
-                "SQUEEZE"
-                if "заливка" in x.lower()
-                else "PERFORATION"
-                if x != "GDI"
-                else "GDI"
-            )
-        )
     logger.info("События: %s", well.uwi)
     contours = await _calc_profile(well, poro, events, min_radius, dao, logger)
     logger.info("%s Созданы контуры ФНВ", well.uwi)

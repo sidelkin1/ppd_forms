@@ -140,9 +140,6 @@ class FnvMock(FnvReporter):
     async def events(self, alternative: bool, uwi: str) -> pd.DataFrame:
         return pd.DataFrame(self.fake_events[uwi])
 
-    async def totwat(
-        self, uwi: str, date_from: str, date_to: str
-    ) -> pd.DataFrame:
-        return pd.DataFrame(
-            [self.fake_totwat[uwi].get("..".join((date_from, date_to)))]
-        )
+    async def totwat(self, uwi: str, date_from: str, date_to: str) -> float:
+        totwat = self.fake_totwat[uwi].get("..".join((date_from, date_to)))
+        return totwat or 0

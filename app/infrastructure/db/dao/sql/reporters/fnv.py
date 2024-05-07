@@ -29,15 +29,22 @@ class FnvReporter(OfmBaseDAO):
         return await self.read_one(key="poro", uwi=uwi)
 
     async def events(self, alternative: bool, uwi: str) -> pd.DataFrame:
-        return await (
-            self.read_one(key="events_alt", uwi=uwi)
-            if alternative
-            else self.read_one(key="events", uwi=uwi)
-        )
+        if alternative:
+            events = await self.read_one(key="events_alt", uwi=uwi)
+            events["type_action"] = events["type_action"].map(
+                lambda x: (
+                    "SQUEEZE"
+                    if "заливка" in x.lower()
+                    else "PERFORATION"
+                    if x != "GDI"
+                    else "GDI"
+                )
+            )
+            return events
+        return await self.read_one(key="events", uwi=uwi)
 
-    async def totwat(
-        self, uwi: str, date_from: str, date_to: str
-    ) -> pd.DataFrame:
-        return await self.read_one(
+    async def totwat(self, uwi: str, date_from: str, date_to: str) -> float:
+        totwat = await self.read_one(
             key="totwat", uwi=uwi, date_from=date_from, date_to=date_to
         )
+        return totwat.squeeze() or 0

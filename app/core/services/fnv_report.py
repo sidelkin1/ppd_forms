@@ -2,8 +2,8 @@ import logging
 from datetime import date
 from pathlib import Path
 from shutil import make_archive
-from typing import cast
 
+import aiofiles
 import numpy as np
 import pandas as pd
 
@@ -353,28 +353,22 @@ async def _make_contours(
     return final_contours
 
 
-def _save_countours(
+async def _save_countours(
     path: Path, contours: pd.DataFrame, logger: logging.Logger
 ) -> None:
-    for layer_index, layer_row in contours.iterrows():
-        index = cast(pd.Index, layer_index)
-        fname = (path / "_".join((index[0], index[1]))).with_suffix(".txt")
-        fname.parent.mkdir(parents=True, exist_ok=True)
-        empty_file = True
-        with open(fname, "w") as file:
-            file.write("/\n")
-            # цикл по контурам
-            for contour in layer_row:
-                # если контур не пустой
-                if contour:
-                    empty_file = False
+    path.mkdir(parents=True, exist_ok=True)
+    for layer_index, *layer_row in contours.itertuples():
+        if any(layer_row):
+            fname = (path / "_".join(layer_index)).with_suffix(".txt")
+            async with aiofiles.open(fname, "w") as file:
+                await file.write("/\n")  # цикл по контурам
+                for contour in filter(None, layer_row):  # type: ignore
                     # цикл по точкам внутри контура
-                    for pointx, pointy in contour:
-                        file.write(f"{pointx:.3f} {pointy:.3f}\n")
-                    file.write("/\n")
-        # удаляем, если не было выгружено контуров
-        if empty_file:
-            fname.unlink(missing_ok=True)
+                    await file.writelines(
+                        f"{pointx:.3f} {pointy:.3f}\n"
+                        for pointx, pointy in contour
+                    )
+                    await file.write("/\n")
     logger.info("-" * 160)
     logger.warning("Сохранено в %s", path)
 
@@ -400,7 +394,7 @@ async def fnv_report(
         contours = await _make_contours(
             field, min_radius, alternative, wells, dao, logger
         )
-        _save_countours(result_path, contours, logger)
+        await _save_countours(result_path, contours, logger)
         make_archive(str(path), "zip", root_dir=path)
         logger.warning("Finish")
     finally:

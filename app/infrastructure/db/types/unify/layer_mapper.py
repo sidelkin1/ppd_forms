@@ -23,10 +23,10 @@ class LayerMapper(SimpleMapper):
         replace: ReplaceDict | None = None,
         **kwargs,
     ) -> None:
+        super().__init__(replace=replace, **kwargs)
         if replace:
             self.prepare_replace(replace)
             self.remake_replace(replace)
-        super().__init__(replace=replace, **kwargs)
 
     def prepare_replace(self, replace: ReplaceDict):
         for key, value in replace.items():

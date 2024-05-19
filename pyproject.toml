@@ -11,7 +11,7 @@ python = ">=3.11,<3.13"
 python-dateutil = "^2.8.2"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.25"}
 asyncpg = "^0.28.0"
-arq = "0.26.0b1"
+arq = "^0.26.0"
 pydantic = "^2.3.0"
 pydantic-settings = "^2.0.3"
 fastapi = "^0.103.1"

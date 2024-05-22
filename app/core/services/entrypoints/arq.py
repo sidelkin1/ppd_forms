@@ -16,7 +16,7 @@ from app.api.models.responses import (
 from app.core.config.models.app import AppSettings
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
-from app.core.services.fnv_report import fnv_report
+from app.core.services.fnv.report import fnv_report
 from app.core.services.inj_loss_report import inj_loss_report
 from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report
@@ -150,7 +150,7 @@ async def create_profile_report(
     file_id = cast(str, response.job.file_id)
     app_config: AppSettings = ctx["app_config"]
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["local_pool_dao"]() as holder:
+    async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await profile_report(
             path_provider.file_path(user_id, file_id),
@@ -172,7 +172,7 @@ async def create_first_rate_inj_loss_report(
     file_id = cast(str, response.job.file_id)
     app_config: AppSettings = ctx["app_config"]
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["local_pool_dao"]() as holder:
+    async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await inj_loss_report(
             path_provider.file_path(user_id, file_id),
@@ -194,7 +194,7 @@ async def create_max_rate_inj_loss_report(
     file_id = cast(str, response.job.file_id)
     app_config: AppSettings = ctx["app_config"]
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["local_pool_dao"]() as holder:
+    async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await inj_loss_report(
             path_provider.file_path(user_id, file_id),
@@ -215,7 +215,7 @@ async def create_first_rate_oil_loss_report(
     user_id = cast(str, response.job.user_id)
     file_id = cast(str, response.job.file_id)
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["local_pool_dao"]() as holder:
+    async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
             path_provider.file_path(user_id, file_id),
@@ -235,7 +235,7 @@ async def create_max_rate_oil_loss_report(
     user_id = cast(str, response.job.user_id)
     file_id = cast(str, response.job.file_id)
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["local_pool_dao"]() as holder:
+    async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
             path_provider.file_path(user_id, file_id),
@@ -255,7 +255,7 @@ async def create_opp_per_year_report(
     user_id = cast(str, response.job.user_id)
     file_id = cast(str, response.job.file_id)
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["ofm_pool_dao"]() as holder:
+    async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await opp_per_year_report(
             path_provider.file_path(user_id, file_id),
@@ -276,7 +276,7 @@ async def create_matrix_report(
     file_id = cast(str, response.job.file_id)
     app_config: AppSettings = ctx["app_config"]
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["local_pool_dao"]() as holder:
+    async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await matrix_report(
             path_provider.file_path(user_id, file_id),
@@ -302,17 +302,13 @@ async def create_fnv_report(
     file_id = cast(str, response.job.file_id)
     async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
-        wells = await holder.uneft.get_injection_wells(response.task.field.id)
-    async with ctx["ofm_pool_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
         await fnv_report(
             path_provider.dir_path(user_id, file_id),
-            response.task.field,
+            response.task.fields,
             response.task.min_radius,
             response.task.alternative,
-            wells,
+            response.task.max_fields,
             holder.fnv_reporter,
-            ctx["pool"],
         )
 
 

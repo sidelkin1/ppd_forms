@@ -28,6 +28,9 @@ class OppPerYearMock(OppPerYearReporter):
 
 
 class FnvMock(FnvReporter):
+    fake_cumwat = {
+        1: {"field": [1, 1], "uwi": ["F1W1", "F1W2"], "cumwat": [100, 100]}
+    }
     fake_layers = {
         1: {
             "cid": ["R1", "R1", "R2", "R2", "R2"],
@@ -130,6 +133,9 @@ class FnvMock(FnvReporter):
 
     def __init__(self, pool: sessionmaker[Session]) -> None:
         pass
+
+    async def cumwat(self, field_id: int) -> pd.DataFrame:
+        return pd.DataFrame(self.fake_cumwat[field_id])
 
     async def layers(self, field_id: int) -> pd.DataFrame:
         return pd.DataFrame(self.fake_layers[field_id])

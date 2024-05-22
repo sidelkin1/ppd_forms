@@ -15,40 +15,36 @@ async def initialize_replace(
     provider: DbProvider,
     paths: Paths,
 ) -> None:
-    await asyncio.gather(
-        db.init_field_replace(provider, paths),
-        db.init_reservoir_replace(provider, paths),
-        db.init_layer_replace(provider, paths),
-    )
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(db.init_field_replace(provider, paths))
+        tg.create_task(db.init_reservoir_replace(provider, paths))
+        tg.create_task(db.init_layer_replace(provider, paths))
 
 
 async def initialize_mapper(provider: DbProvider) -> None:
-    await asyncio.gather(
-        mapper.init_field_mapper(provider),
-        mapper.init_reservoir_mapper(provider),
-        mapper.init_multi_reservoir_mapper(provider),
-        mapper.init_multi_split_reservoir_mapper(provider),
-        mapper.init_layer_mapper(provider),
-        mapper.init_multi_layer_mapper(provider),
-    )
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(mapper.init_field_mapper(provider))
+        tg.create_task(mapper.init_reservoir_mapper(provider))
+        tg.create_task(mapper.init_multi_reservoir_mapper(provider))
+        tg.create_task(mapper.init_multi_split_reservoir_mapper(provider))
+        tg.create_task(mapper.init_layer_mapper(provider))
+        tg.create_task(mapper.init_multi_layer_mapper(provider))
 
 
 async def initialize_main(provider: DbProvider, paths: Paths) -> None:
-    await asyncio.gather(
-        # db.init_monthly_report(provider, settings),
-        db.init_well_profile(provider, paths),
-    )
+    async with asyncio.TaskGroup() as tg:
+        # tg.create_task(db.init_monthly_report(provider, settings))
+        tg.create_task(db.init_well_profile(provider, paths))
 
 
 async def initialize_all(provider: DbProvider, paths: Paths) -> None:
-    await asyncio.gather(
-        db.init_monthly_report(provider, paths),
-        db.init_well_profile(provider, paths),
-        db.init_inj_well_database(provider, paths),
-        db.init_neighborhood(provider, paths),
-        db.init_new_strategy_inj(provider, paths),
-        db.init_new_strategy_oil(provider, paths),
-    )
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(db.init_monthly_report(provider, paths))
+        tg.create_task(db.init_well_profile(provider, paths))
+        tg.create_task(db.init_inj_well_database(provider, paths))
+        tg.create_task(db.init_neighborhood(provider, paths))
+        tg.create_task(db.init_new_strategy_inj(provider, paths))
+        tg.create_task(db.init_new_strategy_oil(provider, paths))
 
 
 async def main() -> None:  # pragma: no cover

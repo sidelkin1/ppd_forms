@@ -36,7 +36,9 @@ class BaseDAO(Generic[Pool]):
         return pd.DataFrame(result.all())
 
     async def read_all(self, **params) -> dict[str, pd.DataFrame]:
-        results: list[pd.DataFrame] = await asyncio.gather(
-            *(self.read_one(key=key, **params) for key in self.keys)
-        )
-        return dict(zip(self.keys, results))
+        async with asyncio.TaskGroup() as tg:
+            tasks = [
+                tg.create_task(self.read_one(key=key, **params))
+                for key in self.keys
+            ]
+        return dict(zip(self.keys, (task.result() for task in tasks)))

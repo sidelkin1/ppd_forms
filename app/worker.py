@@ -68,9 +68,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["pool"] = ProcessPoolManager(max_workers=app_config.max_workers)
     ctx["local_dao"] = asynccontextmanager(provider.local_dao)
     ctx["ofm_dao"] = asynccontextmanager(provider.ofm_dao)
-    ctx["local_pool_dao"] = asynccontextmanager(provider.local_pool_dao)
     ctx["ofm_local_dao"] = asynccontextmanager(provider.ofm_local_dao)
-    ctx["ofm_pool_dao"] = asynccontextmanager(provider.ofm_pool_dao)
     ctx["file_local_dao"] = asynccontextmanager(provider.file_local_dao)
     await initialize_mapper(provider)
     logger.info("worker prepared")
@@ -119,4 +117,4 @@ class WorkerSettings:
         port=cast(int, os.getenv("REDIS_PORT")),
     )
     allow_abort_jobs = True
-    job_timeout = 1500
+    job_timeout = 2500

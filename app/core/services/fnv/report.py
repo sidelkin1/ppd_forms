@@ -1,4 +1,4 @@
-import logging
+import asyncio
 from datetime import date
 from pathlib import Path
 from shutil import make_archive
@@ -6,33 +6,21 @@ from shutil import make_archive
 import aiofiles
 import numpy as np
 import pandas as pd
+from structlog.stdlib import BoundLogger
 
-from app.core.models.dto import UneftFieldDB, UneftWellDB
-from app.core.utils.process_pool import ProcessPoolManager
+from app.core.models.dto import UneftFieldDB
+from app.core.services.fnv.context import LogContext
 from app.infrastructure.db.dao.sql.reporters import FnvReporter
+
+"""
+Немного переработанная версия пакета
+https://github.com/TsepelevVP/PyOraFNV
+
+"""
 
 
 class FnvException(Exception):
     pass
-
-
-def _configure_logging(log_name: str, path: Path) -> logging.Logger:
-    logger = logging.getLogger(log_name)
-    format = (
-        "[%(asctime)s] [%(module)s - %(funcName)s] [%(levelname)s] %(message)s"
-    )
-    datefmt = "%Y-%m-%d %H:%M"
-    formatter = logging.Formatter(fmt=format, datefmt=datefmt)
-    file_handler = logging.FileHandler(path / "fnv.log", mode="w")
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.WARNING)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
-    logger.propagate = False
-    return logger
 
 
 def _prepare_profile(poro: pd.DataFrame) -> pd.DataFrame:
@@ -71,8 +59,8 @@ def _fill_properties(
     return profile
 
 
-def _fill_events(
-    profile: pd.DataFrame, events: pd.DataFrame, logger: logging.Logger
+async def _fill_events(
+    profile: pd.DataFrame, events: pd.DataFrame, logger: BoundLogger
 ) -> pd.DataFrame:
     profile["last_perf"] = 0.0
     profile["1900-01-01"] = 0.0
@@ -118,7 +106,7 @@ def _fill_events(
             profile["last_perf"] = profile[row["date_op"]]
         # выводим данные по получившемуся профилю в лог
         log_df = profile.loc[flt, "layer_name"].unique()
-        logger.info(
+        await logger.ainfo(
             "Событие: %s (%s - %s): %s %s %s",
             row["date_op"],
             row["top"],
@@ -145,8 +133,8 @@ def _normalize_profile(profile: pd.DataFrame) -> pd.DataFrame:
     return profile
 
 
-def _get_profile(
-    poro: pd.DataFrame, events: pd.DataFrame, logger: logging.Logger
+async def _get_profile(
+    poro: pd.DataFrame, events: pd.DataFrame, logger: BoundLogger
 ) -> pd.DataFrame:
     poro["ktop"] = poro["ktop"].mul(100).fillna(0).astype("int")
     poro["kbot"] = poro["kbot"].mul(100).fillna(0).astype("int")
@@ -156,25 +144,25 @@ def _get_profile(
     events["prof"] = events["prof"] * 0.01
     profile = _prepare_profile(poro)
     profile = _fill_properties(profile, poro)
-    profile = _fill_events(profile, events, logger)
+    profile = await _fill_events(profile, events, logger)
     profile = _normalize_profile(profile)
     return profile
 
 
 async def _calc_injection(
-    well: UneftWellDB,
+    uwi: str,
     profile: pd.DataFrame,
     dao: FnvReporter,
-    logger: logging.Logger,
+    logger: BoundLogger,
 ) -> pd.DataFrame:
-    logger.info("-" * 160)
-    logger.info(
+    await logger.ainfo("-" * 160)
+    await logger.ainfo(
         "Создан профиль долей закачки: %s (%s - %s)",
-        well.uwi,
+        uwi,
         profile["MD"].min() / 100,
         profile["MD"].max() / 100,
     )
-    logger.info("-" * 160)
+    await logger.ainfo("-" * 160)
     i_start_col = profile.columns.get_loc("last_perf") + 1
     # получаем профиль закачки - проходим все столбцы
     # с датами (начинаются с i_start_col)
@@ -188,15 +176,15 @@ async def _calc_injection(
         current = profile.columns[index]
         # закачка за период между событиями
         totwat = await dao.totwat(
-            well.uwi, profile.columns[index], profile.columns[index + 1]
+            uwi, profile.columns[index], profile.columns[index + 1]
         )
         # профиль притока по интервалу = доля закачки * на закачку
         profile[current] = profile[current] * totwat
         # сделать список названий пластов с непустым притоком в log_df
         log_df = profile[profile[current] != 0]["layer_name"].unique()
-        logger.info(
+        await logger.ainfo(
             "%s Закачка (%s - %s) : %.0f, по профилю : %.0f %s",
-            well.uwi,
+            uwi,
             profile.columns[index],
             profile.columns[index + 1],
             totwat,
@@ -206,19 +194,19 @@ async def _calc_injection(
     # суммируем столбцы, начиная с 5-го
     profile["total"] = profile.iloc[:, i_start_col:].sum(axis=1)
     # вывести строки с непустым названием пласта и непустым последним столбцом
-    logger.info("-" * 160)
-    logger.info(
-        "%s Всего закачка по профилям: %s", well.uwi, profile["total"].sum()
+    await logger.ainfo("-" * 160)
+    await logger.ainfo(
+        "%s Всего закачка по профилям: %s", uwi, profile["total"].sum()
     )
-    logger.debug(
+    await logger.adebug(
         "Ненулевые профили закачки:\n%s",
         profile[(profile["layer_name"] != "") & (profile.iloc[:, -1] > 0)],
     )
     return profile
 
 
-def _calc_radius(
-    well: UneftWellDB, profile: pd.DataFrame, logger: logging.Logger
+async def _calc_radius(
+    uwi: str, profile: pd.DataFrame, logger: BoundLogger
 ) -> pd.DataFrame:
     layers_radius = profile.groupby(["layer_name"]).agg(
         {
@@ -240,20 +228,20 @@ def _calc_radius(
     )
     # заменяем не-числа на 0
     layers_radius = layers_radius.infer_objects().fillna(0)
-    logger.info("-" * 160)
-    logger.info("%s Радиусы ФНВ по пластам:", well.uwi)
-    logger.info("\n%s", layers_radius)
+    await logger.ainfo("-" * 160)
+    await logger.ainfo("%s Радиусы ФНВ по пластам:", uwi)
+    await logger.ainfo("\n%s", layers_radius)
     return layers_radius
 
 
-def _calc_contours(
-    well: UneftWellDB,
+async def _calc_contours(
+    uwi: str,
     layers_radius: pd.DataFrame,
     min_radius: float,
-    logger: logging.Logger,
+    logger: BoundLogger,
 ) -> pd.DataFrame:
     result = pd.DataFrame(columns=["contour"], index=layers_radius.index)
-    logger.info("-" * 160)
+    await logger.ainfo("-" * 160)
     # по всем строкам layers_radius
     for index, row in layers_radius.iterrows():
         r = row["radius"]
@@ -268,48 +256,48 @@ def _calc_contours(
                 ]
                 for phi in range(51)
             ]
-            logger.info(
-                "%s Круг для %s : (%s - %s) R = %s", well.uwi, index, x, y, r
+            await logger.ainfo(
+                "%s Круг для %s : (%s - %s) R = %s", uwi, index, x, y, r
             )
         result.loc[index, "contour"] = contour  # type:ignore
-    result.columns = [well.uwi]  # type:ignore
+    result.columns = [uwi]  # type:ignore
     return result
 
 
 async def _calc_profile(
-    well: UneftWellDB,
+    uwi: str,
     poro: pd.DataFrame,
     events: pd.DataFrame,
     min_radius: float,
     dao: FnvReporter,
-    logger: logging.Logger,
+    logger: BoundLogger,
 ) -> pd.DataFrame:
-    profile = _get_profile(poro, events, logger)
-    profile = await _calc_injection(well, profile, dao, logger)
-    layers_radius = _calc_radius(well, profile, logger)
-    contours = _calc_contours(well, layers_radius, min_radius, logger)
+    profile = await _get_profile(poro, events, logger)
+    profile = await _calc_injection(uwi, profile, dao, logger)
+    layers_radius = await _calc_radius(uwi, profile, logger)
+    contours = await _calc_contours(uwi, layers_radius, min_radius, logger)
     return contours
 
 
 async def _process_well(
-    well: UneftWellDB,
+    uwi: str,
     min_radius: float,
     alternative: bool,
     dao: FnvReporter,
-    logger: logging.Logger,
+    logger: BoundLogger,
 ) -> pd.DataFrame:
-    logger.info("-" * 160)
-    logger.info(">>> Скважина: %s", well.uwi)
-    poro = await dao.poro(well.uwi)
-    logger.info("Пористость: %s", well.uwi)
+    await logger.ainfo("-" * 160)
+    await logger.ainfo(">>> Скважина: %s", uwi)
+    poro = await dao.poro(uwi)
+    await logger.ainfo("Пористость: %s", uwi)
     if not poro.size:
         raise FnvException("нет пористости")
-    logger.info("\n%s", poro)
-    events = await dao.events(alternative, well.uwi)
-    logger.info("События: %s", well.uwi)
-    contours = await _calc_profile(well, poro, events, min_radius, dao, logger)
-    logger.info("%s Созданы контуры ФНВ", well.uwi)
-    logger.debug("%s", contours)
+    await logger.ainfo("\n%s", poro)
+    events = await dao.events(alternative, uwi)
+    await logger.ainfo("События: %s", uwi)
+    contours = await _calc_profile(uwi, poro, events, min_radius, dao, logger)
+    await logger.ainfo("%s Созданы контуры ФНВ", uwi)
+    await logger.adebug("%s", contours)
     return contours
 
 
@@ -317,16 +305,23 @@ async def _make_contours(
     field: UneftFieldDB,
     min_radius: float,
     alternative: bool,
-    wells: list[UneftWellDB],
     dao: FnvReporter,
-    logger: logging.Logger,
+    logger: BoundLogger,
 ) -> pd.DataFrame:
+    well_names = await dao.cumwat(field.id)
+    await logger.ainfo(
+        "Скважин в ППД: %s Накопленная закачка: от %s м3 до %s м3",
+        well_names["uwi"].count(),
+        well_names["cumwat"].min(),
+        well_names["cumwat"].max(),
+    )
     final_contours = await dao.layers(field.id)
     final_contours = final_contours.groupby(["cid", "layer_name"]).agg("first")
-    for well in wells:
+    for _, row in well_names.iterrows():
+        uwi = row["uwi"]
         try:
             contours = await _process_well(
-                well, min_radius, alternative, dao, logger
+                uwi, min_radius, alternative, dao, logger
             )
             final_contours = pd.merge(
                 final_contours,
@@ -336,25 +331,22 @@ async def _make_contours(
                 right_index=True,
             )
         except FnvException as error:
-            logger.error(
-                "Не обработана скважина: %s : %s",
-                well.uwi,
-                error,
-                exc_info=True,
+            await logger.aexception(
+                "Не обработана скважина: %s : %s", uwi, error
             )
     final_contours.fillna(0, inplace=True)
-    logger.info("-" * 160)
-    logger.info(
+    await logger.ainfo("-" * 160)
+    await logger.ainfo(
         "%s: cкважин с профилями: %s",
         field.name,
         final_contours.columns.size,
     )
-    logger.debug("%s", final_contours)
+    await logger.adebug("%s", final_contours)
     return final_contours
 
 
 async def _save_countours(
-    path: Path, contours: pd.DataFrame, logger: logging.Logger
+    path: Path, contours: pd.DataFrame, logger: BoundLogger
 ) -> None:
     path.mkdir(parents=True, exist_ok=True)
     for layer_index, *layer_row in contours.itertuples():
@@ -369,33 +361,72 @@ async def _save_countours(
                         for pointx, pointy in contour
                     )
                     await file.write("/\n")
-    logger.info("-" * 160)
-    logger.warning("Сохранено в %s", path)
+    await logger.ainfo("-" * 160)
+    await logger.awarning("Сохранено в %s", path)
 
 
-async def fnv_report(
+async def _process_field(
     path: Path,
     field: UneftFieldDB,
     min_radius: float,
     alternative: bool,
-    wells: list[UneftWellDB],
-    dao: FnvReporter,
-    pool: ProcessPoolManager,
+    fnv: FnvReporter,
+    sem: asyncio.Semaphore,
+    failures: asyncio.Queue[UneftFieldDB],
 ) -> None:
-    try:
+    async with sem:
         result_path = path / field.name
         result_path.mkdir(parents=True, exist_ok=True)
-        logger = _configure_logging(str(path), result_path)
-        logger.warning("Start")
-        logger.warning("Field = %s", field.name)
-        logger.warning("Min radius = %s", min_radius)
-        logger.warning("Alternative = %s", alternative)
-        logger.warning("Скважин в ППД: %s", len(wells))
-        contours = await _make_contours(
-            field, min_radius, alternative, wells, dao, logger
-        )
-        await _save_countours(result_path, contours, logger)
-        make_archive(str(path), "zip", root_dir=path)
-        logger.warning("Finish")
-    finally:
-        logging.root.manager.loggerDict.pop(str(path), None)
+        with LogContext(str(result_path), result_path) as logger:
+            try:
+                await logger.awarning("Start")
+                await logger.awarning("Field = %s", field.name)
+                await logger.awarning("Min radius = %s", min_radius)
+                await logger.awarning("Alternative = %s", alternative)
+                contours = await _make_contours(
+                    field, min_radius, alternative, fnv, logger
+                )
+                await _save_countours(result_path, contours, logger)
+                await logger.awarning("Finish")
+            except Exception:
+                await logger.aexception("Ошибка во время обработки")
+                await failures.put(field)
+
+
+async def _handle_failures(
+    path: Path,
+    failures: asyncio.Queue[UneftFieldDB],
+    tasks: list[asyncio.Task],
+) -> None:
+    with LogContext(str(path), path) as logger:
+        while not (all(task.done() for task in tasks) and failures.empty()):
+            if failures.empty():
+                await asyncio.sleep(0)
+                continue
+            field = await failures.get()
+            await logger.aerror(
+                "Не удалось обработать месторождение: %s", field.name
+            )
+
+
+async def fnv_report(
+    path: Path,
+    fields: list[UneftFieldDB],
+    min_radius: float,
+    alternative: bool,
+    max_fields: int,
+    fnv: FnvReporter,
+) -> None:
+    sem = asyncio.Semaphore(max_fields)
+    failures: asyncio.Queue[UneftFieldDB] = asyncio.Queue(maxsize=100)
+    async with asyncio.TaskGroup() as tg:
+        tasks = [
+            tg.create_task(
+                _process_field(
+                    path, field, min_radius, alternative, fnv, sem, failures
+                )
+            )
+            for field in fields
+        ]
+        tg.create_task(_handle_failures(path, failures, tasks))
+    make_archive(str(path), "zip", root_dir=path)

@@ -30,17 +30,11 @@ class DbProvider:
 
     async def local_dao(self) -> AsyncGenerator[HolderDAO, None]:
         async with self.local_pool() as session:
-            yield HolderDAO(local_session=session)
-
-    async def local_pool_dao(self) -> AsyncGenerator[HolderDAO, None]:
-        yield HolderDAO(local_pool=self.local_pool)
+            yield HolderDAO(local_session=session, local_pool=self.local_pool)
 
     async def ofm_dao(self) -> AsyncGenerator[HolderDAO, None]:
         with self.ofm_pool() as session:
-            yield HolderDAO(ofm_session=session)
-
-    async def ofm_pool_dao(self) -> AsyncGenerator[HolderDAO, None]:
-        yield HolderDAO(ofm_pool=self.ofm_pool)
+            yield HolderDAO(ofm_session=session, ofm_pool=self.ofm_pool)
 
     async def ofm_local_dao(self) -> AsyncGenerator[HolderDAO, None]:
         with self.ofm_pool() as ofm_session:

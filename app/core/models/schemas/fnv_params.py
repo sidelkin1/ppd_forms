@@ -4,6 +4,7 @@ from app.core.models.dto.db.field_list import UneftFieldDB
 
 
 class FnvParams(BaseModel):
-    field: UneftFieldDB
+    fields: list[UneftFieldDB]
     min_radius: NonNegativeFloat
     alternative: bool
+    max_fields: int = 5

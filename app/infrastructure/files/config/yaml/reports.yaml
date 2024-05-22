@@ -94,4 +94,7 @@
   - text: --Выберите месторождение--
     value: --
     selected: true
+  - text: --Все месторождения--
+    value: 0
+    selected: false
   description: Фронт нагнетаемой воды

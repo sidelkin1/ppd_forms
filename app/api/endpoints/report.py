@@ -114,7 +114,7 @@ async def generate_fnv_report(
 ):
     task = TaskFNV(
         name=ReportName.fnv,
-        field=fnv_params.field,
+        fields=fnv_params.fields,
         min_radius=fnv_params.min_radius,
         alternative=fnv_params.alternative,
     )

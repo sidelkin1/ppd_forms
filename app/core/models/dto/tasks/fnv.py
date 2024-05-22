@@ -9,6 +9,7 @@ class TaskFNV(
     TaskBase, task_id=TaskId.report, route_fields=["task_id", "name"]
 ):
     name: ReportName
-    field: UneftFieldDB
+    fields: list[UneftFieldDB]
     min_radius: NonNegativeFloat
     alternative: bool
+    max_fields: int = 5

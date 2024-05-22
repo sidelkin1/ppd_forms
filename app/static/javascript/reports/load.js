@@ -104,6 +104,9 @@ async function loadFNV(reportName) {
   const alert = document.getElementById(`${reportName}Danger`);
   const success = document.getElementById(`${reportName}Success`);
   const minRadius = document.getElementById(`${reportName}MinRadius`).value;
+  const allFields = [...document.getElementById(`${reportName}Fields`)]
+    .filter((opt) => !["--", "0"].includes(opt.value))
+    .map((opt) => ({ id: opt.value, name: opt.text }));
   const { value: fieldID, text: fieldName } = document.getElementById(
     `${reportName}Fields`
   ).selectedOptions[0];
@@ -119,7 +122,7 @@ async function loadFNV(reportName) {
 
   const url = `/reports/${reportName}`;
   const data = {
-    field: { id: fieldID, name: fieldName },
+    fields: fieldID === "0" ? allFields : [{ id: fieldID, name: fieldName }],
     min_radius: minRadius,
     alternative: alternative,
   };

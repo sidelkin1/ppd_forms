@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.db.dao import local
-from app.infrastructure.db.dao.complex import initializers, loaders
+from app.infrastructure.db.dao.complex import initializers, loaders, uneft
 from app.infrastructure.db.dao.sql import ofm, reporters
 from app.infrastructure.files.dao import csv, excel
 
@@ -76,6 +76,10 @@ class HolderDAO:
     @property
     def ofm_reservoir_list(self) -> ofm.ReservoirListDAO:
         return ofm.ReservoirListDAO(self.ofm_session)
+
+    @property
+    def ofm_well_list(self) -> ofm.WellListDAO:
+        return ofm.WellListDAO(self.ofm_session)
 
     @property
     def csv_monthly_report(self) -> csv.MonthlyReportDAO:
@@ -232,6 +236,10 @@ class HolderDAO:
         return reporters.MatrixReporter(self.local_pool)
 
     @property
+    def fnv_reporter(self) -> reporters.FnvReporter:
+        return reporters.FnvReporter(self.ofm_pool)
+
+    @property
     def new_strategy_inj_loader(self) -> loaders.NewStrategyInjLoader:
         return loaders.NewStrategyInjLoader(
             self.excel_new_strategy_inj, self.local_new_strategy_inj
@@ -265,6 +273,12 @@ class HolderDAO:
     def well_profile_loader(self) -> loaders.WellProfileLoader:
         return loaders.WellProfileLoader(
             self.ofm_well_profile, self.local_well_profile
+        )
+
+    @property
+    def uneft(self) -> uneft.UneftDAO:
+        return uneft.UneftDAO(
+            self.ofm_field_list, self.ofm_reservoir_list, self.ofm_well_list
         )
 
     async def commit(self) -> None:

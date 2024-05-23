@@ -19,7 +19,7 @@ async function loadReport(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}/csv`;
     await checkStatus(reportName, result.job.job_id);
   }
 
@@ -49,7 +49,7 @@ async function loadInjLoss(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}/csv`;
     await checkStatus(reportName, result.job.job_id);
   }
 
@@ -90,7 +90,45 @@ async function loadMatrix(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}`;
+    link.href = `/reports/${result.job.file_id}/csv`;
+    await checkStatus(reportName, result.job.job_id);
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}
+
+async function loadFNV(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const minRadius = document.getElementById(`${reportName}MinRadius`).value;
+  const allFields = [...document.getElementById(`${reportName}Fields`)]
+    .filter((opt) => !["--", "0"].includes(opt.value))
+    .map((opt) => ({ id: opt.value, name: opt.text }));
+  const { value: fieldID, text: fieldName } = document.getElementById(
+    `${reportName}Fields`
+  ).selectedOptions[0];
+  const alternative = document.getElementById(
+    `${reportName}Alternative`
+  ).checked;
+  const link = document.getElementById(`${reportName}Link`);
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const url = `/reports/${reportName}`;
+  const data = {
+    fields: fieldID === "0" ? allFields : [{ id: fieldID, name: fieldName }],
+    min_radius: minRadius,
+    alternative: alternative,
+  };
+  const result = await assignWork(reportName, url, data);
+  if (result) {
+    link.href = `/reports/${result.job.file_id}/zip`;
     await checkStatus(reportName, result.job.job_id);
   }
 

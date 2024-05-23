@@ -23,8 +23,11 @@ class PathProvider:
     def result_dir(self, user_id: str) -> Path:
         return self.user_dir(user_id) / "results"
 
-    def file_path(self, user_id: str, file_id: str) -> Path:
-        return (self.result_dir(user_id) / file_id).with_suffix(".csv")
+    def file_path(self, user_id: str, file_id: str, ext: str = "csv") -> Path:
+        return (self.result_dir(user_id) / file_id).with_suffix(f".{ext}")
+
+    def dir_path(self, user_id: str, file_id: str) -> Path:
+        return self.result_dir(user_id) / file_id
 
 
 def get_path_provider() -> PathProvider:

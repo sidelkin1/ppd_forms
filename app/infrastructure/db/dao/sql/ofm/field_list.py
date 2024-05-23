@@ -1,10 +1,50 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.models.dto import UneftFieldDB
 from app.infrastructure.db.dao.sql.ofm.base import BaseDAO
-from app.infrastructure.db.dao.sql.ofm.querysets import select_fields
+from app.infrastructure.db.dao.sql.ofm.querysets import (
+    select_fields,
+    select_injection_fields,
+    select_production_fields,
+)
 
 
 class FieldListDAO(BaseDAO[UneftFieldDB]):
     def __init__(self, session: Session) -> None:
-        super().__init__(UneftFieldDB, select_fields(), session)
+        self.querysets = {
+            "fields": select_fields(),
+            "production_fields": select_production_fields(),
+            "injection_fields": select_injection_fields(),
+            "field": select_fields(with_field_id=True),
+            "production_field": select_fields(with_field_id=True),
+            "injection_field": select_fields(with_field_id=True),
+        }
+        super().__init__(UneftFieldDB, select(), session)
+
+    async def get_fields(self) -> list[UneftFieldDB]:
+        self.queryset = self.querysets["fields"]
+        return await self.get_by_params()
+
+    async def get_production_fields(self) -> list[UneftFieldDB]:
+        self.queryset = self.querysets["production_fields"]
+        return await self.get_by_params()
+
+    async def get_injection_fields(self) -> list[UneftFieldDB]:
+        self.queryset = self.querysets["injection_fields"]
+        return await self.get_by_params()
+
+    async def get_field(self, field_id: int) -> UneftFieldDB | None:
+        self.queryset = self.querysets["field"]
+        fields = await self.get_by_params(field_id=field_id)
+        return fields[0] if fields else None
+
+    async def get_production_field(self, field_id: int) -> UneftFieldDB | None:
+        self.queryset = self.querysets["production_field"]
+        fields = await self.get_by_params(field_id=field_id)
+        return fields[0] if fields else None
+
+    async def get_injection_field(self, field_id: int) -> UneftFieldDB | None:
+        self.queryset = self.querysets["injection_field"]
+        fields = await self.get_by_params(field_id=field_id)
+        return fields[0] if fields else None

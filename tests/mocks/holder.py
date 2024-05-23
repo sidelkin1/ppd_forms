@@ -8,7 +8,8 @@ from tests.mocks.excel_dao import (
     NewStrategyOilMock,
 )
 from tests.mocks.ofm_dao import MonthlyReportMock, WellProfileMock
-from tests.mocks.reporters import OppPerYearMock
+from tests.mocks.reporters import FnvMock, OppPerYearMock
+from tests.mocks.uneft import FieldListMock, ReservoirListMock, WellListMock
 
 
 class HolderMock(HolderDAO):
@@ -39,3 +40,19 @@ class HolderMock(HolderDAO):
     @property
     def opp_per_year_reporter(self) -> reporters.OppPerYearReporter:
         return OppPerYearMock(self.ofm_pool)
+
+    @property
+    def fnv_reporter(self) -> reporters.FnvReporter:
+        return FnvMock(self.ofm_pool)
+
+    @property
+    def ofm_field_list(self) -> ofm.FieldListDAO:
+        return FieldListMock(self.ofm_session)
+
+    @property
+    def ofm_reservoir_list(self) -> ofm.ReservoirListDAO:
+        return ReservoirListMock(self.ofm_session)
+
+    @property
+    def ofm_well_list(self) -> ofm.WellListDAO:
+        return WellListMock(self.ofm_session)

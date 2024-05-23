@@ -3,10 +3,12 @@ from typing_extensions import Annotated
 
 from app.core.config.main import get_app_settings
 from app.infrastructure.db.types.base import BaseType
-from app.infrastructure.db.types.unify.base_mapper import SplitMode
-from app.infrastructure.db.types.unify.layer_mapper import LayerMapper
-from app.infrastructure.db.types.unify.regex_mapper import RegexMapper
-from app.infrastructure.db.types.unify.well_mapper import WellMapper
+from app.infrastructure.db.types.unify import (
+    LayerMapper,
+    RegexMapper,
+    SplitMode,
+    WellMapper,
+)
 
 settings = get_app_settings()  # FIXME avoid global variable
 

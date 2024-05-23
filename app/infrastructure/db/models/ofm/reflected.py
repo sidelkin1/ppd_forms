@@ -74,3 +74,26 @@ class Reservoir(Reflected, Base):
 class HeaderId(Reflected, Base):
     __tablename__ = "headerid"
     __table_args__ = {"schema": "unofm"}
+
+
+class LayersPty(Reflected, Base):
+    __tablename__ = "layers_pty"
+    __table_args__ = {"schema": "unofm"}
+
+
+class Perf(Reflected, Base):
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    uwi = Column(String, primary_key=True)
+    date_op = Column(String, primary_key=True)
+
+    __tablename__ = "perf"
+    __table_args__ = {"schema": "unofm"}
+
+
+class PerfAlt(Reflected, Base):
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    uwi = Column(String, primary_key=True)
+    date_op = Column(String, primary_key=True)
+
+    __tablename__ = "perf_alt"
+    __table_args__ = {"schema": "unofm"}

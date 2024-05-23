@@ -46,4 +46,5 @@ def select_reservoirs() -> Select:
         )
         .where(DictG.id.in_(_select_reservoir_ids()))
         .distinct()
+        .order_by("name")
     )

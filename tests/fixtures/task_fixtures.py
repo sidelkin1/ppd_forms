@@ -17,7 +17,7 @@ from app.core.models.enums import (
 from app.core.models.schemas import DateRange, MatrixEffect
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def date_range() -> DateRange:
     return DateRange(
         date_from="2020-01-01",
@@ -25,7 +25,7 @@ def date_range() -> DateRange:
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def matrix_effect() -> MatrixEffect:
     return MatrixEffect(
         date_from="2020-01-01",
@@ -37,7 +37,7 @@ def matrix_effect() -> MatrixEffect:
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def task_database(date_range: DateRange) -> TaskDatabase:
     return TaskDatabase(
         table=OfmTableName.profile,
@@ -47,7 +47,7 @@ def task_database(date_range: DateRange) -> TaskDatabase:
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def task_excel() -> TaskExcel:
     return TaskExcel(
         table=ExcelTableName.inj_db,
@@ -56,7 +56,7 @@ def task_excel() -> TaskExcel:
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def task_report(date_range: DateRange) -> TaskReport:
     return TaskReport(
         name=ReportName.opp_per_year,
@@ -65,7 +65,7 @@ def task_report(date_range: DateRange) -> TaskReport:
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def task_inj_loss(date_range: DateRange) -> TaskInjLoss:
     return TaskInjLoss(
         name=ReportName.inj_loss,
@@ -75,7 +75,7 @@ def task_inj_loss(date_range: DateRange) -> TaskInjLoss:
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def task_matrix(matrix_effect: MatrixEffect) -> TaskMatrix:
     return TaskMatrix(
         name=ReportName.matrix,

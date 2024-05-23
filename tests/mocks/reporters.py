@@ -73,6 +73,8 @@ class FnvMock(FnvReporter):
                 datetime(2003, 1, 1),
                 datetime(2003, 1, 1),
                 datetime(2004, 1, 1),
+                datetime(2000, 1, 1),
+                datetime(2000, 1, 1),
             ],
             "type_action": [
                 "PERFORATION",
@@ -84,10 +86,24 @@ class FnvMock(FnvReporter):
                 "GDI",
                 "GDI",
                 "PERFORATION",
+                "GDI",
+                "GDI",
             ],
-            "top": [1, 1.09, 1.22, 1.02, 1.15, 1.1, 1, 1.2, 1.14],
-            "base": [1.05, 1.2, 1.24, 1.1, 1.2, 1.2, 1.05, 1.24, 1.15],
-            "prof": [0, 0, 0, 70, 30, 0, 50, 50, 0],
+            "top": [1, 1.09, 1.22, 1.02, 1.15, 1.1, 1, 1.2, 1.14, 1.09, 1.22],
+            "base": [
+                1.05,
+                1.2,
+                1.24,
+                1.1,
+                1.2,
+                1.2,
+                1.05,
+                1.24,
+                1.15,
+                1.2,
+                1.24,
+            ],
+            "prof": [0, 0, 0, 70, 30, 0, 50, 50, 0, 10, 90],
         },
         "F1W2": {
             "date_op": [
@@ -144,7 +160,9 @@ class FnvMock(FnvReporter):
         return pd.DataFrame(self.fake_poro[uwi])
 
     async def events(self, alternative: bool, uwi: str) -> pd.DataFrame:
-        return pd.DataFrame(self.fake_events[uwi])
+        return pd.DataFrame(self.fake_events[uwi]).sort_values(
+            ["date_op", "type_action"], ascending=[True, False]
+        )
 
     async def totwat(self, uwi: str, date_from: str, date_to: str) -> float:
         totwat = self.fake_totwat[uwi].get("..".join((date_from, date_to)))

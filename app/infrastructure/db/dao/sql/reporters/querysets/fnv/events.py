@@ -2,6 +2,7 @@ from sqlalchemy import (
     CompoundSelect,
     Select,
     bindparam,
+    desc,
     literal_column,
     select,
     union_all,
@@ -56,8 +57,12 @@ def _select_geophys() -> Select:
 
 
 def select_events() -> CompoundSelect:
-    return union_all(_select_perf(), _select_geophys()).order_by("date_op")
+    return union_all(_select_perf(), _select_geophys()).order_by(
+        "date_op", desc("type_action")
+    )
 
 
 def select_events_alt() -> CompoundSelect:
-    return union_all(_select_perf_alt(), _select_geophys()).order_by("date_op")
+    return union_all(_select_perf_alt(), _select_geophys()).order_by(
+        "date_op", desc("type_action")
+    )

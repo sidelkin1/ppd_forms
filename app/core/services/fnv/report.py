@@ -15,7 +15,9 @@ from app.infrastructure.db.dao.sql.reporters import FnvReporter
 """
 Немного переработанная версия пакета
 https://github.com/TsepelevVP/PyOraFNV
-
+.. commit:: a272d8d Добавлен отчет ФНВ
+.. commit:: e59d265 Добавлены тесты
+.. commit:: 49632e9 Исправлена ошибка с PERFORATION и GDI на одну дату
 """
 
 
@@ -64,6 +66,11 @@ async def _fill_events(
 ) -> pd.DataFrame:
     profile["last_perf"] = 0.0
     profile["1900-01-01"] = 0.0
+    # флаг для обработки случая совпадения дат GDI
+    # и PERFORATION/SQUEEZE - заносим только что-то одно
+    # если сначала встретится PERF/SQ, то GDI будут игнорироваться,
+    # если раньше GDI, то игорироваться будет PERF/SQ
+    сolumnIsGDI = False
     for _, row in events.iterrows():
         # в ГДИ часто негерметы обозначают интервалом
         # с одинаковымы глубинами :(
@@ -79,38 +86,51 @@ async def _fill_events(
             if row["type_action"] == "GDI":
                 # если GDI - обнуляем
                 profile[row["date_op"]] = 0.0
+                # снимаем флаг = заполняем GDI
+                сolumnIsGDI = True
             else:
                 # если перфорация или заливка -
                 # берем последний актуальный профиль по перфорациям
                 profile[row["date_op"]] = profile["last_perf"]
+                # выставляем флаг, что заполняем перфорацию/заливку
+                сolumnIsGDI = False
         # разбираем события
-        if row["type_action"] == "GDI":
-            # ГДИ - добавляем долю притока из ГДИ
-            # делим на количество единичных интервалов,
-            # т.к. профиль по ГДИ дается на весь интервал притока целиком
-            # можно для надежности взять
-            # self.profile.loc[flt, row['date_op']].count(),
-            # но вычисление по глубинам должно быть быстрее
-            profile.loc[flt, row["date_op"]] = row["prof"] / (
-                row["base"] - row["top"]
-            )
-        elif row["type_action"] == "PERFORATION":
-            # перфорация - добавляем вскрытую мощность
-            profile.loc[flt, row["date_op"]] = 1.0
-            # заменяем последнее состояние перфораций
-            profile["last_perf"] = profile[row["date_op"]]
+        if сolumnIsGDI:
+            if row["type_action"] == "GDI":
+                # ГДИ - добавляем долю притока из ГДИ
+                # делим на количество единичных интервалов,
+                # т.к. профиль по ГДИ дается на весь интервал притока целиком
+                # можно для надежности взять
+                # self.profile.loc[flt, row['date_op']].count(),
+                # но вычисление по глубинам должно быть быстрее
+                profile.loc[flt, row["date_op"]] = row["prof"] / (
+                    row["base"] - row["top"]
+                )
         else:
-            # заливка - обнуляем приток
-            profile.loc[flt, row["date_op"]] = 0.0
-            # заменяем последнее состояние перфораций
-            profile["last_perf"] = profile[row["date_op"]]
+            if row["type_action"] == "PERFORATION":
+                # перфорация - добавляем вскрытую мощность
+                profile.loc[flt, row["date_op"]] = 1.0
+                # заменяем последнее состояние перфораций
+                profile["last_perf"] = profile[row["date_op"]]
+            elif row["type_action"] == "SQUEEZE":
+                # заливка - обнуляем приток
+                profile.loc[flt, row["date_op"]] = 0.0
+                # заменяем последнее состояние перфораций
+                profile["last_perf"] = profile[row["date_op"]]
         # выводим данные по получившемуся профилю в лог
         log_df = profile.loc[flt, "layer_name"].unique()
+        # в лог ставится пометка об игноре события, если GDI и PERF в одну дату
+        ignoreFlag = (
+            "*ignore* "
+            if (сolumnIsGDI != (row["type_action"] == "GDI"))
+            else ""
+        )  # это XOR
         await logger.ainfo(
-            "Событие: %s (%s - %s): %s %s %s",
+            "Событие: %s (%s - %s): %s%s %s %s",
             row["date_op"],
             row["top"],
             row["base"],
+            ignoreFlag,
             row["type_action"],
             "" if not row["prof"] else int(row["prof"] * 100),
             log_df,
@@ -336,7 +356,7 @@ async def _make_contours(
             )
     final_contours.fillna(0, inplace=True)
     await logger.ainfo("-" * 160)
-    await logger.ainfo(
+    await logger.awarning(
         "%s: cкважин с профилями: %s",
         field.name,
         final_contours.columns.size,

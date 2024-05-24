@@ -10,17 +10,16 @@ class MainTableDAO(BaseDAO[Model, DataModel]):
     async def _upsert_by_matching(
         self, objs: list[DataModel], fields: list[str]
     ) -> None:
+        fields_ = set(fields)
         await self.session.execute(
             delete(self.model).where(
                 tuple_(*(getattr(self.model, field) for field in fields)).in_(
-                    [
-                        tuple(
-                            data[field]
-                            for field in fields
-                            if (data := dto.model_dump())
-                        )
-                        for dto in objs
-                    ]
+                    list(
+                        {
+                            tuple(dto.model_dump(include=fields_).values())
+                            for dto in objs
+                        }
+                    )
                 )
             )
         )

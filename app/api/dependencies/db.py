@@ -1,5 +1,4 @@
 from collections.abc import AsyncGenerator
-from pathlib import Path
 from typing import Annotated, cast
 
 from fastapi import Depends
@@ -28,26 +27,32 @@ class DbProvider:
         self.local_pool = local_pool
         self.ofm_pool = ofm_pool
 
-    async def local_dao(self) -> AsyncGenerator[HolderDAO, None]:
+    async def dao(self) -> AsyncGenerator[HolderDAO, None]:
         async with self.local_pool() as session:
-            yield HolderDAO(local_session=session, local_pool=self.local_pool)
+            yield HolderDAO(local_session=session)
 
-    async def ofm_dao(self) -> AsyncGenerator[HolderDAO, None]:
+    async def local_dao(self, **kwargs) -> AsyncGenerator[HolderDAO, None]:
+        async with self.local_pool() as session:
+            yield HolderDAO(
+                local_session=session, local_pool=self.local_pool, **kwargs
+            )
+
+    async def ofm_dao(self, **kwargs) -> AsyncGenerator[HolderDAO, None]:
         with self.ofm_pool() as session:
-            yield HolderDAO(ofm_session=session, ofm_pool=self.ofm_pool)
+            yield HolderDAO(
+                ofm_session=session, ofm_pool=self.ofm_pool, **kwargs
+            )
 
-    async def ofm_local_dao(self) -> AsyncGenerator[HolderDAO, None]:
+    async def ofm_local_dao(self, **kwargs) -> AsyncGenerator[HolderDAO, None]:
         with self.ofm_pool() as ofm_session:
             async with self.local_pool() as local_session:
                 yield HolderDAO(
-                    local_session=local_session, ofm_session=ofm_session
+                    local_session=local_session,
+                    ofm_session=ofm_session,
+                    local_pool=self.local_pool,
+                    ofm_pool=self.ofm_pool,
+                    **kwargs,
                 )
-
-    async def file_local_dao(
-        self, file_path: Path
-    ) -> AsyncGenerator[HolderDAO, None]:
-        async with self.local_pool() as session:
-            yield HolderDAO(local_session=session, file_path=file_path)
 
     async def dispose(self) -> None:
         if self.local_pool and (engine := self.local_pool.kw.get("bind")):

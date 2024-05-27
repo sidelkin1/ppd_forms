@@ -15,44 +15,44 @@ from tests.mocks.uneft import FieldListMock, ReservoirListMock, WellListMock
 class HolderMock(HolderDAO):
     @property
     def ofm_monthly_report(self) -> ofm.MonthlyReportDAO:
-        return MonthlyReportMock(self.ofm_session)
+        return MonthlyReportMock(self.kwargs["ofm_session"])
 
     @property
     def ofm_well_profile(self) -> ofm.WellProfileDAO:
-        return WellProfileMock(self.ofm_session)
+        return WellProfileMock(self.kwargs["ofm_session"])
 
     @property
     def excel_new_strategy_inj(self) -> excel.NewStrategyInjDAO:
-        return NewStrategyInjMock(self.file_path)
+        return NewStrategyInjMock(self.kwargs["file_path"], ",")
 
     @property
     def excel_new_strategy_oil(self) -> excel.NewStrategyOilDAO:
-        return NewStrategyOilMock(self.file_path)
+        return NewStrategyOilMock(self.kwargs["file_path"])
 
     @property
     def excel_inj_well_database(self) -> excel.InjWellDatabaseDAO:
-        return InjWellDatabaseMock(self.file_path)
+        return InjWellDatabaseMock(self.kwargs["file_path"])
 
     @property
     def excel_neighborhood(self) -> excel.NeighborhoodDAO:
-        return NeighborhoodMock(self.file_path)
+        return NeighborhoodMock(self.kwargs["file_path"])
 
     @property
     def opp_per_year_reporter(self) -> reporters.OppPerYearReporter:
-        return OppPerYearMock(self.ofm_pool)
+        return OppPerYearMock(self.kwargs["ofm_pool"])
 
     @property
     def fnv_reporter(self) -> reporters.FnvReporter:
-        return FnvMock(self.ofm_pool)
+        return FnvMock(self.kwargs["ofm_pool"])
 
     @property
     def ofm_field_list(self) -> ofm.FieldListDAO:
-        return FieldListMock(self.ofm_session)
+        return FieldListMock(self.kwargs["ofm_session"])
 
     @property
     def ofm_reservoir_list(self) -> ofm.ReservoirListDAO:
-        return ReservoirListMock(self.ofm_session)
+        return ReservoirListMock(self.kwargs["ofm_session"])
 
     @property
     def ofm_well_list(self) -> ofm.WellListDAO:
-        return WellListMock(self.ofm_session)
+        return WellListMock(self.kwargs["ofm_session"])

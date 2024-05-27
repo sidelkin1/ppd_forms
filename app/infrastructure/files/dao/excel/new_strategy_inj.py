@@ -10,9 +10,9 @@ from app.infrastructure.files.dao.excel.configs.new_strategy_inj import (
 
 
 class NewStrategyInjDAO(BaseDAO[NewStrategyInjDB]):
-    def __init__(self, filepath: Path) -> None:
+    def __init__(self, filepath: Path, delimiter: str) -> None:
         super().__init__(
-            NewStrategyInjDB, filepath, excel_options, column_names
+            NewStrategyInjDB, filepath, excel_options(delimiter), column_names
         )
 
     async def get_all(self) -> list[NewStrategyInjDB]:

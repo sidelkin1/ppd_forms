@@ -31,20 +31,26 @@ registry = WorkRegistry()
 
 @registry.add("excel:ns_ppd:refresh")
 async def refresh_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
+    app_config: AppSettings = ctx["app_config"]
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](
+        file_path=path, delimiter=app_config.delimiter
+    ) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_inj_loader.refresh()
 
 
 @registry.add("excel:ns_ppd:reload")
 async def reload_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
+    app_config: AppSettings = ctx["app_config"]
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](
+        file_path=path, delimiter=app_config.delimiter
+    ) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_inj_loader.reload()
 
@@ -54,7 +60,7 @@ async def refresh_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](file_path=path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_oil_loader.refresh()
 
@@ -64,7 +70,7 @@ async def reload_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](file_path=path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.new_strategy_oil_loader.reload()
 
@@ -74,7 +80,7 @@ async def refresh_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](file_path=path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.inj_well_database_loader.refresh()
 
@@ -84,7 +90,7 @@ async def reload_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](file_path=path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.inj_well_database_loader.reload()
 
@@ -96,7 +102,7 @@ async def refresh_neighbs(
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](file_path=path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.neighborhood_loader.refresh()
 
@@ -106,7 +112,7 @@ async def reload_neighbs(response: ExcelResponse, ctx: dict[str, Any]) -> None:
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["file_local_dao"](path) as holder:
+    async with ctx["local_dao"](file_path=path) as holder:
         holder = cast(HolderDAO, holder)
         await holder.neighborhood_loader.reload()
 

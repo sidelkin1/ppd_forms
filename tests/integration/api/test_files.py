@@ -31,7 +31,9 @@ async def test_download_report(client: AsyncClient, paths: Paths):
     file = UploadFile(
         open(paths.data_dir / "test.csv", "rb"), filename="test.csv"
     )
-    await save_upload_file(file, paths.file_dir / "test_user" / "results")
+    base_dir = paths.file_dir / "test_user" / "results"
+    base_dir.mkdir(parents=True, exist_ok=True)
+    await save_upload_file(file, base_dir)
     resp = await client.get("/reports/test/csv")
     assert resp.is_success
     assert resp.content == b"test"

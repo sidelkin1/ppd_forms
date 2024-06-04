@@ -8,6 +8,7 @@ from app.api.dependencies.redis import RedisDep
 from app.api.models.responses import (
     FnvResponse,
     InjLossResponse,
+    MatbalResponse,
     MatrixResponse,
     OilLossResponse,
     ReportResponse,
@@ -16,12 +17,18 @@ from app.api.utils.validators import check_file_exists
 from app.core.models.dto import (
     TaskFNV,
     TaskInjLoss,
+    TaskMatbal,
     TaskMatrix,
     TaskOilLoss,
     TaskReport,
 )
 from app.core.models.enums import FileExtension, LossMode, ReportName
-from app.core.models.schemas import DateRange, FnvParams, MatrixEffect
+from app.core.models.schemas import (
+    DateRange,
+    FnvParams,
+    MatbalParams,
+    MatrixEffect,
+)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -119,6 +126,31 @@ async def generate_fnv_report(
         alternative=fnv_params.alternative,
     )
     response = FnvResponse(task=task, job=job)
+    await redis.enqueue_task(response)
+    return response
+
+
+@router.post(
+    "/matbal",
+    status_code=status.HTTP_201_CREATED,
+    response_model=MatbalResponse,
+    response_model_exclude_none=True,
+)
+async def generate_matbal_report(
+    matbal_params: MatbalParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskMatbal(
+        name=ReportName.matbal,
+        field=matbal_params.field,
+        reservoirs=matbal_params.reservoirs,
+        wells=matbal_params.wells,
+        measurements=matbal_params.measurements,
+        alternative=matbal_params.alternative,
+    )
+    response = MatbalResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

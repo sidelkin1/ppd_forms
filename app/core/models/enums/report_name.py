@@ -8,3 +8,4 @@ class ReportName(str, Enum):
     opp_per_year = "opp_per_year"
     matrix = "matrix"
     fnv = "fnv"
+    matbal = "matbal"

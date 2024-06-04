@@ -14,6 +14,7 @@ from .tasks.database import TaskDatabase
 from .tasks.excel import TaskExcel
 from .tasks.fnv import TaskFNV
 from .tasks.inj_loss import TaskInjLoss
+from .tasks.matbal import TaskMatbal
 from .tasks.matrix import TaskMatrix
 from .tasks.oil_loss import TaskOilLoss
 from .tasks.report import TaskReport

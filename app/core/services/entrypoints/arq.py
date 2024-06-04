@@ -7,6 +7,7 @@ from app.api.models.responses import (
     FieldsResponse,
     FnvResponse,
     InjLossResponse,
+    MatbalResponse,
     MatrixResponse,
     OilLossResponse,
     ReportResponse,
@@ -18,6 +19,7 @@ from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.fnv.report import fnv_report
 from app.core.services.inj_loss_report import inj_loss_report
+from app.core.services.matbal_report import matbal_report
 from app.core.services.matrix_report import matrix_report
 from app.core.services.oil_loss_report import oil_loss_report
 from app.core.services.opp_per_year_report import opp_per_year_report
@@ -315,6 +317,31 @@ async def create_fnv_report(
             response.task.alternative,
             response.task.max_fields,
             holder.fnv_reporter,
+        )
+
+
+@registry.add("report:matbal")
+async def create_matbal_report(
+    response: MatbalResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    path = path_provider.upload_dir(user_id)
+    async with ctx["ofm_dao"](
+        path=path,
+        wells=response.task.wells,
+        measurements=response.task.measurements,
+    ) as holder:
+        holder = cast(HolderDAO, holder)
+        await matbal_report(
+            path_provider.dir_path(user_id, file_id),
+            path_provider.data_dir / "matbal_template.xlsm",
+            response.task.field,
+            response.task.reservoirs,
+            response.task.alternative,
+            holder.matbal_reporter,
+            ctx["pool"],
         )
 
 

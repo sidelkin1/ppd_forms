@@ -98,3 +98,17 @@
     value: 0
     selected: false
   description: Фронт нагнетаемой воды
+- title: Шаблон для матбаланса
+  path: matbal
+  alternative: true
+  fields:
+  - text: --Выберите месторождение--
+    value: --
+    selected: true
+  reservoirs:
+  - text: --Выберите объект(ы)--
+    value: --
+    selected: false
+  wells: Список скважин
+  measurements: Замеры Рпл
+  description: Шаблон для матбаланса

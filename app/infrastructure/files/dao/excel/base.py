@@ -26,7 +26,7 @@ class BaseDAO(Generic[Model]):
             pd.read_excel,  # type: ignore[arg-type]
             self.filepath,
             engine="openpyxl",
-            **self.excel_options
+            **self.excel_options,
         )
         if self.column_names:
             df.columns = self.column_names  # type: ignore[assignment]

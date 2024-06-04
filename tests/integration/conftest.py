@@ -37,12 +37,16 @@ logger = logging.getLogger(__name__)
 
 @pytest_asyncio.fixture
 async def holder(session: AsyncSession) -> HolderDAO:
-    return HolderMock(local_session=session)
+    return HolderMock(
+        local_session=session, file_path=None, ofm_session=None, ofm_pool=None
+    )
 
 
 @pytest_asyncio.fixture(scope="session")
 async def pool_holder(pool: sessionmaker) -> HolderDAO:
-    return HolderMock(local_pool=pool)
+    return HolderMock(
+        local_pool=pool, file_path=None, ofm_session=None, ofm_pool=None
+    )
 
 
 @pytest.fixture(scope="session")

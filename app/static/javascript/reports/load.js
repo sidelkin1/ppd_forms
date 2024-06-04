@@ -1,3 +1,15 @@
+async function sendReportFiles(name, files, url) {
+  const alert = document.getElementById(`${name}Danger`);
+
+  try {
+    results = await sendMultipleFiles(files, url);
+    return results;
+  } catch (error) {
+    console.error(error);
+    alert.classList.remove("d-none");
+  }
+}
+
 async function loadReport(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
@@ -130,6 +142,57 @@ async function loadFNV(reportName) {
   if (result) {
     link.href = `/reports/${result.job.file_id}/zip`;
     await checkStatus(reportName, result.job.job_id);
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}
+
+async function loadMatbal(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const { value: fieldID, text: fieldName } = document.getElementById(
+    `${reportName}Fields`
+  ).selectedOptions[0];
+  const reservoirs = [
+    ...document.getElementById(`${reportName}Reservoirs`).selectedOptions,
+  ]
+    .filter((opt) => opt.value !== "--")
+    .map((opt) => ({ id: opt.value, name: opt.text }));
+  const wells = document.getElementById(`${reportName}Wells`).files[0];
+  const measurements = document.getElementById(`${reportName}Measurements`)
+    .files[0];
+  const alternative = document.getElementById(
+    `${reportName}Alternative`
+  ).checked;
+  const link = document.getElementById(`${reportName}Link`);
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const files = await sendReportFiles(
+    reportName,
+    [wells, measurements],
+    "/excel"
+  );
+  if (files) {
+    const url = `/reports/${reportName}`;
+    const data = {
+      field: { id: fieldID, name: fieldName },
+      reservoirs: reservoirs,
+      wells: files[0] ? files[0].filename : null,
+      measurements: files[1] ? files[1].filename : null,
+      alternative: alternative,
+    };
+    const result = await assignWork(reportName, url, data);
+    if (result) {
+      link.href = `/reports/${result.job.file_id}/zip`;
+      await checkStatus(reportName, result.job.job_id);
+    }
   }
 
   loader.classList.add("d-none");

@@ -2411,6 +2411,17 @@ files = [
 types-pyasn1 = "*"
 
 [[package]]
+name = "types-openpyxl"
+version = "3.1.0.20240428"
+description = "Typing stubs for openpyxl"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-openpyxl-3.1.0.20240428.tar.gz", hash = "sha256:76f5d01fb6ecb495683da957ac4e15b982efbeab772f728a348c6e01ae990e9b"},
+    {file = "types_openpyxl-3.1.0.20240428-py3-none-any.whl", hash = "sha256:08b180ec49d15140e07399a3f3cb75fd25e9e09e3326319fc6be5636892480f5"},
+]
+
+[[package]]
 name = "types-pyasn1"
 version = "0.5.0.20240106"
 description = "Typing stubs for pyasn1"
@@ -2844,4 +2855,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "32671d489ef0a2f66fdfb2437cb327ac0b5b8a7e595cefd60f14d7973ab86db2"
+content-hash = "7ad7d6cbfe9f1ac92425543e82a86e7ef15858be7452d7138a5e55a030771d67"

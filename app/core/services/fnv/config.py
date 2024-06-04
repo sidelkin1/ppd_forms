@@ -10,7 +10,7 @@ def configure_logging(name: str, path: Path) -> logging.Logger:
     )
     datefmt = "%Y-%m-%d %H:%M"
     formatter = logging.Formatter(fmt=format, datefmt=datefmt)
-    file_handler = logging.FileHandler(path / "fnv.log", mode="w")
+    file_handler = logging.FileHandler(path / "fnv.log", mode="w", delay=True)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
     console_handler = logging.StreamHandler()

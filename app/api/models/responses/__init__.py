@@ -6,6 +6,7 @@ from .task import (
     FieldsResponse,
     FnvResponse,
     InjLossResponse,
+    MatbalResponse,
     MatrixResponse,
     OilLossResponse,
     ReportResponse,

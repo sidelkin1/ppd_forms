@@ -69,7 +69,6 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["local_dao"] = asynccontextmanager(provider.local_dao)
     ctx["ofm_dao"] = asynccontextmanager(provider.ofm_dao)
     ctx["ofm_local_dao"] = asynccontextmanager(provider.ofm_local_dao)
-    ctx["file_local_dao"] = asynccontextmanager(provider.file_local_dao)
     await initialize_mapper(provider)
     logger.info("worker prepared")
 

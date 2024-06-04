@@ -2,11 +2,10 @@ from dataclasses import dataclass
 
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.infrastructure.db.dao.sql import ofm
-from app.infrastructure.db.dao.sql.reporters.ofm import OfmBaseDAO
 
 
 @dataclass
-class UneftDAO(OfmBaseDAO):
+class UneftDAO:
     fields: ofm.FieldListDAO
     reservoirs: ofm.ReservoirListDAO
     wells: ofm.WellListDAO

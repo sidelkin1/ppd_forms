@@ -11,7 +11,6 @@ async def save_upload_file(file: UploadFile, base_dir: Path):
         if file.filename is None:
             raise ValueError("filename must be set")
         path = base_dir / file.filename
-        path.parent.mkdir(parents=True, exist_ok=True)
         async with aiofiles.open(path, "wb") as f:
             while contents := await file.read(COPY_BUFSIZE):
                 await f.write(contents)

@@ -2,6 +2,7 @@ from .base import BaseDAO
 from .fnv import FnvReporter
 from .inj_loss import FirstRateInjLossReporter, MaxRateInjLossReporter
 from .local import LocalBaseDAO
+from .matbal import MatbalReporter
 from .matrix import MatrixReporter
 from .ofm import OfmBaseDAO
 from .oil_loss import FirstRateOilLossReporter, MaxRateOilLossReporter

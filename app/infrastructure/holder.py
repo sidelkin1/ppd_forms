@@ -1,7 +1,10 @@
 from app.infrastructure.db.dao import local
 from app.infrastructure.db.dao.complex import initializers, loaders, uneft
-from app.infrastructure.db.dao.sql import ofm, reporters
+from app.infrastructure.db.dao.complex import reporters as complex_reporters
+from app.infrastructure.db.dao.sql import ofm
+from app.infrastructure.db.dao.sql import reporters as db_reporters
 from app.infrastructure.files.dao import csv, excel
+from app.infrastructure.files.dao import reporters as file_reporters
 
 
 class HolderDAO:
@@ -189,40 +192,62 @@ class HolderDAO:
         )
 
     @property
-    def well_profile_reporter(self) -> reporters.WellProfileReporter:
-        return reporters.WellProfileReporter(self.kwargs["local_pool"])
+    def well_profile_reporter(self) -> db_reporters.WellProfileReporter:
+        return db_reporters.WellProfileReporter(self.kwargs["local_pool"])
 
     @property
     def first_rate_inj_loss_reporter(
         self,
-    ) -> reporters.FirstRateInjLossReporter:
-        return reporters.FirstRateInjLossReporter(self.kwargs["local_pool"])
+    ) -> db_reporters.FirstRateInjLossReporter:
+        return db_reporters.FirstRateInjLossReporter(self.kwargs["local_pool"])
 
     @property
-    def max_rate_inj_loss_reporter(self) -> reporters.MaxRateInjLossReporter:
-        return reporters.MaxRateInjLossReporter(self.kwargs["local_pool"])
+    def max_rate_inj_loss_reporter(
+        self,
+    ) -> db_reporters.MaxRateInjLossReporter:
+        return db_reporters.MaxRateInjLossReporter(self.kwargs["local_pool"])
 
     @property
     def first_rate_oil_loss_reporter(
         self,
-    ) -> reporters.FirstRateOilLossReporter:
-        return reporters.FirstRateOilLossReporter(self.kwargs["local_pool"])
+    ) -> db_reporters.FirstRateOilLossReporter:
+        return db_reporters.FirstRateOilLossReporter(self.kwargs["local_pool"])
 
     @property
-    def max_rate_oil_loss_reporter(self) -> reporters.MaxRateOilLossReporter:
-        return reporters.MaxRateOilLossReporter(self.kwargs["local_pool"])
+    def max_rate_oil_loss_reporter(
+        self,
+    ) -> db_reporters.MaxRateOilLossReporter:
+        return db_reporters.MaxRateOilLossReporter(self.kwargs["local_pool"])
 
     @property
-    def opp_per_year_reporter(self) -> reporters.OppPerYearReporter:
-        return reporters.OppPerYearReporter(self.kwargs["ofm_pool"])
+    def opp_per_year_reporter(self) -> db_reporters.OppPerYearReporter:
+        return db_reporters.OppPerYearReporter(self.kwargs["ofm_pool"])
 
     @property
-    def matrix_reporter(self) -> reporters.MatrixReporter:
-        return reporters.MatrixReporter(self.kwargs["local_pool"])
+    def matrix_reporter(self) -> db_reporters.MatrixReporter:
+        return db_reporters.MatrixReporter(self.kwargs["local_pool"])
 
     @property
-    def fnv_reporter(self) -> reporters.FnvReporter:
-        return reporters.FnvReporter(self.kwargs["ofm_pool"])
+    def fnv_reporter(self) -> db_reporters.FnvReporter:
+        return db_reporters.FnvReporter(self.kwargs["ofm_pool"])
+
+    @property
+    def db_matbal_reporter(self) -> db_reporters.MatbalReporter:
+        return db_reporters.MatbalReporter(self.kwargs["ofm_pool"])
+
+    @property
+    def file_matbal_reporter(self) -> file_reporters.MatbalReporter:
+        return file_reporters.MatbalReporter(
+            self.kwargs["path"],
+            self.kwargs["wells"],
+            self.kwargs["measurements"],
+        )
+
+    @property
+    def matbal_reporter(self) -> complex_reporters.MatbalReporter:
+        return complex_reporters.MatbalReporter(
+            self.db_matbal_reporter, self.file_matbal_reporter
+        )
 
     @property
     def new_strategy_inj_loader(self) -> loaders.NewStrategyInjLoader:

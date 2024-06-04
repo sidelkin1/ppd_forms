@@ -368,7 +368,6 @@ async def _make_contours(
 async def _save_countours(
     path: Path, contours: pd.DataFrame, logger: BoundLogger
 ) -> None:
-    path.mkdir(parents=True, exist_ok=True)
     for layer_index, *layer_row in contours.itertuples():
         if any(layer_row):
             fname = (path / "_".join(layer_index)).with_suffix(".txt")

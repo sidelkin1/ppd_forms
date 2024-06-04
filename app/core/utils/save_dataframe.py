@@ -8,7 +8,6 @@ from aiocsv import AsyncWriter
 async def save_to_csv(
     df: pd.DataFrame, path: Path, encoding: str, delimiter: str
 ) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     async with aiofiles.open(
         path, mode="w", encoding=encoding, newline=""
     ) as afp:

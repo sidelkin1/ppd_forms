@@ -8,8 +8,18 @@ class MonthlyProd(Reflected, Base):
     __table_args__ = {"schema": "unofm"}
 
 
+class MonthlyProdAlt(Reflected, Base):
+    __tablename__ = "monthlyprod_alt"
+    __table_args__ = {"schema": "unofm"}
+
+
 class MonthlyInj(Reflected, Base):
     __tablename__ = "monthly_inj"
+    __table_args__ = {"schema": "unofm"}
+
+
+class MonthlyInjAlt(Reflected, Base):
+    __tablename__ = "monthly_inj_alt"
     __table_args__ = {"schema": "unofm"}
 
 

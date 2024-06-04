@@ -14,7 +14,7 @@ async function fetchFields(report, path) {
       let option = document.createElement("option");
       option.value = id;
       option.innerHTML = name;
-      fieldList.append(option);
+      fieldList.add(option);
     });
   } catch (error) {
     console.error(error);
@@ -33,4 +33,7 @@ async function loadReportFields(reportFields) {
   }
 }
 
-loadReportFields([["fnv", "fields?stock=injection"]]);
+loadReportFields([
+  ["fnv", "fields?stock=injection"],
+  ["matbal", "fields?stock=production"],
+]);

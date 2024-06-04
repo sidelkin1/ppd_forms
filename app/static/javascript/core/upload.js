@@ -1,24 +1,21 @@
-async function sendFile(name, url) {
-  const alert = document.getElementById(`${name}Danger`);
+async function sendFile(file, url) {
+  if (!file) {
+    return null;
+  }
 
-  const file = document.getElementById(`${name}File`).files[0];
   const formData = new FormData();
   formData.append("file", file);
 
-  let result;
-  try {
-    const response = await fetch(url, {
-      method: "post",
-      body: formData,
-    });
-    if (!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
-    result = await response.json();
-  } catch (error) {
-    console.error(error);
-    alert.classList.remove("d-none");
+  const response = await fetch(url, {
+    method: "post",
+    body: formData,
+  });
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
   }
+  return await response.json();
+}
 
-  return result;
+async function sendMultipleFiles(files, url) {
+  return await Promise.all(files.map((file) => sendFile(file, url)));
 }

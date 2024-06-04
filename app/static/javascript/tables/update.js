@@ -1,3 +1,19 @@
+async function sendExcelFile(name, url) {
+  const alert = document.getElementById(`${name}Danger`);
+  const file = document.getElementById(`${name}File`).files[0];
+
+  try {
+    result = await sendFile(file, url);
+    if (!result) {
+      throw new Error("File is not selected");
+    }
+    return result;
+  } catch (error) {
+    console.error(error);
+    alert.classList.remove("d-none");
+  }
+}
+
 async function updateTable(tableName) {
   const loader = document.getElementById(`${tableName}Status`);
   const button = document.getElementById(`${tableName}Button`);
@@ -39,7 +55,7 @@ async function updateExcel(tableName) {
   alert.classList.add("d-none");
   success.classList.add("d-none");
 
-  let result = await sendFile(tableName, "/excel/");
+  let result = await sendExcelFile(tableName, "/excel");
   if (result) {
     const url = `/excel/${tableName}/refresh`;
     const data = { file: result.filename };

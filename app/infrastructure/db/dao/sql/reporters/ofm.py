@@ -11,7 +11,5 @@ class OfmBaseDAO(BaseDAO[sessionmaker[Session]]):
         self, queryset: Select | CompoundSelect, **params
     ) -> Result:
         with self.pool() as session:
-            result: Result = await run_in_threadpool(
-                session.execute, queryset, params
-            )
+            result = await run_in_threadpool(session.execute, queryset, params)
         return result

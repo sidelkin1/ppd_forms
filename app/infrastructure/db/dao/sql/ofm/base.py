@@ -2,7 +2,6 @@ from typing import Generic, TypeVar
 
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
-from sqlalchemy import Result
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import Select
 
@@ -18,7 +17,7 @@ class BaseDAO(Generic[Model]):
         self.session = session
 
     async def get_by_params(self, **params) -> list[Model]:
-        result: Result = await run_in_threadpool(
+        result = await run_in_threadpool(
             self.session.execute, self.queryset, params
         )
         return [self.model.model_validate(row) for row in result.all()]

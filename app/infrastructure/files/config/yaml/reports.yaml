@@ -98,7 +98,7 @@
     value: 0
     selected: false
   description: Фронт нагнетаемой воды
-- title: Шаблон для матбаланса
+- title: Шаблон для матбаланса (РН-КИН)
   path: matbal
   alternative: true
   fields:

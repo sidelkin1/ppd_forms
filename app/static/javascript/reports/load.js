@@ -198,3 +198,38 @@ async function loadMatbal(reportName) {
   loader.classList.add("d-none");
   button.classList.remove("disabled");
 }
+
+async function loadProlong(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const expected = document.getElementById(`${reportName}Expected`).files[0];
+  const actual = document.getElementById(`${reportName}Actual`).files[0];
+  const interpolation = document.getElementById(`${reportName}Interpolation`)
+    .selectedOptions[0].value;
+  const link = document.getElementById(`${reportName}Link`);
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const files = await sendReportFiles(reportName, [expected, actual], "/excel");
+  if (files) {
+    const url = `/reports/${reportName}`;
+    const data = {
+      expected: files[0] ? files[0].filename : null,
+      actual: files[1] ? files[1].filename : null,
+      interpolation: interpolation,
+    };
+    const result = await assignWork(reportName, url, data);
+    if (result) {
+      link.href = `/reports/${result.job.file_id}/zip`;
+      await checkStatus(reportName, result.job.job_id);
+    }
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}

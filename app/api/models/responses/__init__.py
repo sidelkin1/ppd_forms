@@ -9,6 +9,7 @@ from .task import (
     MatbalResponse,
     MatrixResponse,
     OilLossResponse,
+    ProlongResponse,
     ReportResponse,
     ReservoirsResponse,
     WellsResponse,

@@ -11,6 +11,7 @@ from app.api.models.responses import (
     MatbalResponse,
     MatrixResponse,
     OilLossResponse,
+    ProlongResponse,
     ReportResponse,
 )
 from app.api.utils.validators import check_file_exists
@@ -20,6 +21,7 @@ from app.core.models.dto import (
     TaskMatbal,
     TaskMatrix,
     TaskOilLoss,
+    TaskProlong,
     TaskReport,
 )
 from app.core.models.enums import FileExtension, LossMode, ReportName
@@ -28,6 +30,7 @@ from app.core.models.schemas import (
     FnvParams,
     MatbalParams,
     MatrixEffect,
+    ProlongParams,
 )
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -151,6 +154,29 @@ async def generate_matbal_report(
         alternative=matbal_params.alternative,
     )
     response = MatbalResponse(task=task, job=job)
+    await redis.enqueue_task(response)
+    return response
+
+
+@router.post(
+    "/prolong",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ProlongResponse,
+    response_model_exclude_none=True,
+)
+async def generate_prolong_report(
+    prolong_params: ProlongParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskProlong(
+        name=ReportName.prolong,
+        expected=prolong_params.expected,
+        actual=prolong_params.actual,
+        interpolation=prolong_params.interpolation,
+    )
+    response = ProlongResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

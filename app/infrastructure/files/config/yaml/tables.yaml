@@ -1,24 +1,24 @@
-- description: Какое-то краткое описание таблицы.
-  path: report
+- path: report
   source: database
   title: МЭР
-- description: Какое-то краткое описание таблицы.
-  path: profile
+  description: Копия МЭР из базы СМД.
+- path: profile
   source: database
   title: ОПП
-- description: Какое-то краткое описание таблицы.
-  path: ns_ppd
+  description: Копия профилей из базы СМД.
+- path: ns_ppd
   source: excel
   title: НС ППД
-- description: Какое-то краткое описание таблицы.
-  path: ns_oil
+  description: Сводная НС ППД с округой (<a href="file://">ссылка</a>).
+- path: ns_oil
   source: excel
   title: НС НФ
-- description: Какое-то краткое описание таблицы.
-  path: inj_db
+  description: Сводная НС НФ за все года (<a href="file://">ссылка</a>).
+- path: inj_db
   source: excel
   title: База ГТМ ППД
-- description: Какое-то краткое описание таблицы.
-  path: neighbs
+  description: Таблица для подбора ГТМ ППД (<a href="file://">ссылка</a>).
+- path: neighbs
   source: excel
   title: Округа
+  description: Выгрузка из РН-КИН по областям Вороного (<a href="file://">ссылка</a>).

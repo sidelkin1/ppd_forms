@@ -9,7 +9,7 @@ import pandas as pd
 from structlog.stdlib import BoundLogger
 
 from app.core.models.dto import UneftFieldDB
-from app.core.services.fnv.context import LogContext
+from app.core.services.reports.log.context import LogContext
 from app.infrastructure.db.dao.sql.reporters import FnvReporter
 
 """
@@ -396,7 +396,7 @@ async def _process_field(
     async with sem:
         result_path = path / field.name
         result_path.mkdir(parents=True, exist_ok=True)
-        with LogContext(str(result_path), result_path) as logger:
+        with LogContext(str(result_path), result_path / "fnv.log") as logger:
             try:
                 await logger.awarning("Start")
                 await logger.awarning("Field = %s", field.name)
@@ -417,7 +417,7 @@ async def _handle_failures(
     failures: asyncio.Queue[UneftFieldDB],
     tasks: list[asyncio.Task],
 ) -> None:
-    with LogContext(str(path), path) as logger:
+    with LogContext(str(path), path / "errors.log") as logger:
         while not (all(task.done() for task in tasks) and failures.empty()):
             if failures.empty():
                 await asyncio.sleep(0)

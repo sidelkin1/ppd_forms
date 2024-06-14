@@ -44,7 +44,7 @@ def excel_options(delimiter: str) -> dict[str, Any]:
     }
 
 
-column_names: list[str] = [
+column_names = [
     "field",
     "well",
     "reservoir",

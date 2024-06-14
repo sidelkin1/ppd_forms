@@ -8,12 +8,14 @@ import pytest
 from csv_diff import compare, load_csv
 
 from app.core.models.dto import UneftFieldDB
-from app.core.services.fnv.report import fnv_report
-from app.core.services.inj_loss_report import inj_loss_report
-from app.core.services.matrix_report import matrix_report
-from app.core.services.oil_loss_report import oil_loss_report
-from app.core.services.opp_per_year_report import opp_per_year_report
-from app.core.services.profile_report import profile_report
+from app.core.services.reports import (
+    fnv_report,
+    inj_loss_report,
+    matrix_report,
+    oil_loss_report,
+    opp_per_year_report,
+    profile_report,
+)
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.sql.reporters import LocalBaseDAO
 from app.infrastructure.files.config.models.csv import CsvSettings

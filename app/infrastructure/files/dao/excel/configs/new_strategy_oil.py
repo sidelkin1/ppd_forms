@@ -1,8 +1,6 @@
-from typing import Any
-
 import pandas as pd
 
-excel_options: dict[str, Any] = {
+excel_options = {
     "converters": {
         "№ скв": str,
         "Дата ВНР": lambda x: pd.to_datetime(
@@ -25,7 +23,7 @@ excel_options: dict[str, Any] = {
     ],
 }
 
-column_names: list[str] = [
+column_names = [
     "field",
     "well",
     "gtm_name",

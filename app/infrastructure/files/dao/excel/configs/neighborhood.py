@@ -1,6 +1,4 @@
-from typing import Any
-
-excel_options: dict[str, Any] = {
+excel_options = {
     "converters": {
         "Скважина №": str,
         "Работающее окружение скважины (области Вороного)": str,
@@ -14,4 +12,4 @@ excel_options: dict[str, Any] = {
     ],
 }
 
-column_names: list[str] = ["field", "reservoir", "well", "neighbs"]
+column_names = ["field", "reservoir", "well", "neighbs"]

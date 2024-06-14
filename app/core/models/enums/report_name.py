@@ -9,3 +9,4 @@ class ReportName(str, Enum):
     matrix = "matrix"
     fnv = "fnv"
     matbal = "matbal"
+    prolong = "prolong"

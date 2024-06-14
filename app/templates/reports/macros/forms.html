@@ -124,3 +124,25 @@
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
+
+{% macro form_prolong(report, button_text, button_func) -%}
+    <div class="mb-3">
+        <label class="form-check-label" for="{{ report.path }}Expected">{{ report.expected }}</label>
+        <input type="file" class="form-control" id="{{ report.path }}Expected" name="file"/>
+    </div>
+    <div class="mb-3">
+        <label class="form-check-label" for="{{ report.path }}Actual">{{ report.actual }}</label>
+        <input type="file" class="form-control" id="{{ report.path }}Actual" name="file"/>
+    </div>
+    <select class="form-select mb-3" id="{{ report.path }}Interpolation">
+        {% for option in report.interpolation %}
+            <option
+                value="{{ option.value }}"
+                {% if option.selected %}selected{% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+    {{ spinner_button(report.path, button_text, button_func) }}
+{%- endmacro %}

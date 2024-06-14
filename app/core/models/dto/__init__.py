@@ -9,6 +9,7 @@ from .db.reservoir_list import UneftReservoirDB
 from .db.well_list import UneftWellDB
 from .db.well_profile import WellProfileDB
 from .jobs.job_stamp import JobStamp
+from .reports.prolong import ProlongExpected
 from .tasks.base import TaskBase
 from .tasks.database import TaskDatabase
 from .tasks.excel import TaskExcel
@@ -17,5 +18,6 @@ from .tasks.inj_loss import TaskInjLoss
 from .tasks.matbal import TaskMatbal
 from .tasks.matrix import TaskMatrix
 from .tasks.oil_loss import TaskOilLoss
+from .tasks.prolong import TaskProlong
 from .tasks.report import TaskReport
 from .tasks.uneft import TaskFields, TaskReservoirs, TaskUneft, TaskWells

@@ -10,6 +10,7 @@ from app.api.models.responses import (
     MatbalResponse,
     MatrixResponse,
     OilLossResponse,
+    ProlongResponse,
     ReportResponse,
     ReservoirsResponse,
     WellsResponse,
@@ -17,13 +18,16 @@ from app.api.models.responses import (
 from app.core.config.models.app import AppSettings
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
-from app.core.services.fnv.report import fnv_report
-from app.core.services.inj_loss_report import inj_loss_report
-from app.core.services.matbal_report import matbal_report
-from app.core.services.matrix_report import matrix_report
-from app.core.services.oil_loss_report import oil_loss_report
-from app.core.services.opp_per_year_report import opp_per_year_report
-from app.core.services.profile_report import profile_report
+from app.core.services.reports import (
+    fnv_report,
+    inj_loss_report,
+    matbal_report,
+    matrix_report,
+    oil_loss_report,
+    opp_per_year_report,
+    profile_report,
+    prolong_report,
+)
 from app.core.services.uneft import uneft_fields, uneft_reservoirs, uneft_wells
 from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
@@ -343,6 +347,26 @@ async def create_matbal_report(
             holder.matbal_reporter,
             ctx["pool"],
         )
+
+
+@registry.add("report:prolong")
+async def create_prolong_report(
+    response: ProlongResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    path = path_provider.upload_dir(user_id)
+    holder = HolderDAO(file_path=path / response.task.expected)
+    csv_config: CsvSettings = ctx["csv_config"]
+    await prolong_report(
+        path_provider.dir_path(user_id, file_id),
+        holder.excel_prolong_expected,
+        path / response.task.actual,
+        response.task.interpolation,
+        ctx["pool"],
+        csv_config,
+    )
 
 
 @registry.add("uneft:fields")

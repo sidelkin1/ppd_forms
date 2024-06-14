@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 
 {% from '/macros/forms.html' import form_date_range %}
-{% from 'reports/macros/forms.html' import form_inj_loss, form_matrix, form_fnv, form_matbal %}
+{% from 'reports/macros/forms.html' import
+    form_inj_loss,
+    form_matrix,
+    form_fnv,
+    form_matbal,
+    form_prolong
+%}
 {% from '/macros/accordion.html' import accordion_form %}
 
 {% block content %}
@@ -46,6 +52,8 @@
                                 {{ form_fnv(report, "Выгрузить", "loadFNV") }}
                             {% elif report.path == "matbal" %}
                                 {{ form_matbal(report, "Выгрузить", "loadMatbal") }}
+                            {% elif report.path == "prolong" %}
+                                {{ form_prolong(report, "Выгрузить", "loadProlong") }}
                             {% else %}
                                 {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
                             {% endif %}

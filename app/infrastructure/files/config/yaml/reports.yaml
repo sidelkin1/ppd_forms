@@ -86,7 +86,7 @@
     <li><b>Qн на начало периода</b> - начальная точка соответствует первому ненулевому МЭР</li>
     <li><b>максимальный Qн</b> - начальная точка соответствует МЭР с максимальным Qн</li>
     <li>конечная точка соответствует последней дате интервала</li></ul>
-- title: Отчеты ФНВ
+- title: Контуры ФНВ
   path: fnv
   min_radius: 30
   alternative: true
@@ -112,3 +112,18 @@
   wells: Список скважин
   measurements: Замеры Рпл
   description: Шаблон для матбаланса
+- title: Пролонгация эффекта ППД по ХВ
+  path: prolong
+  expected: ДД план
+  actual: ДД факт
+  interpolation:
+  - text: Метод PCHIP
+    value: pchip
+    selected: true
+  - text: Алгоритм Акима
+    value: akima
+    selected: false
+  - text: Кубический сплайн
+    value: cubic
+    selected: false
+  description: Пролонгация эффекта ППД по ХВ

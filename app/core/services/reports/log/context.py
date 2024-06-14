@@ -3,8 +3,8 @@ from pathlib import Path
 
 import structlog
 
-from app.core.services.fnv.bound import BoundLogger
-from app.core.services.fnv.config import configure_logging
+from app.core.services.reports.log.bound import BoundLogger
+from app.core.services.reports.log.config import configure_logging
 
 
 class LogContext:

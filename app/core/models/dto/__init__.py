@@ -9,6 +9,7 @@ from .db.reservoir_list import UneftReservoirDB
 from .db.well_list import UneftWellDB
 from .db.well_profile import WellProfileDB
 from .jobs.job_stamp import JobStamp
+from .reports.prolong import ProlongExpected
 from .tasks.base import TaskBase
 from .tasks.database import TaskDatabase
 from .tasks.excel import TaskExcel

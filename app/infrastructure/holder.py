@@ -122,6 +122,10 @@ class HolderDAO:
         return excel.NeighborhoodDAO(self.kwargs["file_path"])
 
     @property
+    def excel_prolong_expected(self) -> excel.ProlongExpectedDAO:
+        return excel.ProlongExpectedDAO(self.kwargs["file_path"])
+
+    @property
     def monthly_report_initializer(
         self,
     ) -> initializers.MonthlyReportInitializer:

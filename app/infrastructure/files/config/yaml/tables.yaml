@@ -9,16 +9,20 @@
 - path: ns_ppd
   source: excel
   title: НС ППД
-  description: Сводная НС ППД с округой (<a href="file://">ссылка</a>).
+  description: Сводная НС ППД с округой.
+  link: 'U:\Documents\ИНТЦ\Model2\Отдел мониторинга разработки\Группа управления заводнением\!ППД\_Новая стратегия ППД'
 - path: ns_oil
   source: excel
   title: НС НФ
-  description: Сводная НС НФ за все года (<a href="file://">ссылка</a>).
+  description: Сводная НС НФ за все года.
+  link: 'U:\Documents\ИНТЦ\Model2\Отдел мониторинга разработки\Группа управления заводнением\!ППД\_Шаблоны\_Исходники'
 - path: inj_db
   source: excel
   title: База ГТМ ППД
-  description: Таблица для подбора ГТМ ППД (<a href="file://">ссылка</a>).
+  description: Таблица для подбора ГТМ ППД.
+  link: 'U:\Documents\ИНТЦ\База ГТМ'
 - path: neighbs
   source: excel
   title: Округа
-  description: Выгрузка из РН-КИН по областям Вороного (<a href="file://">ссылка</a>).
+  description: Выгрузка из РН-КИН по областям Вороного.
+  link: 'U:\Documents\ИНТЦ\Model2\Отдел мониторинга разработки\Группа управления заводнением\!ППД\_Шаблоны\_Исходники'

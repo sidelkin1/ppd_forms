@@ -4,6 +4,7 @@ from .matbal import (
     select_well_sum_alternative_rates,
     select_well_sum_rates,
 )
+from .mmb import select_tank_alternative_history, select_tank_history
 from .oil_loss import (
     select_monthly_report_for_first_rate,
     select_monthly_report_for_max_rate,

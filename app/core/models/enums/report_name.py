@@ -10,3 +10,4 @@ class ReportName(str, Enum):
     fnv = "fnv"
     matbal = "matbal"
     prolong = "prolong"
+    mmb = "mmb"

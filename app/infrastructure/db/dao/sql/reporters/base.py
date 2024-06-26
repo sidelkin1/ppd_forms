@@ -2,7 +2,6 @@ import asyncio
 from typing import Generic, TypeVar
 
 import pandas as pd
-from sqlalchemy import Result
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.sql.expression import CompoundSelect, Select
@@ -25,15 +24,15 @@ class BaseDAO(Generic[Pool]):
 
     async def _perform_query(
         self, queryset: Select | CompoundSelect, **params
-    ) -> Result:
+    ) -> pd.DataFrame:
         raise NotImplementedError
 
     async def read_one(
         self, *, key: str | None = None, **params
     ) -> pd.DataFrame:
         queryset = self.querysets[self.keys.index(key) if key else 0]
-        result = await self._perform_query(queryset, **params)
-        return pd.DataFrame(result.all())
+        df = await self._perform_query(queryset, **params)
+        return df
 
     async def read_all(self, **params) -> dict[str, pd.DataFrame]:
         async with asyncio.TaskGroup() as tg:

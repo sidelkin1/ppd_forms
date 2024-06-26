@@ -25,7 +25,6 @@ class JobTracker:
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        await self.websocket.close()
         self.socket_task.cancel()
         self.job_task.cancel()
 
@@ -34,7 +33,7 @@ class JobTracker:
             while True:
                 await self.websocket.receive()
         except Exception as error:
-            logger.error("Webosocket error", exc_info=error)
+            logger.error("Websocket error", exc_info=error)
 
     async def _job_result(self) -> None:
         if self.response.job.status is JobStatus.not_found:

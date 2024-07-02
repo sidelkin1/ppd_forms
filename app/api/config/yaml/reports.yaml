@@ -117,3 +117,8 @@
     value: cubic
     selected: false
   description: Пролонгация эффекта ППД (факт+план)
+- title: Выгрузка исходников для ММБ (Julia)
+  path: mmb
+  alternative: true
+  tank: Параметры блоков
+  description: Исходники для работы ММБ (добыча, закачка, замеры Рпл и т.д.)

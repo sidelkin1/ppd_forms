@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.config.models.auth import AuthSettings
-from app.infrastructure.files.config.models.paths import Paths
+from app.common.config.models.paths import Paths
 from app.infrastructure.redis.factory import redismaker
 
 from .auth import (

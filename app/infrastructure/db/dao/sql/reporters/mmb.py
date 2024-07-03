@@ -1,10 +1,12 @@
-import pandas as pd
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters.ofm import OfmBaseDAO
 from app.infrastructure.db.dao.sql.reporters.querysets import (
-    select_tank_alternative_history,
-    select_tank_history,
+    select_tank_alternative_rates,
+    select_tank_bhp,
+    select_tank_pressures,
+    select_tank_rates,
+    select_tank_works,
 )
 
 
@@ -12,26 +14,23 @@ class MmbReporter(OfmBaseDAO):
     def __init__(self, pool: sessionmaker[Session]) -> None:
         super().__init__(
             {
-                "history": select_tank_history(),
-                "history_alt": select_tank_alternative_history(),
+                "rates": select_tank_rates(),
+                "resp": select_tank_pressures(),
+                "bhp": select_tank_bhp(),
+                "works": select_tank_works(),
             },
             pool,
         )
 
-    async def get_history(
-        self,
-        fields: list[str],
-        reservoirs: list[str],
-        wells: list[str],
-        alternative: bool,
-    ) -> pd.DataFrame:
-        if alternative:
-            return await self.read_one(
-                key="history_alt",
-                fields=fields,
-                reservoirs=reservoirs,
-                wells=wells,
-            )
-        return await self.read_one(
-            key="history", fields=fields, reservoirs=reservoirs, wells=wells
+
+class MmbAltReporter(OfmBaseDAO):
+    def __init__(self, pool: sessionmaker[Session]) -> None:
+        super().__init__(
+            {
+                "rates": select_tank_alternative_rates(),
+                "resp": select_tank_pressures(),
+                "bhp": select_tank_bhp(),
+                "works": select_tank_works(),
+            },
+            pool,
         )

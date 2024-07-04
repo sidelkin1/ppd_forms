@@ -9,12 +9,14 @@ from app.api.models.responses import (
     InjLossResponse,
     MatbalResponse,
     MatrixResponse,
+    MmbResponse,
     OilLossResponse,
     ProlongResponse,
     ReportResponse,
     ReservoirsResponse,
     WellsResponse,
 )
+from app.core.config.main import get_mmb_settings
 from app.core.config.models.app import AppSettings
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
@@ -23,6 +25,7 @@ from app.core.services.reports import (
     inj_loss_report,
     matbal_report,
     matrix_report,
+    mmb_report,
     oil_loss_report,
     opp_per_year_report,
     profile_report,
@@ -367,6 +370,30 @@ async def create_prolong_report(
         ctx["pool"],
         csv_config,
     )
+
+
+@registry.add("report:mmb")
+async def create_mmb_report(
+    response: MmbResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    app_config: AppSettings = ctx["app_config"]
+    csv_config: CsvSettings = ctx["csv_config"]
+    mmb_config = get_mmb_settings()
+    async with ctx["ofm_dao"](path=path) as holder:
+        holder = cast(HolderDAO, holder)
+        await mmb_report(
+            path_provider.dir_path(user_id, file_id),
+            response.task.alternative,
+            holder.mmb_reporter,
+            ctx["pool"],
+            app_config.delimiter,
+            csv_config,
+            mmb_config,
+        )
 
 
 @registry.add("uneft:fields")

@@ -197,7 +197,7 @@ async def generate_mmb_report(
     job: NewJobDep,
 ):
     task = TaskMmb(
-        name=ReportName.matbal,
+        name=ReportName.mmb,
         file=params.file,
         alternative=params.alternative,
     )

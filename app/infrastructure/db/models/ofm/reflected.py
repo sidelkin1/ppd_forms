@@ -107,3 +107,13 @@ class PerfAlt(Reflected, Base):
 
     __tablename__ = "perf_alt"
     __table_args__ = {"schema": "unofm"}
+
+
+class Pressure(Reflected, Base):
+    __tablename__ = "pressure"
+    __table_args__ = {"schema": "unofm"}
+
+
+class Notes(Reflected, Base):
+    __tablename__ = "notes"
+    __table_args__ = {"schema": "unofm"}

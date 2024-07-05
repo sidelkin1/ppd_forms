@@ -3,7 +3,7 @@ from fastapi import UploadFile, status
 from httpx import AsyncClient
 
 from app.api.utils.upload_file import save_upload_file
-from app.infrastructure.files.config.models.paths import Paths
+from app.common.config.models.paths import Paths
 
 
 @pytest.mark.asyncio(scope="session")

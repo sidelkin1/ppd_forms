@@ -67,7 +67,7 @@ def _process_data(
     )
     df = _join_rates_and_measurements(df, rates, measurements)
     _fill_template(df, path, template)
-    df.to_csv(path / "matbal.csv", sep=";")
+    df.to_csv(path / "matbal.csv", sep=";", date_format="%d.%m.%Y")
     return df
 
 

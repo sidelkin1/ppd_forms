@@ -1,0 +1,44 @@
+parameters:
+  - name: transmiss
+    min_value: 0
+    max_value: 300
+    symbols: ['Tconn', 'Tconst']
+  - name: well_index
+    min_value: 0.001
+    max_value: 5
+    symbols: ['Prod_index', 'Inj_index']
+  - name: frac_injection
+    min_value: 0
+    max_value: 1
+    symbols: ['Frac_inj']
+  - name: porous_volume
+    min_value: 10000
+    max_value: 10000000000
+    symbols: ['Vpi']
+  - name: compress
+    min_value: 0.000001
+    max_value: 0.01
+    symbols: ['cw', 'co', 'cf']
+  - name: pressure
+    min_value: 1
+    max_value: 500
+    symbols: ['Pi', 'Min_Pres', 'Max_Pres']
+  - name: fvf
+    min_value: 0.1
+    max_value: 2
+    symbols: ['Bwi', 'Boi']
+  - name: saturation
+    min_value: 0
+    max_value: 1
+    symbols: ['Swi']
+  - name: viscosity
+    min_value: 0.001
+    max_value: 1000
+    symbols: ['muw', 'muo']
+  - name: rel_perm
+    min_value: 0
+    max_value: 1
+    symbols: ['krw_max', 'kro_max']
+press_tol:
+  min_value: 3
+  max_value: 3

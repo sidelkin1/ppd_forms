@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from app.api.dependencies.db import DbProvider
 from app.api.dependencies.path import PathProvider
 from app.api.models.responses import BaseResponse
+from app.common.config.models.paths import Paths
 from app.core.config.main import get_app_settings
 from app.core.services.cron.clean_files import cron_clean_files
 from app.core.services.cron.refresh_table import (
@@ -29,7 +30,6 @@ from app.infrastructure.db.factories.local import (
 from app.infrastructure.db.factories.ofm import create_pool as create_ofm_pool
 from app.infrastructure.db.models import ofm
 from app.infrastructure.files.config.main import get_csv_settings
-from app.infrastructure.files.config.models.paths import Paths
 from app.infrastructure.log.config.main import get_log_settings
 from app.infrastructure.log.main import configure_logging
 from app.initial_data import initialize_mapper

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     profiles: [ "api", "migration" ]
-    image: postgres:latest
+    image: postgres:15.7-alpine
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -42,7 +42,7 @@ services:
 
   redis:
     profiles: [ "api" ]
-    image: redis:latest
+    image: redis:7.0.15-alpine
     restart: unless-stopped
     ports:
       - 6379:6379

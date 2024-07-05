@@ -17,6 +17,7 @@ from .tasks.fnv import TaskFNV
 from .tasks.inj_loss import TaskInjLoss
 from .tasks.matbal import TaskMatbal
 from .tasks.matrix import TaskMatrix
+from .tasks.mmb import TaskMmb
 from .tasks.oil_loss import TaskOilLoss
 from .tasks.prolong import TaskProlong
 from .tasks.report import TaskReport

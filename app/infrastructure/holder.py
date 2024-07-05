@@ -240,6 +240,14 @@ class HolderDAO:
         return db_reporters.MatbalReporter(self.kwargs["ofm_pool"])
 
     @property
+    def db_mmb_reporter(self) -> db_reporters.MmbReporter:
+        return db_reporters.MmbReporter(self.kwargs["ofm_pool"])
+
+    @property
+    def db_mmb_alt_reporter(self) -> db_reporters.MmbAltReporter:
+        return db_reporters.MmbAltReporter(self.kwargs["ofm_pool"])
+
+    @property
     def file_matbal_reporter(self) -> file_reporters.MatbalReporter:
         return file_reporters.MatbalReporter(
             self.kwargs["path"],
@@ -248,9 +256,21 @@ class HolderDAO:
         )
 
     @property
+    def file_mmb_reporter(self) -> file_reporters.MmbReporter:
+        return file_reporters.MmbReporter(self.kwargs["path"])
+
+    @property
     def matbal_reporter(self) -> complex_reporters.MatbalReporter:
         return complex_reporters.MatbalReporter(
             self.db_matbal_reporter, self.file_matbal_reporter
+        )
+
+    @property
+    def mmb_reporter(self) -> complex_reporters.MmbReporter:
+        return complex_reporters.MmbReporter(
+            self.db_mmb_reporter,
+            self.db_mmb_alt_reporter,
+            self.file_mmb_reporter,
         )
 
     @property

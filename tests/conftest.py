@@ -4,7 +4,7 @@ import pytest
 
 from app.api.config.models.auth import AuthSettings
 from app.api.config.models.basic import BasicAuthSettings
-from app.infrastructure.files.config.models.paths import Paths
+from app.common.config.models.paths import Paths
 
 
 @pytest.fixture(scope="session")

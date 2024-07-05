@@ -5,7 +5,7 @@ from pydantic import BaseModel, DirectoryPath
 
 class Paths(BaseModel):
     base_dir: DirectoryPath = (
-        Path(__file__).resolve().parent.parent.parent.parent.parent.parent
+        Path(__file__).resolve().parent.parent.parent.parent.parent
     )
     app_dir: DirectoryPath = base_dir / "app"
     data_dir: DirectoryPath = base_dir / "data"
@@ -49,22 +49,12 @@ class Paths(BaseModel):
 
     @property
     def report_config(self):
-        return (
-            self.app_dir
-            / "infrastructure"
-            / "files"
-            / "config"
-            / "yaml"
-            / "reports.yaml"
-        )
+        return self.app_dir / "api" / "config" / "yaml" / "reports.yaml"
 
     @property
     def table_config(self):
-        return (
-            self.app_dir
-            / "infrastructure"
-            / "files"
-            / "config"
-            / "yaml"
-            / "tables.yaml"
-        )
+        return self.app_dir / "api" / "config" / "yaml" / "tables.yaml"
+
+    @property
+    def mmb_config(self):
+        return self.app_dir / "core" / "config" / "yaml" / "mmb.yaml"

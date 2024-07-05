@@ -55,7 +55,7 @@ async function updateExcel(tableName) {
   alert.classList.add("d-none");
   success.classList.add("d-none");
 
-  let result = await sendExcelFile(tableName, "/excel");
+  let result = await sendExcelFile(tableName, "/excel/");
   if (result) {
     const url = `/excel/${tableName}/refresh`;
     const data = { file: result.filename };

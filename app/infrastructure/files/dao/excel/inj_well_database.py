@@ -13,3 +13,11 @@ class InjWellDatabaseDAO(BaseDAO[InjWellDatabaseDB]):
         super().__init__(
             InjWellDatabaseDB, filepath, excel_options, column_names
         )
+
+    async def get_all(self) -> list[InjWellDatabaseDB]:
+        df = await self._get_all()
+        df = df.dropna().drop_duplicates()
+        return [
+            self.model.model_validate(row)
+            for row in df.itertuples(index=False)
+        ]

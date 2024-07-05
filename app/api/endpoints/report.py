@@ -10,6 +10,7 @@ from app.api.models.responses import (
     InjLossResponse,
     MatbalResponse,
     MatrixResponse,
+    MmbResponse,
     OilLossResponse,
     ProlongResponse,
     ReportResponse,
@@ -20,6 +21,7 @@ from app.core.models.dto import (
     TaskInjLoss,
     TaskMatbal,
     TaskMatrix,
+    TaskMmb,
     TaskOilLoss,
     TaskProlong,
     TaskReport,
@@ -30,6 +32,7 @@ from app.core.models.schemas import (
     FnvParams,
     MatbalParams,
     MatrixEffect,
+    MmbParams,
     ProlongParams,
 )
 
@@ -117,16 +120,16 @@ async def generate_matrix_report(
     response_model_exclude_none=True,
 )
 async def generate_fnv_report(
-    fnv_params: FnvParams,
+    params: FnvParams,
     user: UserDep,
     redis: RedisDep,
     job: NewJobDep,
 ):
     task = TaskFNV(
         name=ReportName.fnv,
-        fields=fnv_params.fields,
-        min_radius=fnv_params.min_radius,
-        alternative=fnv_params.alternative,
+        fields=params.fields,
+        min_radius=params.min_radius,
+        alternative=params.alternative,
     )
     response = FnvResponse(task=task, job=job)
     await redis.enqueue_task(response)
@@ -140,18 +143,18 @@ async def generate_fnv_report(
     response_model_exclude_none=True,
 )
 async def generate_matbal_report(
-    matbal_params: MatbalParams,
+    params: MatbalParams,
     user: UserDep,
     redis: RedisDep,
     job: NewJobDep,
 ):
     task = TaskMatbal(
         name=ReportName.matbal,
-        field=matbal_params.field,
-        reservoirs=matbal_params.reservoirs,
-        wells=matbal_params.wells,
-        measurements=matbal_params.measurements,
-        alternative=matbal_params.alternative,
+        field=params.field,
+        reservoirs=params.reservoirs,
+        wells=params.wells,
+        measurements=params.measurements,
+        alternative=params.alternative,
     )
     response = MatbalResponse(task=task, job=job)
     await redis.enqueue_task(response)
@@ -165,18 +168,40 @@ async def generate_matbal_report(
     response_model_exclude_none=True,
 )
 async def generate_prolong_report(
-    prolong_params: ProlongParams,
+    params: ProlongParams,
     user: UserDep,
     redis: RedisDep,
     job: NewJobDep,
 ):
     task = TaskProlong(
         name=ReportName.prolong,
-        expected=prolong_params.expected,
-        actual=prolong_params.actual,
-        interpolation=prolong_params.interpolation,
+        expected=params.expected,
+        actual=params.actual,
+        interpolation=params.interpolation,
     )
     response = ProlongResponse(task=task, job=job)
+    await redis.enqueue_task(response)
+    return response
+
+
+@router.post(
+    "/mmb",
+    status_code=status.HTTP_201_CREATED,
+    response_model=MmbResponse,
+    response_model_exclude_none=True,
+)
+async def generate_mmb_report(
+    params: MmbParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskMmb(
+        name=ReportName.mmb,
+        file=params.file,
+        alternative=params.alternative,
+    )
+    response = MmbResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

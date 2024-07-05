@@ -7,13 +7,13 @@ from fastapi.staticfiles import StaticFiles
 from app.api import dependencies, endpoints, middlewares
 from app.api.config.main import get_api_settings, get_auth_settings
 from app.api.dependencies.db import DbProvider
+from app.common.config.main import get_paths
 from app.core.config.main import get_app_settings
 from app.infrastructure.db.config.main import get_postgres_settings
 from app.infrastructure.db.config.models.local import PostgresSettings
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )
-from app.infrastructure.files.config.main import get_paths
 from app.infrastructure.redis.config.main import get_redis_settings
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from app.initial_data import initialize_mapper

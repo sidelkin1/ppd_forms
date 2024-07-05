@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from app.infrastructure.files.config.models.paths import Paths
+from app.common.config.models.paths import Paths
 
 
 class PathProvider:

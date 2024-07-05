@@ -8,6 +8,7 @@ from .task import (
     InjLossResponse,
     MatbalResponse,
     MatrixResponse,
+    MmbResponse,
     OilLossResponse,
     ProlongResponse,
     ReportResponse,

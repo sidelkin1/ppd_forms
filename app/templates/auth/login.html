@@ -9,7 +9,7 @@
                     Войти в учетную запись
                 </h5>
                 <div class="card-body">
-                    <form class="mb-3" method="POST" action="{{ url_for('login') }}">
+                    <form class="mb-3" method="POST" action="{{ url_for('login').include_query_params(next=next) }}">
                         <div class="mb-3">
                             <input type="text" required
                                 placeholder="Введите имя пользователя"

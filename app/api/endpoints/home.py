@@ -44,11 +44,16 @@ async def tables(request: Request, user: UserOrNoneDep, path: PathDep):
 
 @router.get("/login")
 async def login_page(
-    request: Request, username: str = "", error: bool = False
+    request: Request, username: str = "", error: bool = False, next: str = ""
 ):
     return templates.TemplateResponse(
         "auth/login.html",
-        {"request": request, "error": error, "username": username},
+        {
+            "request": request,
+            "error": error,
+            "username": username,
+            "next": next,
+        },
     )
 
 
@@ -76,7 +81,7 @@ async def login(
     except HTTPException:
         return RedirectResponse(
             request.url_for("login_page").include_query_params(
-                username=form_data.username, error=True
+                username=form_data.username, error=True, next=next
             ),
             status_code=status.HTTP_303_SEE_OTHER,
         )

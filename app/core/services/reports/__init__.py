@@ -1,3 +1,4 @@
+from .compensation import compensation_report
 from .fnv import fnv_report
 from .inj_loss import inj_loss_report
 from .matbal import matbal_report

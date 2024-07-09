@@ -1,3 +1,4 @@
+from .compensation import select_compensation_rates
 from .matbal import (
     select_field_sum_alternative_rates,
     select_field_sum_rates,

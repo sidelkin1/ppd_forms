@@ -11,6 +11,7 @@ from .db.well_profile import WellProfileDB
 from .jobs.job_stamp import JobStamp
 from .reports.prolong import ProlongExpected
 from .tasks.base import TaskBase
+from .tasks.compensation import TaskCompensation
 from .tasks.database import TaskDatabase
 from .tasks.excel import TaskExcel
 from .tasks.fnv import TaskFNV

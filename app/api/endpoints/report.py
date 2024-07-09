@@ -6,6 +6,7 @@ from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.models.responses import (
+    CompensationResponse,
     FnvResponse,
     InjLossResponse,
     MatbalResponse,
@@ -17,6 +18,7 @@ from app.api.models.responses import (
 )
 from app.api.utils.validators import check_file_exists
 from app.core.models.dto import (
+    TaskCompensation,
     TaskFNV,
     TaskInjLoss,
     TaskMatbal,
@@ -33,6 +35,7 @@ from app.core.models.schemas import (
     MatbalParams,
     MatrixEffect,
     MmbParams,
+    OnDate,
     ProlongParams,
 )
 
@@ -202,6 +205,27 @@ async def generate_mmb_report(
         alternative=params.alternative,
     )
     response = MmbResponse(task=task, job=job)
+    await redis.enqueue_task(response)
+    return response
+
+
+@router.post(
+    "/compensation",
+    status_code=status.HTTP_201_CREATED,
+    response_model=CompensationResponse,
+    response_model_exclude_none=True,
+)
+async def generate_compensation_report(
+    on_date: OnDate,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskCompensation(
+        name=ReportName.compensation,
+        on_date=on_date.on_date,
+    )
+    response = CompensationResponse(task=task, job=job)
     await redis.enqueue_task(response)
     return response
 

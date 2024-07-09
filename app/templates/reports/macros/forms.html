@@ -1,7 +1,7 @@
 {% from '/macros/forms.html' import date_range, spinner_button %}
 
 {% macro form_inj_loss(report, button_text, button_func) -%}
-    {{ date_range(report.path, button_text, button_func) }}
+    {{ date_range(report.path) }}
     <select class="form-select mb-3" id="{{ report.path }}Select">
         {% for option in report.loss_mode %}
             <option
@@ -16,7 +16,7 @@
 {%- endmacro %}
 
 {% macro form_matrix(report, button_text, button_func) -%}
-    {{ date_range(report.path, button_text, button_func) }}
+    {{ date_range(report.path) }}
     <div class="form-floating mb-3">
         <input type="date" class="form-control" id="{{ report.path }}Mer" name="mer" placeholder>
         <label for="{{ report.path }}Mer">На дату МЭР</label>

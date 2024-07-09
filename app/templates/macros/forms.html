@@ -17,7 +17,7 @@
     </div>
 {%- endmacro %}
 
-{% macro date_range(name, button_text, button_func) -%}
+{% macro date_range(name) -%}
     <div class="form-floating mb-3">
         <input type="date" class="form-control" id="{{ name }}Start" name="start" placeholder/>
         <label for="{{ name }}Start">Начальная дата</label>
@@ -28,8 +28,20 @@
     </div>
 {%- endmacro %}
 
+{% macro on_date(name) -%}
+    <div class="form-floating mb-3">
+        <input type="date" class="form-control" id="{{ name }}OnDate" name="on_date" placeholder/>
+        <label for="{{ name }}Start">На дату</label>
+    </div>
+{%- endmacro %}
+
 {% macro form_date_range(name, button_text, button_func) -%}
-    {{ date_range(name, button_text, button_func) }}
+    {{ date_range(name) }}
+    {{ spinner_button(name, button_text, button_func) }}
+{%- endmacro %}
+
+{% macro form_on_date(name, button_text, button_func) -%}
+    {{ on_date(name) }}
     {{ spinner_button(name, button_text, button_func) }}
 {%- endmacro %}
 

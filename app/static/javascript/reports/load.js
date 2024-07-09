@@ -39,6 +39,31 @@ async function loadReport(reportName) {
   button.classList.remove("disabled");
 }
 
+async function loadOnDate(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const onDate = document.getElementById(`${reportName}OnDate`).value;
+  const link = document.getElementById(`${reportName}Link`);
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const url = `/reports/${reportName}`;
+  const data = { on_date: onDate };
+  const result = await assignWork(reportName, url, data);
+  if (result) {
+    link.href = `/reports/${result.job.file_id}/csv`;
+    await checkStatus(reportName, result.job.job_id);
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}
+
 async function loadInjLoss(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);

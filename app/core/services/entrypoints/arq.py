@@ -2,6 +2,7 @@ from typing import Any, cast
 
 from app.api.dependencies.path import PathProvider
 from app.api.models.responses import (
+    CompensationResponse,
     DatabaseResponse,
     ExcelResponse,
     FieldsResponse,
@@ -21,6 +22,7 @@ from app.core.config.models.app import AppSettings
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.reports import (
+    compensation_report,
     fnv_report,
     inj_loss_report,
     matbal_report,
@@ -393,6 +395,24 @@ async def create_mmb_report(
             app_config.delimiter,
             csv_config,
             mmb_config,
+        )
+
+
+@registry.add("report:compensation")
+async def create_compensation_report(
+    response: CompensationResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    csv_config: CsvSettings = ctx["csv_config"]
+    async with ctx["ofm_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        await compensation_report(
+            path_provider.file_path(user_id, file_id),
+            response.task.on_date,
+            holder.compensation_reporter,
+            csv_config,
         )
 
 

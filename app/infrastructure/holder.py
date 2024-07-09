@@ -274,6 +274,10 @@ class HolderDAO:
         )
 
     @property
+    def compensation_reporter(self) -> db_reporters.CompensationReporter:
+        return db_reporters.CompensationReporter(self.kwargs["ofm_pool"])
+
+    @property
     def new_strategy_inj_loader(self) -> loaders.NewStrategyInjLoader:
         return loaders.NewStrategyInjLoader(
             self.excel_new_strategy_inj, self.local_new_strategy_inj

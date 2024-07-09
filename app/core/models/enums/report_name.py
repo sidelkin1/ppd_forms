@@ -11,3 +11,4 @@ class ReportName(str, Enum):
     matbal = "matbal"
     prolong = "prolong"
     mmb = "mmb"
+    compensation = "compensation"

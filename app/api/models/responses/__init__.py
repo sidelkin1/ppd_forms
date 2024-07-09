@@ -1,6 +1,7 @@
 from .base import BaseResponse
 from .job import JobResponse
 from .task import (
+    CompensationResponse,
     DatabaseResponse,
     ExcelResponse,
     FieldsResponse,

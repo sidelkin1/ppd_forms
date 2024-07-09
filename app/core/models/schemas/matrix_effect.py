@@ -1,16 +1,11 @@
-from datetime import date
-
-from dateutil.relativedelta import relativedelta
 from pydantic import Field, PositiveInt
 
 from app.core.models.enums import ExcludeGTM
-from app.core.models.schemas import DateRange
+from app.core.models.schemas.date_range import DateRange
+from app.core.models.schemas.on_date import OnDate
 
-ON_DATE = date.today().replace(day=1) - relativedelta(months=1)
 
-
-class MatrixEffect(DateRange):
+class MatrixEffect(DateRange, OnDate):
     base_period: PositiveInt = Field(..., examples=[1])
     pred_period: PositiveInt = Field(..., examples=[12])
     excludes: list[ExcludeGTM] = Field(..., examples=[[ExcludeGTM.perf]])
-    on_date: date = Field(..., examples=[ON_DATE])

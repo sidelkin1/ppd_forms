@@ -2,7 +2,7 @@ async function assignWork(name, url, data) {
   const alert = document.getElementById(`${name}Danger`);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(buildUrl(url), {
       method: "post",
       headers: {
         "Content-Type": "application/json",

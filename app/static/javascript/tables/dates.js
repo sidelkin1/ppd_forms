@@ -5,7 +5,7 @@ async function fetchDates(path, source) {
   loader.classList.remove("d-none");
 
   try {
-    const response = await fetch(`/${source}/${path}`);
+    const response = await fetch(buildUrl(`/${source}/${path}`));
     if (!response.ok) {
       return;
     }

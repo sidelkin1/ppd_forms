@@ -21,3 +21,7 @@ function copyClipboard(id, text) {
   tooltip.show();
   tooltip._config.title = oldTitle;
 }
+
+function buildUrl(endpoint) {
+  return `${ROOT_PATH}${endpoint}`;
+}

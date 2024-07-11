@@ -12,5 +12,6 @@ class AppSettings(BaseSettings):
     )
     delimiter: str = ","
     max_workers: int = 4
+    root_path: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

@@ -33,7 +33,11 @@ def init_api() -> FastAPI:
     redis_config = get_redis_settings()
     redis = create_redis_pool(redis_config)
     app_config = get_app_settings()
-    app = FastAPI(title=app_config.title, description=app_config.description)
+    app = FastAPI(
+        title=app_config.title,
+        description=app_config.description,
+        root_path=app_config.root_path,
+    )
     endpoints.setup(app)
     middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")

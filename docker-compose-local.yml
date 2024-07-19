@@ -63,11 +63,13 @@ services:
     volumes:
       - ./files:/app/files
       - static_value:/app/app/static/
+      - ./logs:/app/logs
     environment:
       - DB_HOST=db
       - REDIS_HOST=redis
       - API_HOST=0
       - API_PORT=8000
+      - LOG_PATH=/app/logs/web.log
     env_file:
       - ./.env
     depends_on:
@@ -97,9 +99,11 @@ services:
       dockerfile: worker.Dockerfile
     volumes:
       - ./files:/app/files
+      - ./logs:/app/logs
     environment:
       - DB_HOST=db
       - REDIS_HOST=redis
+      - LOG_PATH=/app/logs/worker.log
     env_file:
       - ./.env
     depends_on:

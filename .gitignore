@@ -135,3 +135,4 @@ files/*
 !files/.gitkeep
 data/*
 !data/.gitkeep
+logs/*

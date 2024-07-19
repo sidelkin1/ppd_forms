@@ -1,4 +1,4 @@
-import logging.config
+import logging.handlers
 
 import structlog
 from sqlalchemy import log as sa_log
@@ -70,14 +70,18 @@ def configure_logging(settings: LogSettings) -> None:
 
     handlers: list[logging.Handler] = [handler]
     if settings.log_path:
-        settings.log_path.parent.mkdir(parents=True, exist_ok=True)
         log_path = (
             settings.log_path / "logs.log"
             if settings.log_path.is_dir()
             else settings.log_path
         )
 
-        file_handler = logging.FileHandler(log_path, encoding="utf8")
+        file_handler = logging.handlers.RotatingFileHandler(
+            log_path,
+            backupCount=settings.log_backup_count,
+            maxBytes=settings.log_max_bytes,
+            encoding="utf8",
+        )
         file_handler.set_name("file")
         file_handler.setLevel(settings.log_level)
         file_formatter = structlog.stdlib.ProcessorFormatter(

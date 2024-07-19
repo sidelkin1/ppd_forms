@@ -5,9 +5,10 @@ function constructWebSocketURL(relaivePath) {
   return url;
 }
 
-async function checkStatus(name, jobID) {
+async function checkStatus(name, jobID, resultURL = null) {
   const success = document.getElementById(`${name}Success`);
   const alert = document.getElementById(`${name}Danger`);
+  const link = document.getElementById(`${name}Link`);
 
   let result;
   const webSocketClient = new WebSocketClient();
@@ -20,6 +21,9 @@ async function checkStatus(name, jobID) {
       throw new Error(data.job.message);
     }
     success.classList.remove("d-none");
+    if (resultURL) {
+      link.href = buildUrl(resultURL);
+    }
     result = true;
   } catch (error) {
     console.error(error);

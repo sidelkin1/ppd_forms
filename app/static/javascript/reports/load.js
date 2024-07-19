@@ -17,7 +17,6 @@ async function loadReport(reportName) {
   const success = document.getElementById(`${reportName}Success`);
   const dateFrom = document.getElementById(`${reportName}Start`).value;
   const dateTo = document.getElementById(`${reportName}End`).value;
-  const link = document.getElementById(`${reportName}Link`);
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -31,8 +30,11 @@ async function loadReport(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}/csv`;
-    await checkStatus(reportName, result.job.job_id);
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/csv`
+    );
   }
 
   loader.classList.add("d-none");
@@ -45,7 +47,6 @@ async function loadOnDate(reportName) {
   const alert = document.getElementById(`${reportName}Danger`);
   const success = document.getElementById(`${reportName}Success`);
   const onDate = document.getElementById(`${reportName}OnDate`).value;
-  const link = document.getElementById(`${reportName}Link`);
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -56,8 +57,11 @@ async function loadOnDate(reportName) {
   const data = { on_date: onDate };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}/csv`;
-    await checkStatus(reportName, result.job.job_id);
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/csv`
+    );
   }
 
   loader.classList.add("d-none");
@@ -72,7 +76,6 @@ async function loadInjLoss(reportName) {
   const dateFrom = document.getElementById(`${reportName}Start`).value;
   const dateTo = document.getElementById(`${reportName}End`).value;
   const lossMode = document.getElementById(`${reportName}Select`).value;
-  const link = document.getElementById(`${reportName}Link`);
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -86,8 +89,11 @@ async function loadInjLoss(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}/csv`;
-    await checkStatus(reportName, result.job.job_id);
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/csv`
+    );
   }
 
   loader.classList.add("d-none");
@@ -104,7 +110,6 @@ async function loadMatrix(reportName) {
   const basePeriod = document.getElementById(`${reportName}Base`).value;
   const predPeriod = document.getElementById(`${reportName}Pred`).value;
   const onDate = document.getElementById(`${reportName}Mer`).value;
-  const link = document.getElementById(`${reportName}Link`);
   const excludes = [
     ...document.getElementById(`${reportName}Excludes`).selectedOptions,
   ]
@@ -127,8 +132,11 @@ async function loadMatrix(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}/csv`;
-    await checkStatus(reportName, result.job.job_id);
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/csv`
+    );
   }
 
   loader.classList.add("d-none");
@@ -150,7 +158,6 @@ async function loadFNV(reportName) {
   const alternative = document.getElementById(
     `${reportName}Alternative`
   ).checked;
-  const link = document.getElementById(`${reportName}Link`);
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -165,8 +172,11 @@ async function loadFNV(reportName) {
   };
   const result = await assignWork(reportName, url, data);
   if (result) {
-    link.href = `/reports/${result.job.file_id}/zip`;
-    await checkStatus(reportName, result.job.job_id);
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/zip`
+    );
   }
 
   loader.classList.add("d-none");
@@ -192,7 +202,6 @@ async function loadMatbal(reportName) {
   const alternative = document.getElementById(
     `${reportName}Alternative`
   ).checked;
-  const link = document.getElementById(`${reportName}Link`);
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -215,8 +224,11 @@ async function loadMatbal(reportName) {
     };
     const result = await assignWork(reportName, url, data);
     if (result) {
-      link.href = `/reports/${result.job.file_id}/zip`;
-      await checkStatus(reportName, result.job.job_id);
+      await checkStatus(
+        reportName,
+        result.job.job_id,
+        `/reports/${result.job.file_id}/zip`
+      );
     }
   }
 
@@ -233,7 +245,6 @@ async function loadProlong(reportName) {
   const actual = document.getElementById(`${reportName}Actual`).files[0];
   const interpolation = document.getElementById(`${reportName}Interpolation`)
     .selectedOptions[0].value;
-  const link = document.getElementById(`${reportName}Link`);
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -254,8 +265,11 @@ async function loadProlong(reportName) {
     };
     const result = await assignWork(reportName, url, data);
     if (result) {
-      link.href = `/reports/${result.job.file_id}/zip`;
-      await checkStatus(reportName, result.job.job_id);
+      await checkStatus(
+        reportName,
+        result.job.job_id,
+        `/reports/${result.job.file_id}/zip`
+      );
     }
   }
 
@@ -272,7 +286,6 @@ async function loadMMB(reportName) {
   const alternative = document.getElementById(
     `${reportName}Alternative`
   ).checked;
-  const link = document.getElementById(`${reportName}Link`);
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -288,8 +301,11 @@ async function loadMMB(reportName) {
     };
     const result = await assignWork(reportName, url, data);
     if (result) {
-      link.href = `/reports/${result.job.file_id}/zip`;
-      await checkStatus(reportName, result.job.job_id);
+      await checkStatus(
+        reportName,
+        result.job.job_id,
+        `/reports/${result.job.file_id}/zip`
+      );
     }
   }
 

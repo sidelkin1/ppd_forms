@@ -12,10 +12,10 @@ async function fetchReservoirs(report, path) {
       return;
     }
     const reservoirs = await response.json();
-    reservoirs.map(({ id, name }) => {
+    reservoirs.forEach(({ id, name }) => {
       let option = document.createElement("option");
       option.value = id;
-      option.innerHTML = name;
+      option.text = name;
       reservoirsList.add(option);
     });
   } catch (error) {

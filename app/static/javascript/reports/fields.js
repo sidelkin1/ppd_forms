@@ -10,10 +10,10 @@ async function fetchFields(report, path) {
       return;
     }
     const fields = await response.json();
-    fields.map(({ id, name }) => {
+    fields.forEach(({ id, name }) => {
       let option = document.createElement("option");
       option.value = id;
-      option.innerHTML = name;
+      option.text = name;
       fieldList.add(option);
     });
   } catch (error) {

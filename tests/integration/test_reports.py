@@ -23,42 +23,49 @@ from app.infrastructure.holder import HolderDAO
 
 
 @pytest.mark.parametrize(
-    "dao,service,expected_report",
+    "dao,service,expected_report,resulted_report",
     [
         (
             "well_profile_reporter",
             profile_report,
             "profile_report.csv",
+            "profile.csv",
         ),
         (
             "first_rate_inj_loss_reporter",
             inj_loss_report,
             "first_rate_inj_loss_report.csv",
+            "inj_loss.csv",
         ),
         (
             "max_rate_inj_loss_reporter",
             inj_loss_report,
             "max_rate_inj_loss_report.csv",
+            "inj_loss.csv",
         ),
         (
             "first_rate_oil_loss_reporter",
             oil_loss_report,
             "first_rate_oil_loss_report.csv",
+            "oil_loss.csv",
         ),
         (
             "max_rate_oil_loss_reporter",
             oil_loss_report,
             "max_rate_oil_loss_report.csv",
+            "oil_loss.csv",
         ),
         (
             "opp_per_year_reporter",
             opp_per_year_report,
             "opp_per_year_report.csv",
+            "opp_per_year.csv",
         ),
         (
             "matrix_reporter",
             matrix_report,
             "matrix_report.csv",
+            "matrix.csv",
         ),
     ],
 )
@@ -70,16 +77,16 @@ async def test_reports(
     dao: str,
     service: Callable[..., Awaitable],
     expected_report: str,
+    resulted_report: str,
     result_dir: Path,
 ):
-    path = tmp_path / "results.csv"
     date_from = date(2000, 1, 1)
     date_to = date(2001, 1, 1)
     dao_: LocalBaseDAO = getattr(pool_holder, dao)
     csv_config = CsvSettings()
     if dao == "matrix_reporter":
         await service(
-            path,
+            tmp_path,
             date_from,
             date_to,
             1,
@@ -96,13 +103,16 @@ async def test_reports(
         "first_rate_oil_loss_reporter",
         "max_rate_oil_loss_reporter",
     ):
-        await service(path, date_from, date_to, dao_, process_pool, csv_config)
+        await service(
+            tmp_path, date_from, date_to, dao_, process_pool, csv_config
+        )
     else:
         await service(
-            path, date_from, date_to, dao_, process_pool, ",", csv_config
+            tmp_path, date_from, date_to, dao_, process_pool, ",", csv_config
         )
     diff = compare(
-        load_csv(open(result_dir / expected_report)), load_csv(open(path))
+        load_csv(open(result_dir / expected_report)),
+        load_csv(open(tmp_path / resulted_report)),
     )
     for value in diff.values():
         assert not value

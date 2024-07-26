@@ -33,7 +33,7 @@ async function loadReport(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/csv`
+      `/reports/${result.job.file_id}/zip`
     );
   }
 
@@ -60,7 +60,7 @@ async function loadOnDate(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/csv`
+      `/reports/${result.job.file_id}/zip`
     );
   }
 
@@ -92,7 +92,7 @@ async function loadInjLoss(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/csv`
+      `/reports/${result.job.file_id}/zip`
     );
   }
 
@@ -135,7 +135,7 @@ async function loadMatrix(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/csv`
+      `/reports/${result.job.file_id}/zip`
     );
   }
 

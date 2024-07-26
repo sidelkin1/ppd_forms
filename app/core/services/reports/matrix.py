@@ -1,5 +1,6 @@
 from datetime import date
 from pathlib import Path
+from shutil import make_archive
 from typing import Any
 
 import pandas as pd
@@ -323,4 +324,7 @@ async def matrix_report(
         on_date,
         delimiter,
     )
-    await save_to_csv(df, path, csv_config.encoding, csv_config.delimiter)
+    await save_to_csv(
+        df, path / "matrix.csv", csv_config.encoding, csv_config.delimiter
+    )
+    make_archive(str(path), "zip", root_dir=path)

@@ -1,5 +1,6 @@
 from datetime import date
 from pathlib import Path
+from shutil import make_archive
 
 import pandas as pd
 
@@ -51,4 +52,7 @@ async def oil_loss_report(
 ) -> None:
     df = await dao.read_one(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, df, date_to)
-    await save_to_csv(df, path, csv_config.encoding, csv_config.delimiter)
+    await save_to_csv(
+        df, path / "oil_loss.csv", csv_config.encoding, csv_config.delimiter
+    )
+    make_archive(str(path), "zip", root_dir=path)

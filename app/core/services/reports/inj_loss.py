@@ -1,5 +1,6 @@
 from datetime import date
 from pathlib import Path
+from shutil import make_archive
 from typing import Any
 
 import pandas as pd
@@ -234,4 +235,7 @@ async def inj_loss_report(
 ) -> None:
     dfs = await dao.read_all(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, dfs, delimiter)
-    await save_to_csv(df, path, csv_config.encoding, csv_config.delimiter)
+    await save_to_csv(
+        df, path / "inj_loss.csv", csv_config.encoding, csv_config.delimiter
+    )
+    make_archive(str(path), "zip", root_dir=path)

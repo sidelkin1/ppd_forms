@@ -170,7 +170,7 @@ async def create_profile_report(
     async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await profile_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.well_profile_reporter,
@@ -192,7 +192,7 @@ async def create_first_rate_inj_loss_report(
     async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await inj_loss_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.first_rate_inj_loss_reporter,
@@ -214,7 +214,7 @@ async def create_max_rate_inj_loss_report(
     async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await inj_loss_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.max_rate_inj_loss_reporter,
@@ -235,7 +235,7 @@ async def create_first_rate_oil_loss_report(
     async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.first_rate_oil_loss_reporter,
@@ -255,7 +255,7 @@ async def create_max_rate_oil_loss_report(
     async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await oil_loss_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.max_rate_oil_loss_reporter,
@@ -275,7 +275,7 @@ async def create_opp_per_year_report(
     async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await opp_per_year_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             holder.opp_per_year_reporter,
@@ -296,7 +296,7 @@ async def create_matrix_report(
     async with ctx["local_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await matrix_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.date_from,
             response.task.date_to,
             response.task.base_period,
@@ -409,7 +409,7 @@ async def create_compensation_report(
     async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await compensation_report(
-            path_provider.file_path(user_id, file_id),
+            path_provider.dir_path(user_id, file_id),
             response.task.on_date,
             holder.compensation_reporter,
             csv_config,

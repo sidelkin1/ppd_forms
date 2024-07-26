@@ -1,5 +1,6 @@
 from datetime import date
 from pathlib import Path
+from shutil import make_archive
 
 import pandas as pd
 
@@ -33,4 +34,10 @@ async def opp_per_year_report(
 ) -> None:
     df = await dao.read_one(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, df)
-    await save_to_csv(df, path, csv_config.encoding, csv_config.delimiter)
+    await save_to_csv(
+        df,
+        path / "opp_per_year.csv",
+        csv_config.encoding,
+        csv_config.delimiter,
+    )
+    make_archive(str(path), "zip", root_dir=path)

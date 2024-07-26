@@ -1,5 +1,6 @@
 from datetime import date
 from pathlib import Path
+from shutil import make_archive
 
 from app.core.utils.save_dataframe import save_to_csv
 from app.infrastructure.db.dao.sql.reporters import CompensationReporter
@@ -14,4 +15,10 @@ async def compensation_report(
 ) -> None:
     df = await dao.read_one(on_date=on_date)
     df["oil_fvf"] = df["oil_fvf"].fillna("")
-    await save_to_csv(df, path, csv_config.encoding, csv_config.delimiter)
+    await save_to_csv(
+        df,
+        path / "compensation.csv",
+        csv_config.encoding,
+        csv_config.delimiter,
+    )
+    make_archive(str(path), "zip", root_dir=path)

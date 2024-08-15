@@ -7,7 +7,7 @@ from arq.jobs import Job
 from app.api.models.responses import BaseResponse
 
 
-class RedisDAO:
+class ArqDAO:
     def __init__(self, redis: ArqRedis):
         self.redis = redis
 

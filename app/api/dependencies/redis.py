@@ -4,11 +4,11 @@ from typing import Annotated
 from arq import ArqRedis
 from fastapi import Depends
 
-from app.infrastructure.redis.dao import RedisDAO
+from app.infrastructure.redis.dao import ArqDAO
 from app.infrastructure.redis.factory import redismaker
 
 
-def redis_provider() -> RedisDAO:
+def redis_provider() -> ArqDAO:
     raise NotImplementedError
 
 
@@ -16,9 +16,9 @@ class RedisProvider:
     def __init__(self, pool: redismaker[ArqRedis]) -> None:
         self.pool = pool
 
-    async def dao(self) -> AsyncGenerator[RedisDAO, None]:
+    async def dao(self) -> AsyncGenerator[ArqDAO, None]:
         async with self.pool() as redis:
-            yield RedisDAO(redis=redis)
+            yield ArqDAO(redis=redis)
 
 
-RedisDep = Annotated[RedisDAO, Depends(redis_provider)]
+RedisDep = Annotated[ArqDAO, Depends(redis_provider)]

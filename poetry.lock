@@ -2428,6 +2428,20 @@ files = [
 ]
 
 [[package]]
+name = "types-cffi"
+version = "1.16.0.20240331"
+description = "Typing stubs for cffi"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-cffi-1.16.0.20240331.tar.gz", hash = "sha256:b8b20d23a2b89cfed5f8c5bc53b0cb8677c3aac6d970dbc771e28b9c698f5dee"},
+    {file = "types_cffi-1.16.0.20240331-py3-none-any.whl", hash = "sha256:a363e5ea54a4eb6a4a105d800685fde596bc318089b025b27dee09849fe41ff0"},
+]
+
+[package.dependencies]
+types-setuptools = "*"
+
+[[package]]
 name = "types-colorama"
 version = "0.4.15.20240311"
 description = "Typing stubs for colorama"
@@ -2475,6 +2489,21 @@ files = [
 ]
 
 [[package]]
+name = "types-pyopenssl"
+version = "24.1.0.20240722"
+description = "Typing stubs for pyOpenSSL"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-pyOpenSSL-24.1.0.20240722.tar.gz", hash = "sha256:47913b4678a01d879f503a12044468221ed8576263c1540dcb0484ca21b08c39"},
+    {file = "types_pyOpenSSL-24.1.0.20240722-py3-none-any.whl", hash = "sha256:6a7a5d2ec042537934cfb4c9d4deb0e16c4c6250b09358df1f083682fe6fda54"},
+]
+
+[package.dependencies]
+cryptography = ">=35.0.0"
+types-cffi = "*"
+
+[[package]]
 name = "types-python-dateutil"
 version = "2.8.19.20240106"
 description = "Typing stubs for python-dateutil"
@@ -2519,6 +2548,32 @@ python-versions = "*"
 files = [
     {file = "types-PyYAML-6.0.12.12.tar.gz", hash = "sha256:334373d392fde0fdf95af5c3f1661885fa10c52167b14593eb856289e1855062"},
     {file = "types_PyYAML-6.0.12.12-py3-none-any.whl", hash = "sha256:c05bc6c158facb0676674b7f11fe3960db4f389718e19e62bd2b84d6205cfd24"},
+]
+
+[[package]]
+name = "types-redis"
+version = "4.6.0.20240726"
+description = "Typing stubs for redis"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-redis-4.6.0.20240726.tar.gz", hash = "sha256:de2aefcf7afe80057debada8c540463d06c8863de50b8016bd369ccdbcb59b5e"},
+    {file = "types_redis-4.6.0.20240726-py3-none-any.whl", hash = "sha256:233062b7120a9908532ec9163d17af74b80fa49a89d510444cad4cac42717378"},
+]
+
+[package.dependencies]
+cryptography = ">=35.0.0"
+types-pyOpenSSL = "*"
+
+[[package]]
+name = "types-setuptools"
+version = "71.1.0.20240726"
+description = "Typing stubs for setuptools"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-setuptools-71.1.0.20240726.tar.gz", hash = "sha256:85ba28e9461bb1be86ebba4db0f1c2408f2b11115b1966334ea9dc464e29303e"},
+    {file = "types_setuptools-71.1.0.20240726-py3-none-any.whl", hash = "sha256:a7775376f36e0ff09bcad236bf265777590a66b11623e48c20bfc30f1444ea36"},
 ]
 
 [[package]]
@@ -2897,4 +2952,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "86987ef6563b93955442b44a98fd697d11f8c8d072172a4e53a913e8616b5642"
+content-hash = "747f31b33729100d570df2c8823754d4a28b22b204ad056d30cc4c49339bd27b"

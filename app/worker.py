@@ -32,6 +32,8 @@ from app.infrastructure.db.models import ofm
 from app.infrastructure.files.config.main import get_csv_settings
 from app.infrastructure.log.config.main import get_log_settings
 from app.infrastructure.log.main import configure_logging
+from app.infrastructure.redis.config.main import get_redis_settings
+from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from app.initial_data import initialize_mapper
 
 load_dotenv()
@@ -58,7 +60,11 @@ async def startup(ctx: dict[str, Any]) -> None:
     ofm_pool = (
         create_ofm_pool(oracle_config) if ofm.setup(oracle_config) else None
     )
-    provider = DbProvider(local_pool=local_pool, ofm_pool=ofm_pool)
+    redis_config = get_redis_settings()
+    redis_pool = create_redis_pool(redis_config)
+    provider = DbProvider(
+        local_pool=local_pool, ofm_pool=ofm_pool, redis_pool=redis_pool
+    )
     paths = Paths()
     app_config = get_app_settings()
     ctx["app_config"] = app_config
@@ -69,6 +75,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     ctx["local_dao"] = asynccontextmanager(provider.local_dao)
     ctx["ofm_dao"] = asynccontextmanager(provider.ofm_dao)
     ctx["ofm_local_dao"] = asynccontextmanager(provider.ofm_local_dao)
+    ctx["ofm_redis_dao"] = asynccontextmanager(provider.ofm_redis_dao)
     await initialize_mapper(provider)
     logger.info("worker prepared")
 

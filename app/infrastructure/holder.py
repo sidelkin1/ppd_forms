@@ -57,15 +57,21 @@ class HolderDAO:
 
     @property
     def ofm_field_list(self) -> ofm.FieldListDAO:
-        return ofm.FieldListDAO(self.kwargs["ofm_session"])
+        return ofm.FieldListDAO(
+            self.kwargs["ofm_session"], self.kwargs["redis"]
+        )
 
     @property
     def ofm_reservoir_list(self) -> ofm.ReservoirListDAO:
-        return ofm.ReservoirListDAO(self.kwargs["ofm_session"])
+        return ofm.ReservoirListDAO(
+            self.kwargs["ofm_session"], self.kwargs["redis"]
+        )
 
     @property
     def ofm_well_list(self) -> ofm.WellListDAO:
-        return ofm.WellListDAO(self.kwargs["ofm_session"])
+        return ofm.WellListDAO(
+            self.kwargs["ofm_session"], self.kwargs["redis"]
+        )
 
     @property
     def csv_monthly_report(self) -> csv.MonthlyReportDAO:

@@ -1,6 +1,7 @@
 from collections.abc import AsyncGenerator
 from typing import Annotated, cast
 
+from arq import ArqRedis
 from fastapi import Depends
 from sqlalchemy import Engine
 from sqlalchemy.ext.asyncio import (
@@ -11,6 +12,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.holder import HolderDAO
+from app.infrastructure.redis.factory import redismaker
 
 
 def dao_provider() -> HolderDAO:
@@ -23,9 +25,11 @@ class DbProvider:
         *,
         local_pool: async_sessionmaker[AsyncSession] | None = None,
         ofm_pool: sessionmaker[Session] | None = None,
+        redis_pool: redismaker[ArqRedis] | None = None,
     ) -> None:
         self.local_pool = local_pool
         self.ofm_pool = ofm_pool
+        self.redis_pool = redis_pool
 
     async def dao(self) -> AsyncGenerator[HolderDAO, None]:
         async with self.local_pool() as session:
@@ -50,6 +54,16 @@ class DbProvider:
                     local_session=local_session,
                     ofm_session=ofm_session,
                     local_pool=self.local_pool,
+                    ofm_pool=self.ofm_pool,
+                    **kwargs,
+                )
+
+    async def ofm_redis_dao(self, **kwargs) -> AsyncGenerator[HolderDAO, None]:
+        with self.ofm_pool() as ofm_session:
+            async with self.redis_pool() as redis:
+                yield HolderDAO(
+                    redis=redis,
+                    ofm_session=ofm_session,
                     ofm_pool=self.ofm_pool,
                     **kwargs,
                 )

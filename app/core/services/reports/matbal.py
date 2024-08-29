@@ -23,11 +23,25 @@ def _expand_date_range(
     return df
 
 
+def _shift_to_month_start(s: pd.Series) -> pd.Series:
+    s = pd.to_datetime(s, errors="coerce")
+    crit = s.dt.is_month_start
+    s[~crit] -= pd.offsets.MonthBegin(n=1)  # type: ignore[operator]
+    return s.dt.date
+
+
+def _prepare_measurements(df: pd.DataFrame) -> pd.DataFrame:
+    df["date"] = _shift_to_month_start(df["date"])
+    df = df.groupby("date", as_index=False).mean()
+    return df
+
+
 def _join_rates_and_measurements(
     df: pd.DataFrame, rates: pd.DataFrame, measurements: pd.DataFrame | None
 ) -> pd.DataFrame:
     df = pd.merge(df, rates, how="left", on="date").fillna(0)
     if measurements is not None:
+        measurements = _prepare_measurements(measurements)
         df = pd.merge(df, measurements, how="left", on="date")
     else:
         df = df.assign(Pres=None)

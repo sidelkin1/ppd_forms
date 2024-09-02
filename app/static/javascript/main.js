@@ -25,3 +25,16 @@ function copyClipboard(id, text) {
 function buildUrl(endpoint) {
   return `${ROOT_PATH}${endpoint}`;
 }
+
+let requestIds = {};
+
+function setRequestId(uniqueKey) {
+  if (!requestIds[uniqueKey]) {
+    requestIds[uniqueKey] = 1;
+  }
+  return ++requestIds[uniqueKey];
+}
+
+function getRequestId(uniqueKey) {
+  return requestIds[uniqueKey];
+}

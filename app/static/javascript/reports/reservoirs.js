@@ -1,4 +1,6 @@
 async function fetchReservoirs(report, path) {
+  const uniqueKey = `${report}Reservoirs`;
+  const currentRequestId = setRequestId(uniqueKey);
   const loader = document.getElementById(`${report}Fetch`);
   const { value: fieldID } = document.getElementById(`${report}Fields`);
   const reservoirsList = document.getElementById(`${report}Reservoirs`);
@@ -8,19 +10,23 @@ async function fetchReservoirs(report, path) {
 
   try {
     const response = await fetch(buildUrl(`/uneft/fields/${fieldID}/${path}`));
-    if (!response.ok) {
+    if (!response.ok || currentRequestId !== getRequestId(uniqueKey)) {
       return;
     }
     const reservoirs = await response.json();
-    reservoirs.forEach(({ id, name }) => {
-      let option = document.createElement("option");
-      option.value = id;
-      option.text = name;
-      reservoirsList.add(option);
-    });
+    if (currentRequestId === getRequestId(uniqueKey)) {
+      reservoirs.forEach(({ id, name }) => {
+        let option = document.createElement("option");
+        option.value = id;
+        option.text = name;
+        reservoirsList.add(option);
+      });
+    }
   } catch (error) {
     console.error(error);
   } finally {
-    loader.classList.add("d-none");
+    if (currentRequestId === getRequestId(uniqueKey)) {
+      loader.classList.add("d-none");
+    }
   }
 }

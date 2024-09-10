@@ -16,8 +16,8 @@ router = APIRouter(tags=["home"])
 
 
 @router.get("/", response_class=HTMLResponse)
-async def home():
-    return RedirectResponse("/reports")
+async def home(request: Request):
+    return RedirectResponse(request.url_for("reports"))
 
 
 @router.get("/reports", response_class=HTMLResponse)

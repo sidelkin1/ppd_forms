@@ -5,6 +5,7 @@ from filecmp import cmpfiles
 from pathlib import Path
 
 import pytest
+import structlog
 from csv_diff import compare, load_csv
 
 from app.core.models.dto import UneftFieldDB
@@ -126,6 +127,10 @@ async def test_fnv_report(
     caplog,
 ):
     caplog.set_level(logging.DEBUG)
+    structlog.contextvars.clear_contextvars()
+    structlog.contextvars.bind_contextvars(
+        request_id="1234567890", user_id="test_user"
+    )
     fnv_dir = result_dir / "fnv"
     fields = [UneftFieldDB(id=1, name="F1")]
     min_radius = 0

@@ -37,7 +37,7 @@ async def load_database(
 ):
     task = TaskExcel(table=table, mode=mode, file=excel.file)
     response = ExcelResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 

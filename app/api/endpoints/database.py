@@ -42,7 +42,7 @@ async def load_database(
         date_to=date_range.date_to,
     )
     response = DatabaseResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 

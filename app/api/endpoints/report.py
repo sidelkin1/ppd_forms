@@ -62,7 +62,7 @@ async def generate_inj_loss_report(
         date_to=date_range.date_to,
     )
     response = InjLossResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -86,7 +86,7 @@ async def generate_oil_loss_report(
         date_to=date_range.date_to,
     )
     response = OilLossResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -112,7 +112,7 @@ async def generate_matrix_report(
         on_date=matrix_effect.on_date,
     )
     response = MatrixResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -135,7 +135,7 @@ async def generate_fnv_report(
         alternative=params.alternative,
     )
     response = FnvResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -160,7 +160,7 @@ async def generate_matbal_report(
         alternative=params.alternative,
     )
     response = MatbalResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -183,7 +183,7 @@ async def generate_prolong_report(
         interpolation=params.interpolation,
     )
     response = ProlongResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -205,7 +205,7 @@ async def generate_mmb_report(
         alternative=params.alternative,
     )
     response = MmbResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -226,7 +226,7 @@ async def generate_compensation_report(
         on_date=on_date.on_date,
     )
     response = CompensationResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 
@@ -249,7 +249,7 @@ async def generate_report(
         date_to=date_range.date_to,
     )
     response = ReportResponse(task=task, job=job)
-    await redis.enqueue_task(response)
+    await redis.enqueue_task(response, user.username)
     return response
 
 

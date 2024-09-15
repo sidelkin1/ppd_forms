@@ -34,7 +34,7 @@ async def field_list(
 ):
     task = TaskFields(assets=UneftAssets.fields, stock=stock)
     response = FieldsResponse(task=task, job=job)
-    fields: list[UneftFieldDB] = await redis.result(response)
+    fields: list[UneftFieldDB] = await redis.result(response, user.username)
     logger.debug("Fetched fields", extra={"fields": fields})
     return fields
 
@@ -51,7 +51,7 @@ async def get_field(
         assets=UneftAssets.fields, stock=stock, field_id=field_id
     )
     response = FieldsResponse(task=task, job=job)
-    field: UneftFieldDB | None = await redis.result(response)
+    field: UneftFieldDB | None = await redis.result(response, user.username)
     check_field_exists(field)
     logger.debug("Fetched field", extra={"field": field})
     return field
@@ -66,7 +66,9 @@ async def reservoir_list(
     await get_field(field_id, user, redis, await job.create(user))
     task = TaskReservoirs(assets=UneftAssets.reservoirs, field_id=field_id)
     response = ReservoirsResponse(task=task, job=await job.create(user))
-    reservoirs: list[UneftReservoirDB] = await redis.result(response)
+    reservoirs: list[UneftReservoirDB] = await redis.result(
+        response, user.username
+    )
     logger.debug(
         "Fetched reservoirs",
         extra={"field_id": field_id, "reservoirs": reservoirs},
@@ -85,7 +87,7 @@ async def well_list(
     await get_field(field_id, user, redis, await job.create(user))
     task = TaskWells(assets=UneftAssets.wells, stock=stock, field_id=field_id)
     response = WellsResponse(task=task, job=await job.create(user))
-    wells: list[UneftWellDB] = await redis.result(response)
+    wells: list[UneftWellDB] = await redis.result(response, user.username)
     logger.debug(
         "Fetched wells",
         extra={"field_id": field_id, "reservoirs": wells},

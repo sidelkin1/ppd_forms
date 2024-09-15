@@ -7,12 +7,12 @@ from app.core.models.dto import JobStamp, TaskBase
 from app.core.models.enums import JobStatus
 
 
-class JobResponse(BaseResponse[dict[str, Any] | None]):
+class JobResponse(BaseResponse[dict[str, Any]]):
     @classmethod
     async def from_job(cls, job: Job) -> Self:
         status = JobStatus.from_arq(await job.status())
         if status is JobStatus.not_found:
-            task = None
+            task = {}
             job_stamp = JobStamp(
                 job_id=job.job_id, file_id=None, status=status
             )

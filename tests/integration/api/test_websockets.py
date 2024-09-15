@@ -91,5 +91,6 @@ def test_job_is_not_found(test_client: TestClient):
                 "job_id": job_id,
                 "message": "Job is not found",
                 "status": JobStatus.not_found.value,
-            }
+            },
+            "task": {},
         }

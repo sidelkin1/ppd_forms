@@ -64,5 +64,6 @@ async def test_job_is_not_found(client: AsyncClient):
         "job": {
             "job_id": job_id,
             "status": JobStatus.not_found.value,
-        }
+        },
+        "task": {},
     }

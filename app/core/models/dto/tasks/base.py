@@ -25,7 +25,9 @@ class TaskBase(BaseModel):
             data.pop("task_id", None)
         return data
 
-    def __init_subclass__(cls, /, task_id, route_fields=["task_id"], **kwargs):
+    def __init_subclass__(
+        cls, /, task_id: TaskId, route_fields=["task_id"], **kwargs
+    ):
         super().__init_subclass__(**kwargs)
         cls._task_id = task_id
         cls._route_fields = route_fields

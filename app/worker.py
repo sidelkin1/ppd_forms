@@ -124,3 +124,4 @@ class WorkerSettings:
     )
     allow_abort_jobs = True
     job_timeout = 2500
+    keep_result = int(os.getenv("APP_KEEP_RESULT", 86400))

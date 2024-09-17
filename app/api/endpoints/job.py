@@ -40,11 +40,15 @@ async def get_job_status(job_id: str, user: UserDep, job: CurrentJobDep):
 
 @router.websocket("/{job_id}/ws")
 async def websocket_endpoint(
-    websocket: WebSocket, job_id: str, user: UserDep, job: CurrentJobDep
+    websocket: WebSocket,
+    job_id: str,
+    user: UserDep,
+    job: CurrentJobDep,
+    abort: bool = True,
 ):
     response = await JobResponse.from_job(job)
     logger.debug(
         "Current job", extra={"task": response.task, "job": response.job}
     )
-    async with JobTracker(websocket, job, response) as tracker:
+    async with JobTracker(websocket, job, response, abort) as tracker:
         await tracker.status()

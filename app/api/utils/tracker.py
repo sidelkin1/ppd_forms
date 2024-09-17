@@ -12,11 +12,16 @@ logger = logging.getLogger(__name__)
 
 class JobTracker:
     def __init__(
-        self, websocket: WebSocket, job: Job, response: JobResponse
+        self,
+        websocket: WebSocket,
+        job: Job,
+        response: JobResponse,
+        abort: bool = True,
     ) -> None:
         self.websocket = websocket
         self.job = job
         self.response = response
+        self.abort = abort
 
     async def __aenter__(self):
         await self.websocket.accept()
@@ -60,9 +65,20 @@ class JobTracker:
             return_when=asyncio.FIRST_COMPLETED,
         )
         if self.socket_task.done():
-            try:
-                await self.job.abort()
-            except Exception as error:
-                logger.error("Exception while aborting job", exc_info=error)
+            if self.abort:
+                logger.info(
+                    "Websocket was closed, the job %s will be aborted",
+                    self.response.job.job_id,
+                )
+                try:
+                    await self.job.abort()
+                except Exception as error:
+                    logger.error(
+                        "Exception while aborting job", exc_info=error
+                    )
+            else:
+                logger.info(
+                    "Websocket was closed, but the job will continue to run"
+                )
         else:
             await self.send_response()

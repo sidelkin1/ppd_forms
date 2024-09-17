@@ -1,10 +1,3 @@
-function constructWebSocketURL(relaivePath) {
-  const url = new URL(location.href);
-  url.protocol = "ws";
-  url.pathname = relaivePath;
-  return url;
-}
-
 async function checkStatus(name, jobID, resultURL = null) {
   const success = document.getElementById(`${name}Success`);
   const alert = document.getElementById(`${name}Danger`);
@@ -13,7 +6,7 @@ async function checkStatus(name, jobID, resultURL = null) {
   let result;
   const webSocketClient = new WebSocketClient();
   try {
-    const url = constructWebSocketURL(buildUrl(`/jobs/${jobID}/ws`));
+    const url = buildUrl(`/jobs/${jobID}/ws?abort=false`);
     await webSocketClient.connect(url);
     const response = await webSocketClient.receive();
     const data = JSON.parse(response);

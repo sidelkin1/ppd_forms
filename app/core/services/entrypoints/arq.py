@@ -420,7 +420,8 @@ async def create_compensation_report(
 async def get_fields(
     response: FieldsResponse, ctx: dict[str, Any]
 ) -> UneftFieldDB | list[UneftFieldDB] | None:
-    async with ctx["ofm_redis_dao"]() as holder:
+    app_config: AppSettings = ctx["app_config"]
+    async with ctx["ofm_redis_dao"](expires=app_config.keep_result) as holder:
         holder = cast(HolderDAO, holder)
         results = await uneft_fields(
             response.task.stock, response.task.field_id, holder.uneft
@@ -432,7 +433,8 @@ async def get_fields(
 async def get_reservoirs(
     response: ReservoirsResponse, ctx: dict[str, Any]
 ) -> list[UneftReservoirDB]:
-    async with ctx["ofm_redis_dao"]() as holder:
+    app_config: AppSettings = ctx["app_config"]
+    async with ctx["ofm_redis_dao"](expires=app_config.keep_result) as holder:
         holder = cast(HolderDAO, holder)
         results = await uneft_reservoirs(response.task.field_id, holder.uneft)
     return results
@@ -442,7 +444,8 @@ async def get_reservoirs(
 async def get_wells(
     response: WellsResponse, ctx: dict[str, Any]
 ) -> list[UneftWellDB]:
-    async with ctx["ofm_redis_dao"]() as holder:
+    app_config: AppSettings = ctx["app_config"]
+    async with ctx["ofm_redis_dao"](expires=app_config.keep_result) as holder:
         holder = cast(HolderDAO, holder)
         results = await uneft_wells(
             response.task.stock, response.task.field_id, holder.uneft

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from redis.asyncio import Redis
 from sqlalchemy import CompoundSelect, Select, select
 from sqlalchemy.orm import Session
@@ -14,8 +16,9 @@ class AssetListDAO(CachedDAO[Model]):
         cache_keys: list[str],
         session: Session,
         redis: Redis,
+        expires: timedelta,
     ) -> None:
-        super().__init__(model, select(), session, redis)
+        super().__init__(model, select(), session, redis, expires)
         self.cache_keys = dict(zip(querysets.keys(), cache_keys))
         self.querysets = querysets
 

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from redis.asyncio import Redis
 from sqlalchemy.orm import Session
 
@@ -10,7 +12,9 @@ from app.infrastructure.db.dao.sql.ofm.querysets import (
 
 
 class WellListDAO(AssetListDAO[UneftWellDB]):
-    def __init__(self, session: Session, redis: Redis) -> None:
+    def __init__(
+        self, session: Session, redis: Redis, expires: timedelta
+    ) -> None:
         super().__init__(
             UneftWellDB,
             {
@@ -20,6 +24,7 @@ class WellListDAO(AssetListDAO[UneftWellDB]):
             ["fields:{}:wells:production", "fields:{}:wells:injection"],
             session,
             redis,
+            expires,
         )
 
     async def get_production_wells(self, field_id: int) -> list[UneftWellDB]:

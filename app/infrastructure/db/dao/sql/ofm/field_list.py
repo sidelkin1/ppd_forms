@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from redis.asyncio import Redis
 from sqlalchemy.orm import Session
 
@@ -11,7 +13,9 @@ from app.infrastructure.db.dao.sql.ofm.querysets import (
 
 
 class FieldListDAO(AssetListDAO[UneftFieldDB]):
-    def __init__(self, session: Session, redis: Redis) -> None:
+    def __init__(
+        self, session: Session, redis: Redis, expires: timedelta
+    ) -> None:
         super().__init__(
             UneftFieldDB,
             {
@@ -32,6 +36,7 @@ class FieldListDAO(AssetListDAO[UneftFieldDB]):
             ],
             session,
             redis,
+            expires,
         )
 
     async def get_fields(self) -> list[UneftFieldDB]:

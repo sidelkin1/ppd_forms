@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from redis.asyncio import Redis
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import CompoundSelect, Select
@@ -13,9 +15,10 @@ class CachedDAO(BaseDAO[Model]):
         queryset: Select | CompoundSelect,
         session: Session,
         redis: Redis,
+        expires: timedelta,
     ) -> None:
         super().__init__(model, queryset, session)
-        self.cache = CacheDAO(model, redis)
+        self.cache = CacheDAO(model, redis, expires=expires)
 
     async def get_by_params_cached(self, key, **params) -> list[Model]:
         if objs := await self.cache.get_objects(key):

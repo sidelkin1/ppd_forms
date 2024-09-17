@@ -21,6 +21,15 @@
                         Таблицы
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a
+                        class="nav-link
+                        {% if request.route.name == 'results' %}active{% endif %}"
+                        href="{{ url_for('results') }}"
+                    >
+                        Результаты
+                    </a>
+                </li>
             </ul>
             <div class="d-flex">
                 <ul class="navbar-nav">

@@ -86,3 +86,13 @@ async def login(
             status_code=status.HTTP_303_SEE_OTHER,
         )
     return response
+
+
+@router.get("/results", response_class=HTMLResponse)
+async def results(request: Request, user: UserOrNoneDep):
+    if user is None:
+        return build_redirect_response(request, "login_page")
+    return templates.TemplateResponse(
+        "results/result_list.html",
+        {"request": request, "user": user},
+    )

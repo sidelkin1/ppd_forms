@@ -16,5 +16,6 @@ class JobStamp(BaseModel):
     user_id: str | None = None
     message: str | None = None
     status: JobStatus = JobStatus.created
+    created_at: datetime = Field(default_factory=datetime.now)
 
     model_config = ConfigDict(extra="forbid")

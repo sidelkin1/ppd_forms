@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from datetime import timedelta
 from typing import Annotated
 
 from arq import ArqRedis
@@ -13,12 +14,13 @@ def redis_provider() -> ArqDAO:
 
 
 class RedisProvider:
-    def __init__(self, pool: redismaker[ArqRedis]) -> None:
+    def __init__(self, pool: redismaker[ArqRedis], expires: timedelta) -> None:
         self.pool = pool
+        self.expires = expires
 
     async def dao(self) -> AsyncGenerator[ArqDAO, None]:
         async with self.pool() as redis:
-            yield ArqDAO(redis=redis)
+            yield ArqDAO(redis=redis, expires=self.expires)
 
 
 RedisDep = Annotated[ArqDAO, Depends(redis_provider)]

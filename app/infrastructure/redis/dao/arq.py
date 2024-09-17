@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Any
 
 import structlog
@@ -10,9 +11,9 @@ from app.infrastructure.redis.dao.job import ScheduledJobsDAO
 
 
 class ArqDAO:
-    def __init__(self, redis: ArqRedis):
+    def __init__(self, redis: ArqRedis, expires: timedelta):
         self.redis = redis
-        self.schedule = ScheduledJobsDAO(redis)
+        self.schedule = ScheduledJobsDAO(redis, expires=expires)
 
     async def enqueue_task(
         self, response: BaseResponse, username: str

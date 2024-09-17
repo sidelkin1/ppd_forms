@@ -43,7 +43,7 @@ def init_api() -> FastAPI:
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
     auth_config = get_auth_settings()
     paths = get_paths()
-    dependencies.setup(app, pool, redis, auth_config, paths)
+    dependencies.setup(app, pool, redis, app_config, auth_config, paths)
     logger.info("App prepared")
     return app
 

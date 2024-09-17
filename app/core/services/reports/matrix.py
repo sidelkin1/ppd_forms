@@ -43,6 +43,7 @@ def _expand_reservoir(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
 def _expand_neighbs(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
     df["neighbs"] = df["neighbs"].str.split(delimiter)
     df = df.explode("neighbs")
+    df["neighbs"] = df["neighbs"].fillna("")
     return df
 
 

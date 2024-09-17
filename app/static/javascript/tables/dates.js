@@ -1,3 +1,7 @@
+document.addEventListener("DOMContentLoaded", () => {
+  loadTableDates(dbTables);
+});
+
 async function fetchDates(path, source) {
   const loader = document.getElementById(`${path}Fetch`);
   const dates = document.getElementById(`${path}Dates`);
@@ -30,5 +34,3 @@ async function loadTableDates(tableURLs) {
     console.error("Error:", error);
   }
 }
-
-loadTableDates(dbTables);

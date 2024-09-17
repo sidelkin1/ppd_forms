@@ -1,3 +1,10 @@
+document.addEventListener("DOMContentLoaded", () => {
+  loadReportFields([
+    ["fnv", "fields?stock=injection"],
+    ["matbal", "fields?stock=production"],
+  ]);
+});
+
 async function fetchFields(report, path) {
   const loader = document.getElementById(`${report}Fetch`);
   const fieldList = document.getElementById(`${report}Fields`);
@@ -32,8 +39,3 @@ async function loadReportFields(reportFields) {
     console.error("Error:", error);
   }
 }
-
-loadReportFields([
-  ["fnv", "fields?stock=injection"],
-  ["matbal", "fields?stock=production"],
-]);

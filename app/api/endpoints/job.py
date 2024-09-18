@@ -44,11 +44,13 @@ async def websocket_endpoint(
     job_id: str,
     user: UserDep,
     job: CurrentJobDep,
-    abort: bool = True,
+    abort_on_disconnect: bool = False,
 ):
     response = await JobResponse.from_job(job)
     logger.debug(
         "Current job", extra={"task": response.task, "job": response.job}
     )
-    async with JobTracker(websocket, job, response, abort) as tracker:
+    async with JobTracker(
+        websocket, job, response, abort_on_disconnect=abort_on_disconnect
+    ) as tracker:
         await tracker.status()

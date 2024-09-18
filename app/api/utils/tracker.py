@@ -16,12 +16,12 @@ class JobTracker:
         websocket: WebSocket,
         job: Job,
         response: JobResponse,
-        abort: bool = True,
+        abort_on_disconnect: bool = False,
     ) -> None:
         self.websocket = websocket
         self.job = job
         self.response = response
-        self.abort = abort
+        self.abort_on_disconnect = abort_on_disconnect
 
     async def __aenter__(self):
         await self.websocket.accept()
@@ -65,7 +65,7 @@ class JobTracker:
             return_when=asyncio.FIRST_COMPLETED,
         )
         if self.socket_task.done():
-            if self.abort:
+            if self.abort_on_disconnect:
                 logger.info(
                     "Websocket was closed, the job %s will be aborted",
                     self.response.job.job_id,

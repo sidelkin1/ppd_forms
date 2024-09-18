@@ -6,7 +6,7 @@ async function checkStatus(name, jobID, resultURL = null) {
   let result;
   const webSocketClient = new WebSocketClient();
   try {
-    const url = buildUrl(`/jobs/${jobID}/ws?abort=false`);
+    const url = buildUrl(`/jobs/${jobID}/ws`);
     await webSocketClient.connect(url);
     const response = await webSocketClient.receive();
     const data = JSON.parse(response);

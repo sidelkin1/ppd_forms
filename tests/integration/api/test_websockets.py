@@ -76,7 +76,9 @@ async def test_job_abort(
             await asyncio.sleep(0.1)
     worker_ = worker(functions=[work_long], allow_abort_jobs=True)
     asyncio.create_task(worker_.main())
-    with test_client.websocket_connect(f"/jobs/{response.job.job_id}/ws"):
+    with test_client.websocket_connect(
+        f"/jobs/{response.job.job_id}/ws?abort_on_disconnect=true"
+    ):
         await asyncio.sleep(0.1)
     with pytest.raises(asyncio.CancelledError):
         await job.result()

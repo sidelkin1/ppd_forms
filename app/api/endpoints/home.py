@@ -7,9 +7,11 @@ from fastapi.templating import Jinja2Templates
 
 from app.api.dependencies.auth import AuthDep, UserDep, UserOrNoneDep
 from app.api.dependencies.path import PathDep
+from app.api.dependencies.redis import RedisDep  # Добавляем импорт RedisDep
 from app.api.endpoints.auth import revoke, token
 from app.api.utils.redirect import build_redirect_response
 from app.common.parsers import read_config
+from app.core.models.enums import TaskId
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(tags=["home"])
@@ -89,10 +91,23 @@ async def login(
 
 
 @router.get("/results", response_class=HTMLResponse)
-async def results(request: Request, user: UserOrNoneDep):
+async def results(request: Request, user: UserOrNoneDep, redis: RedisDep):
     if user is None:
         return build_redirect_response(request, "login_page")
+    responses = await redis.get_scheduled_tasks(
+        user.username, task_id=TaskId.report
+    )
+    responses = sorted(
+        responses, key=lambda response: response.job.created_at, reverse=True
+    )
+    tasks = [response.task for response in responses]
+    jobs = [response.job.model_dump(mode="json") for response in responses]
     return templates.TemplateResponse(
         "results/result_list.html",
-        {"request": request, "user": user},
+        {
+            "request": request,
+            "user": user,
+            "tasks": tasks,
+            "jobs": jobs,
+        },
     )

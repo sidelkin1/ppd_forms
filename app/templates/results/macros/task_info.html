@@ -1,0 +1,7 @@
+{% macro task_info(task) -%}
+    <ul>
+        {% for key, value in task.items() %}
+            <li>{{ key }}: {{ value }}</li>
+        {% endfor %}
+    </ul>
+{%- endmacro %}

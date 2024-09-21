@@ -3,6 +3,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi_pagination import add_pagination
 
 from app.api import dependencies, endpoints, middlewares
 from app.api.config.main import get_api_settings, get_auth_settings
@@ -38,6 +39,7 @@ def init_api() -> FastAPI:
         description=app_config.description,
         root_path=app_config.root_path,
     )
+    add_pagination(app)
     endpoints.setup(app)
     middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")

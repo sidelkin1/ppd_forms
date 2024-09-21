@@ -1,11 +1,11 @@
 {% macro table_row(task, job, success_text, danger_text) -%}
     <tr>
-        <td>{{ task.name }}</td>
-        <td>{{ job.created_at.strftime("%d.%m.%Y %H:%M") }}</td>
+        <td class="text-center">{{ task.name }}</td>
+        <td class="text-center">{{ job.created_at.strftime("%d.%m.%Y %H:%M") }}</td>
         <td>
             {{ caller(task) }}
         </td>
-        <td>
+        <td class="text-center">
             <div class="spinner-border spinner-border-sm" id="{{ job.job_id }}Fetch" role="status"></div>
             <div class="alert alert-success d-none" id="{{ job.job_id }}Success" role="alert">
                 {{ success_text }}

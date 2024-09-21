@@ -20,5 +20,6 @@ class AppSettings(BaseSettings):
     keep_result: Annotated[timedelta, BeforeValidator(int)] = Field(
         default=86400, validation_alias="app_keep_result"
     )
+    page_size: int = Field(default=5, validation_alias="app_page_size")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

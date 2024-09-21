@@ -4,10 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
+from fastapi_pagination import paginate
 
 from app.api.dependencies.auth import AuthDep, UserDep, UserOrNoneDep
+from app.api.dependencies.pagination import PageParamsDeps
 from app.api.dependencies.path import PathDep
-from app.api.dependencies.redis import RedisDep  # Добавляем импорт RedisDep
+from app.api.dependencies.redis import RedisDep
 from app.api.endpoints.auth import revoke, token
 from app.api.utils.redirect import build_redirect_response
 from app.common.parsers import read_config
@@ -90,8 +92,16 @@ async def login(
     return response
 
 
-@router.get("/results", response_class=HTMLResponse)
-async def results(request: Request, user: UserOrNoneDep, redis: RedisDep):
+@router.get(
+    "/results",
+    response_class=HTMLResponse,
+)
+async def results(
+    request: Request,
+    user: UserOrNoneDep,
+    redis: RedisDep,
+    params: PageParamsDeps,
+):
     if user is None:
         return build_redirect_response(request, "login_page")
     responses = await redis.get_scheduled_tasks(
@@ -102,10 +112,13 @@ async def results(request: Request, user: UserOrNoneDep, redis: RedisDep):
         {
             "request": request,
             "user": user,
-            "responses": sorted(
-                responses,
-                key=lambda response: response.job.created_at,
-                reverse=True,
+            "responses": paginate(
+                sorted(
+                    responses,
+                    key=lambda response: response.job.created_at,
+                    reverse=True,
+                ),
+                params,
             ),
         },
     )

@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import APIRouter, WebSocket
+from fastapi_pagination import Page, paginate
 
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import CurrentJobDep
@@ -15,14 +16,14 @@ router = APIRouter(prefix="/jobs", tags=["jobs"])
 
 @router.get(
     "/scheduled",
-    response_model=list[JobResponse],
+    response_model=Page[JobResponse],
     response_model_exclude_none=True,
 )
 async def get_user_tasks(
     redis: RedisDep, user: UserDep, task_id: TaskId | None = None
 ):
     tasks = await redis.get_scheduled_tasks(user.username, task_id)
-    return tasks
+    return paginate(tasks)
 
 
 @router.get(

@@ -101,17 +101,21 @@ async def results(
     user: UserOrNoneDep,
     redis: RedisDep,
     params: PageParamsDeps,
+    path: PathDep,
 ):
     if user is None:
         return build_redirect_response(request, "login_page")
     responses = await redis.get_scheduled_tasks(
         user.username, task_id=TaskId.report
     )
+    reports = read_config(path.report_config_file)
+    report_title = {report["path"]: report["title"] for report in reports}
     return templates.TemplateResponse(
         "results/result_list.html",
         {
             "request": request,
             "user": user,
+            "report_title": report_title,
             "responses": paginate(
                 sorted(
                     responses,

@@ -1,6 +1,6 @@
-{% macro table_row(task, job, success_text, danger_text) -%}
+{% macro table_row(task, job, report_title, success_text, danger_text) -%}
     <tr>
-        <td class="text-center">{{ task.name }}</td>
+        <td class="text-center">{{ report_title.get(task.name, task.name) }}</td>
         <td class="text-center">{{ job.created_at.strftime("%d.%m.%Y %H:%M") }}</td>
         <td>
             {{ caller(task) }}

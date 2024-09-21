@@ -25,6 +25,7 @@ oracledb = "^1.4.1"
 structlog = "^24.1.0"
 rich = "^13.7.1"
 colorama = "^0.4.6"
+fastapi-pagination = "^0.12.27"
 
 [tool.poetry.group.web]
 optional = true

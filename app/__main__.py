@@ -1,10 +1,14 @@
 import asyncio
 import logging
 
+from fastapi_pagination.utils import disable_installed_extensions_check  # noqa
+
 from app.infrastructure.db.config.main import get_postgres_settings
 from app.infrastructure.log.config.main import get_log_settings
 from app.infrastructure.log.main import configure_logging
 from app.main import init_api, init_mapper, run_api
+
+disable_installed_extensions_check()
 
 logger = logging.getLogger(__name__)
 

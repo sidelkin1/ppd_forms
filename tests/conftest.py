@@ -1,10 +1,14 @@
 from pathlib import Path
 
 import pytest
+from fastapi_pagination.utils import disable_installed_extensions_check  # noqa
 
 from app.api.config.models.auth import AuthSettings
 from app.api.config.models.basic import BasicAuthSettings
 from app.common.config.models.paths import Paths
+from app.core.config.models.app import AppSettings
+
+disable_installed_extensions_check()
 
 
 @pytest.fixture(scope="session")
@@ -16,6 +20,11 @@ def auth_config() -> AuthSettings:
             app_default_password="test_password",
         ),
     )
+
+
+@pytest.fixture(scope="session")
+def app_config() -> AppSettings:
+    return AppSettings()
 
 
 @pytest.fixture(scope="session")

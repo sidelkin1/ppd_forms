@@ -17,7 +17,9 @@ async def test_job_ok(
     work_ok: Function,
 ):
     response_ok = TaskTestResponse.test(status=JobStatus.completed)
-    response = TaskTestResponse.test(job_id=response_ok.job.job_id)
+    response = TaskTestResponse.test(
+        job_id=response_ok.job.job_id, created_at=response_ok.job.created_at
+    )
     job = await arq_redis.enqueue_job(
         work_ok.name, response, _job_id=response.job.job_id
     )
@@ -27,7 +29,7 @@ async def test_job_ok(
     resp = await client.get(f"/jobs/{response.job.job_id}")
     assert resp.is_success
     data = resp.json()
-    assert data == response_ok.model_dump(exclude_none=True)
+    assert data == response_ok.model_dump(mode="json", exclude_none=True)
 
 
 @pytest.mark.asyncio(scope="session")
@@ -40,7 +42,10 @@ async def test_job_error(
     response_error = TaskTestResponse.test(
         status=JobStatus.error, message="Error!"
     )
-    response = TaskTestResponse.test(job_id=response_error.job.job_id)
+    response = TaskTestResponse.test(
+        job_id=response_error.job.job_id,
+        created_at=response_error.job.created_at,
+    )
     job = await arq_redis.enqueue_job(
         work_error.name, response, _job_id=response.job.job_id
     )
@@ -51,7 +56,7 @@ async def test_job_error(
     resp = await client.get(f"/jobs/{response.job.job_id}")
     assert resp.is_success
     data = resp.json()
-    assert data == response_error.model_dump(exclude_none=True)
+    assert data == response_error.model_dump(mode="json", exclude_none=True)
 
 
 @pytest.mark.asyncio(scope="session")
@@ -64,6 +69,7 @@ async def test_job_is_not_found(client: AsyncClient):
         "job": {
             "job_id": job_id,
             "status": JobStatus.not_found.value,
+            "created_at": data["job"]["created_at"],
         },
         "task": {},
     }

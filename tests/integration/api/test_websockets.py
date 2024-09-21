@@ -32,7 +32,7 @@ async def test_job_ok(
         f"/jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
-        assert data == response_ok.model_dump(exclude_none=True)
+        assert data == response_ok.model_dump(mode="json", exclude_none=True)
 
 
 @pytest.mark.asyncio(scope="session")
@@ -57,7 +57,9 @@ async def test_job_error(
         f"/jobs/{response.job.job_id}/ws"
     ) as websocket:
         data = websocket.receive_json()
-        assert data == response_error.model_dump(exclude_none=True)
+        assert data == response_error.model_dump(
+            mode="json", exclude_none=True
+        )
 
 
 @pytest.mark.asyncio(scope="session")
@@ -93,6 +95,7 @@ def test_job_is_not_found(test_client: TestClient):
                 "job_id": job_id,
                 "message": "Job is not found",
                 "status": JobStatus.not_found.value,
+                "created_at": data["job"]["created_at"],
             },
             "task": {},
         }

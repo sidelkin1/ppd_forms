@@ -7,6 +7,7 @@ from arq.worker import Worker
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.testclient import TestClient
+from fastapi_pagination import add_pagination
 from httpx import AsyncClient
 
 from app.api import dependencies, endpoints, middlewares
@@ -14,6 +15,7 @@ from app.api.config.models.auth import AuthSettings
 from app.api.dependencies.auth import AuthProvider
 from app.api.models.auth import Token, User
 from app.common.config.models.paths import Paths
+from app.core.config.models.app import AppSettings
 from app.infrastructure.db.config.models.local import PostgresSettings
 from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
@@ -77,16 +79,18 @@ def anon_test_client(app: FastAPI) -> Generator[TestClient, None, None]:
 def app(
     postgres_config: PostgresSettings,
     redis_config: RedisSettings,
+    app_config: AppSettings,
     auth_config: AuthSettings,
     paths: Paths,
 ) -> FastAPI:
     pool = create_local_pool(postgres_config)
     redis = create_redis_pool(redis_config)
     app = FastAPI()
+    add_pagination(app)
     endpoints.setup(app)
     middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
-    dependencies.setup(app, pool, redis, auth_config, paths)
+    dependencies.setup(app, pool, redis, app_config, auth_config, paths)
     return app
 
 

@@ -10,17 +10,17 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Тип отчета</th>
-                    <th>Дата создания</th>
-                    <th>Информация</th>
-                    <th>Статус</th>
+                    <th class="table-warning">Тип отчета</th>
+                    <th class="table-warning">Дата создания</th>
+                    <th class="table-warning">Информация</th>
+                    <th class="table-warning">Статус</th>
                 </tr>
             </thead>
             <tbody>
-                {% for task in tasks %}
+                {% for response in responses %}
                     {% call(task) table_row(
-                        task,
-                        jobs[loop.index0],
+                        response.task,
+                        response.job,
                         "Отчет успешно сформирован!",
                         "Ошибка при формировании отчета!",
                     ) %}
@@ -28,7 +28,7 @@
                     {% endcall %}
                 {% else %}
                     <tr>
-                        <td>Не найден ни один отчет!</td>
+                        <td colspan="4" class="text-center text-muted">Отчеты не найдены</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -40,7 +40,10 @@
 {% block js %}
 
     <script>
-        const userJobs = {{ jobs | tojson  }};
+        const userJobs = [];
+        {% for response in responses %}
+            userJobs.push({{ response.job.model_dump(mode='json') | tojson }});
+        {% endfor %}
     </script>
     <script src="{{url_for('static', path='/javascript/results/status.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/core/status.js')}}" type="text/javascript"></script>

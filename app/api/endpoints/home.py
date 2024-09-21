@@ -97,17 +97,15 @@ async def results(request: Request, user: UserOrNoneDep, redis: RedisDep):
     responses = await redis.get_scheduled_tasks(
         user.username, task_id=TaskId.report
     )
-    responses = sorted(
-        responses, key=lambda response: response.job.created_at, reverse=True
-    )
-    tasks = [response.task for response in responses]
-    jobs = [response.job.model_dump(mode="json") for response in responses]
     return templates.TemplateResponse(
         "results/result_list.html",
         {
             "request": request,
             "user": user,
-            "tasks": tasks,
-            "jobs": jobs,
+            "responses": sorted(
+                responses,
+                key=lambda response: response.job.created_at,
+                reverse=True,
+            ),
         },
     )

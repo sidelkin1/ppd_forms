@@ -19,7 +19,7 @@ body {
 .bg-dark {
   background-color: #3D464A !important;
 }
-.bg-warning {
+.bg-warning, .table-warning {
   background-color: #F9BD27 !important;
 }
 .bg-danger {

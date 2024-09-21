@@ -1,7 +1,7 @@
 {% macro table_row(task, job, success_text, danger_text) -%}
     <tr>
         <td>{{ task.name }}</td>
-        <td>{{ job.created_at }}</td>
+        <td>{{ job.created_at.strftime("%d.%m.%Y %H:%M") }}</td>
         <td>
             {{ caller(task) }}
         </td>

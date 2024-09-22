@@ -15,6 +15,64 @@ def arq_dao(arq_redis: ArqRedis, app_config: AppSettings):
 
 
 @pytest.mark.asyncio
+async def test_default_pagination(
+    client: AsyncClient, user: User, arq_dao: ArqDAO
+):
+    responses = [
+        TaskTestResponse.test(),
+        TaskTestResponse.foo(),
+        TaskTestResponse.bar(),
+    ]
+    for response in responses:
+        await arq_dao.enqueue_task(response, user.username)
+    resp = await client.get("/jobs/scheduled")
+    assert resp.status_code == 200
+    data = resp.json()
+    for field in ["items", "pages", "page", "size", "total"]:
+        assert field in data
+    assert data["pages"] == 1
+    assert data["page"] == 1
+    assert data["size"] == 50
+    assert data["total"] == len(responses)
+
+
+@pytest.mark.asyncio
+async def test_custom_page_size(
+    client: AsyncClient, user: User, arq_dao: ArqDAO
+):
+    responses = [
+        TaskTestResponse.test(),
+        TaskTestResponse.foo(),
+        TaskTestResponse.bar(),
+    ]
+    for response in responses:
+        await arq_dao.enqueue_task(response, user.username)
+    params = {"page": 1, "size": 1}
+    resp = await client.get("/jobs/scheduled", params=params)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["items"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_page_number_out_of_range(
+    client: AsyncClient, user: User, arq_dao: ArqDAO
+):
+    responses = [
+        TaskTestResponse.test(),
+        TaskTestResponse.foo(),
+        TaskTestResponse.bar(),
+    ]
+    for response in responses:
+        await arq_dao.enqueue_task(response, user.username)
+    params = {"page": 100, "size": 10}
+    resp = await client.get("/jobs/scheduled", params=params)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["items"]) == 0
+
+
+@pytest.mark.asyncio
 async def test_get_tasks_no_filter(
     client: AsyncClient, user: User, arq_dao: ArqDAO
 ):

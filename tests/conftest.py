@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from fastapi_pagination.utils import disable_installed_extensions_check  # noqa
+from fastapi_pagination.utils import disable_installed_extensions_check
 
 from app.api.config.models.auth import AuthSettings
 from app.api.config.models.basic import BasicAuthSettings

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fastapi_pagination.utils import disable_installed_extensions_check  # noqa
+from fastapi_pagination.utils import disable_installed_extensions_check
 
 from app.infrastructure.db.config.main import get_postgres_settings
 from app.infrastructure.log.config.main import get_log_settings

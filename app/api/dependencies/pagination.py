@@ -4,7 +4,9 @@ from fastapi import Depends, Query
 from fastapi_pagination import Params
 
 
-def get_pagination_params() -> Params:
+def get_pagination_params(
+    page: int = Query(1, ge=1, description="Page number"),
+) -> Params:
     raise NotImplementedError
 
 

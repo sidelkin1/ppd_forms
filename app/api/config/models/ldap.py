@@ -8,6 +8,7 @@ class LdapSettings(BaseSettings):
     host: str | None = Field(default=None, validation_alias="ldap_host")
     port: int | None = Field(default=None, validation_alias="ldap_port")
     url: AnyUrl = Field(default=None, validation_alias="ldap_url")
+    timeout_s: int = Field(default=30, validation_alias="ldap_connect_timeout")
 
     @field_validator("url", mode="before")
     @classmethod

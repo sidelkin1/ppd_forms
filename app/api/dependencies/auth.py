@@ -10,6 +10,7 @@ from fastapi import (
     WebSocketException,
     status,
 )
+from fastapi.concurrency import run_in_threadpool
 from jose import JWTError, jwt
 from starlette.requests import HTTPConnection
 
@@ -39,15 +40,19 @@ class AuthProvider:
         self.default_password = settings.basic.password
         self.token_expire_time = settings.token_expire_time
         self.secret_key = settings.secret_key
+        self.timeout_s = settings.ldap.timeout_s
         self.algorithm = "HS256"
 
     def verify_password(self, username: str, password: str) -> bool:
         return default_verify(
             self.default_username, self.default_password, username, password
-        ) or ldap_verify(self.ldap_url, username, password)
+        ) or ldap_verify(self.ldap_url, username, password, self.timeout_s)
 
-    def authenticate_user(self, username: str, password: str) -> User:
-        if not self.verify_password(username, password):
+    async def authenticate_user(self, username: str, password: str) -> User:
+        is_authentiicated = await run_in_threadpool(
+            self.verify_password, username, password
+        )
+        if not is_authentiicated:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password",

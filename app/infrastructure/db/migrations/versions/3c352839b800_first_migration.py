@@ -2,7 +2,7 @@
 
 Revision ID: 3c352839b800
 Revises: 000000000000
-Create Date: 2024-03-21 13:32:02.071185
+Create Date: 2024-09-27 18:34:39.638961
 
 """
 from alembic import op
@@ -30,10 +30,10 @@ def upgrade() -> None:
     op.create_index(op.f('ix__injwelldatabase__field'), 'injwelldatabase', ['field'], unique=False)
     op.create_index(op.f('ix__injwelldatabase__well'), 'injwelldatabase', ['well'], unique=False)
     op.create_table('monthlyreport',
-    sa.Column('field', app.infrastructure.db.migrations.types.FieldType(length=50), nullable=False),
-    sa.Column('well_name', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
+    sa.Column('field', sa.String(length=50), nullable=False),
+    sa.Column('well_name', sa.String(length=10), nullable=False),
     sa.Column('cid_all', app.infrastructure.db.migrations.types.MultiResevoirType(length=200), nullable=False),
-    sa.Column('cid', app.infrastructure.db.migrations.types.ResevoirType(length=100), nullable=False),
+    sa.Column('cid', sa.String(length=100), nullable=False),
     sa.Column('dat_rep', sa.Date(), nullable=False),
     sa.Column('oil', sa.Float(), nullable=False),
     sa.Column('oil_v', sa.Float(), nullable=False),
@@ -71,12 +71,12 @@ def upgrade() -> None:
     sa.Column('well', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
     sa.Column('reservoir', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=False),
     sa.Column('gtm_date', sa.Date(), nullable=False),
-    sa.Column('gtm_description', sa.String(), nullable=False),
+    sa.Column('gtm_description', sa.String(length=200), nullable=False),
     sa.Column('oil_recovery', sa.Float(), nullable=True),
     sa.Column('effect_end', sa.Date(), nullable=True),
-    sa.Column('gtm_group', sa.String(), nullable=True),
+    sa.Column('gtm_group', sa.String(length=50), nullable=True),
     sa.Column('oil_rate', sa.Float(), nullable=True),
-    sa.Column('gtm_problem', sa.String(), nullable=False),
+    sa.Column('gtm_problem', sa.String(length=20), nullable=False),
     sa.Column('reservoir_neighbs', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=True),
     sa.Column('neighbs', app.infrastructure.db.migrations.types.MultiWellType(length=100), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
@@ -92,7 +92,7 @@ def upgrade() -> None:
     sa.Column('reservoir_before', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=False),
     sa.Column('reservoir_after', app.infrastructure.db.migrations.types.MultiSplitResevoirType(length=200), nullable=False),
     sa.Column('vnr_date', sa.Date(), nullable=False),
-    sa.Column('gtm_name', sa.String(), nullable=False),
+    sa.Column('gtm_name', sa.String(length=50), nullable=False),
     sa.Column('start_date', sa.Date(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__newstrategyoil')),
@@ -128,10 +128,10 @@ def upgrade() -> None:
     schema='utils'
     )
     op.create_table('wellprofile',
-    sa.Column('field', app.infrastructure.db.migrations.types.FieldType(length=50), nullable=False),
-    sa.Column('well_name', app.infrastructure.db.migrations.types.WellType(length=10), nullable=False),
+    sa.Column('field', sa.String(length=50), nullable=False),
+    sa.Column('well_name', sa.String(length=10), nullable=False),
     sa.Column('cid_all', app.infrastructure.db.migrations.types.MultiResevoirType(length=200), nullable=False),
-    sa.Column('cid_layer', app.infrastructure.db.migrations.types.ResevoirType(length=100), nullable=True),
+    sa.Column('cid_layer', sa.String(length=100), nullable=True),
     sa.Column('layer', app.infrastructure.db.migrations.types.MultiLayerType(length=100), nullable=True),
     sa.Column('rec_date', sa.Date(), nullable=False),
     sa.Column('uwi', sa.String(length=10), nullable=False),

@@ -1,3 +1,4 @@
+from sqlalchemy import String
 from sqlalchemy.orm import mapped_column
 from typing_extensions import Annotated
 
@@ -62,3 +63,9 @@ multi_split_reservoir_type = Annotated[
 ]
 layer_type = Annotated[str, mapped_column(LayerType(20))]
 multi_layer_type = Annotated[str, mapped_column(MultiLayerType(100))]
+
+# Типы без mapper
+ofm_field_type = Annotated[str, mapped_column(String(50))]
+ofm_well_type = Annotated[str, mapped_column(String(10))]
+ofm_reservoir_type = Annotated[str, mapped_column(String(100))]
+ofm_layer_type = Annotated[str, mapped_column(String(20))]

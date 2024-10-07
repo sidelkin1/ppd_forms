@@ -12,10 +12,10 @@ FVF_DEFAULT_VALUE: float = 1
 
 
 class MonthlyReport(date_stamp_factory("dat_rep"), Base):
-    field: Mapped[types.field_type]
-    well_name: Mapped[types.well_type]
+    field: Mapped[types.ofm_field_type]
+    well_name: Mapped[types.ofm_well_type]
     cid_all: Mapped[types.multi_reservoir_type]
-    cid: Mapped[types.reservoir_type]
+    cid: Mapped[types.ofm_reservoir_type]
     dat_rep: Mapped[date]
     oil: Mapped[float]
     oil_v: Mapped[float]

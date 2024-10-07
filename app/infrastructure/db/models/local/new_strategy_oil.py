@@ -1,7 +1,7 @@
 from datetime import date
 
-from sqlalchemy import Index, UniqueConstraint
-from sqlalchemy.orm import Mapped
+from sqlalchemy import Index, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.db.models.local.base import Base
 from app.infrastructure.db.models.local.mixins import date_stamp_factory
@@ -14,7 +14,7 @@ class NewStrategyOil(date_stamp_factory("vnr_date"), Base):
     reservoir_before: Mapped[types.multi_split_reservoir_type]
     reservoir_after: Mapped[types.multi_split_reservoir_type]
     vnr_date: Mapped[date]
-    gtm_name: Mapped[str]
+    gtm_name: Mapped[str] = mapped_column(String(50))
     start_date: Mapped[date]
 
     __table_args__ = (

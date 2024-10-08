@@ -1,6 +1,5 @@
 from arq import ArqRedis
 from fastapi import FastAPI
-from fastapi_pagination import Params
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.config.models.auth import AuthSettings

@@ -6,6 +6,7 @@ from fastapi import Depends
 
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.redis import RedisDep
+from app.api.models.responses import JobResponse
 from app.core.models.dto import JobStamp
 
 
@@ -14,6 +15,10 @@ def get_new_job() -> JobStamp:
 
 
 def get_current_job() -> Job:
+    raise NotImplementedError
+
+
+def get_job_reponse() -> JobResponse:
     raise NotImplementedError
 
 
@@ -28,6 +33,12 @@ class JobProvider:
         structlog.contextvars.bind_contextvars(job_id=job_id)
         return job
 
+    async def response(
+        self, job: Annotated[Job, Depends(get_current_job)]
+    ) -> JobResponse:
+        response = await JobResponse.from_job(job)
+        return response
+
 
 def get_job_provider() -> JobProvider:
     raise NotImplementedError
@@ -36,3 +47,4 @@ def get_job_provider() -> JobProvider:
 JobDep = Annotated[JobProvider, Depends(get_job_provider)]
 NewJobDep = Annotated[JobStamp, Depends(get_new_job)]
 CurrentJobDep = Annotated[Job, Depends(get_current_job)]
+JobResponseDep = Annotated[JobResponse, Depends(get_job_reponse)]

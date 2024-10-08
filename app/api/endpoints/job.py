@@ -4,10 +4,10 @@ from fastapi import APIRouter, WebSocket
 from fastapi_pagination import Page, paginate
 
 from app.api.dependencies.auth import UserDep
-from app.api.dependencies.job import CurrentJobDep
+from app.api.dependencies.job import JobResponseDep
 from app.api.dependencies.redis import RedisDep
+from app.api.dependencies.tracker import JobTrackerDep
 from app.api.models.responses import JobResponse
-from app.api.utils.tracker import JobTracker
 from app.core.models.enums.task_id import TaskId
 
 logger = logging.getLogger(__name__)
@@ -31,8 +31,7 @@ async def get_user_tasks(
     response_model=JobResponse,
     response_model_exclude_none=True,
 )
-async def get_job_status(job_id: str, user: UserDep, job: CurrentJobDep):
-    response = await JobResponse.from_job(job)
+async def get_job_status(job_id: str, user: UserDep, response: JobResponseDep):
     logger.debug(
         "Current job", extra={"task": response.task, "job": response.job}
     )
@@ -44,14 +43,11 @@ async def websocket_endpoint(
     websocket: WebSocket,
     job_id: str,
     user: UserDep,
-    job: CurrentJobDep,
-    abort_on_disconnect: bool = False,
+    response: JobResponseDep,
+    tracker: JobTrackerDep,
 ):
-    response = await JobResponse.from_job(job)
     logger.debug(
         "Current job", extra={"task": response.task, "job": response.job}
     )
-    async with JobTracker(
-        websocket, job, response, abort_on_disconnect=abort_on_disconnect
-    ) as tracker:
+    async with tracker:
         await tracker.status()

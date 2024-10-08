@@ -3,9 +3,9 @@ from datetime import date
 from sqlalchemy import Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.infrastructure.db import types
 from app.infrastructure.db.models.local.base import Base
 from app.infrastructure.db.models.local.mixins import date_stamp_factory
-from app.infrastructure.db.types import types
 
 
 class NewStrategyInj(date_stamp_factory("gtm_date"), Base):

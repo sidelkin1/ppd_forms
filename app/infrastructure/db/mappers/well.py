@@ -1,7 +1,7 @@
 import re
 from enum import Enum
 
-from app.infrastructure.db.types.unify.base_mapper import BaseMapper, WordOrder
+from app.infrastructure.db.mappers.base import BaseMapper, WordOrder
 
 
 class TRANSLATE_TO(Enum):

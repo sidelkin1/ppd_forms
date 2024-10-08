@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from app.infrastructure.db.types.unify import (
+from app.infrastructure.db.mappers import (
     TRANSLATE_TO,
     BaseMapper,
     LayerMapper,

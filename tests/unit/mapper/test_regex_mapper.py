@@ -1,6 +1,6 @@
 import re
 
-from app.infrastructure.db.types.unify import RegexMapper
+from app.infrastructure.db.mappers import RegexMapper
 
 
 def test_simple_pattern_replacement(regex_mapper: RegexMapper):

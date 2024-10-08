@@ -81,7 +81,7 @@ class BaseMapper(ABC):
         return [
             word
             for word in result
-            if word not in seen
+            if word not in seen  #
             and not seen.add(word)  # type: ignore[func-returns-value]
         ]
 

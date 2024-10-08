@@ -4,9 +4,9 @@ from sqlalchemy import Float, Index, Label, UniqueConstraint, cast, func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped
 
+from app.infrastructure.db import types
 from app.infrastructure.db.models.local.base import Base
 from app.infrastructure.db.models.local.mixins import date_stamp_factory
-from app.infrastructure.db.types import types
 
 FVF_DEFAULT_VALUE: float = 1
 

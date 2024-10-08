@@ -1,11 +1,17 @@
 import re
 
 from app.infrastructure.db.dao import local
-from app.infrastructure.db.types import types
-from app.infrastructure.db.types.unify import (
+from app.infrastructure.db.mappers import (
     BaseMapper,
     RegexMapper,
     SimpleMapper,
+    field_mapper,
+    gtm_mapper,
+    layer_mapper,
+    multi_layer_mapper,
+    multi_reservoir_mapper,
+    multi_split_reservoir_mapper,
+    reservoir_mapper,
 )
 
 
@@ -37,30 +43,30 @@ async def _update_regex_mapper(
 
 
 async def init_field_mapper(dao: local.FieldReplaceDAO) -> None:
-    await _update_regex_mapper(types.FieldType.mapper, dao)
+    await _update_regex_mapper(field_mapper, dao)
 
 
 async def init_reservoir_mapper(dao: local.ReservoirReplaceDAO) -> None:
-    await _update_regex_mapper(types.ResevoirType.mapper, dao)
+    await _update_regex_mapper(reservoir_mapper, dao)
 
 
 async def init_multi_reservoir_mapper(dao: local.ReservoirReplaceDAO) -> None:
-    await _update_regex_mapper(types.MultiResevoirType.mapper, dao)
+    await _update_regex_mapper(multi_reservoir_mapper, dao)
 
 
 async def init_multi_split_reservoir_mapper(
     dao: local.ReservoirReplaceDAO,
 ) -> None:
-    await _update_regex_mapper(types.MultiSplitResevoirType.mapper, dao)
+    await _update_regex_mapper(multi_split_reservoir_mapper, dao)
 
 
 async def init_layer_mapper(dao: local.LayerReplaceDAO) -> None:
-    await _update_simple_mapper(types.LayerType.mapper, dao)
+    await _update_simple_mapper(layer_mapper, dao)
 
 
 async def init_gtm_mapper(dao: local.GtmReplaceDAO) -> None:
-    await _update_simple_mapper(types.GtmType.mapper, dao)
+    await _update_simple_mapper(gtm_mapper, dao)
 
 
 async def init_multi_layer_mapper(dao: local.LayerReplaceDAO) -> None:
-    await _update_simple_mapper(types.MultiLayerType.mapper, dao)
+    await _update_simple_mapper(multi_layer_mapper, dao)

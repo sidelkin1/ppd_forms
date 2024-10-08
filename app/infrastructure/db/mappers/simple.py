@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.infrastructure.db.types.unify.base_mapper import BaseMapper, WordOrder
+from app.infrastructure.db.mappers.base import BaseMapper, WordOrder
 
 ReplaceDict = dict[str, Any]  # FIXME need more precise type conversion
 

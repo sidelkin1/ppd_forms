@@ -1,4 +1,4 @@
-from app.infrastructure.db.types.types import (  # noqa
+from app.infrastructure.db.types import (  # noqa
     FieldType,
     GtmType,
     LayerType,

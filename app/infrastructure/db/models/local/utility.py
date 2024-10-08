@@ -26,3 +26,7 @@ class ReservoirReplace(BaseReplace, BasePattern, Base):
 
 class LayerReplace(BaseReplace, Base):
     pass
+
+
+class GtmReplace(BaseReplace, Base):
+    pass

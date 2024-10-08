@@ -53,6 +53,10 @@ class MultiLayerType(BaseType):
     mapper = LayerMapper(sort=True, delimiter=settings.delimiter)
 
 
+class GtmType(BaseType):
+    mapper = LayerMapper(split=False, delimiter=settings.delimiter)
+
+
 field_type = Annotated[str, mapped_column(FieldType(50))]
 well_type = Annotated[str, mapped_column(WellType(10))]
 multi_well_type = Annotated[str, mapped_column(MultiWellType(100))]
@@ -63,6 +67,7 @@ multi_split_reservoir_type = Annotated[
 ]
 layer_type = Annotated[str, mapped_column(LayerType(20))]
 multi_layer_type = Annotated[str, mapped_column(MultiLayerType(100))]
+gtm_type = Annotated[str, mapped_column(GtmType(20))]
 
 # Типы без mapper
 ofm_field_type = Annotated[str, mapped_column(String(50))]

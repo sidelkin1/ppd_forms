@@ -53,8 +53,8 @@
   - text: ОПЗ
     value: ОПЗ
     selected: false
-  - text: Перестрел
-    value: Перестрел
+  - text: Реперфорация
+    value: Реперфорация
     selected: false
   - text: ИДН
     value: ИДН

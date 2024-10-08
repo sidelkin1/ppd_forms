@@ -24,6 +24,10 @@ class Paths(BaseModel):
         return self.data_dir / "layer_replace.csv"
 
     @property
+    def gtm_replace(self):
+        return self.data_dir / "gtm_replace.csv"
+
+    @property
     def monthly_report(self):
         return self.data_dir / "monthly_report.csv"
 

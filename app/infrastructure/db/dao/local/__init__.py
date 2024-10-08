@@ -1,5 +1,6 @@
 from .base import BaseDAO
 from .field_replace import FieldReplaceDAO
+from .gtm_replace import GtmReplaceDAO
 from .inj_well_database import InjWellDatabaseDAO
 from .layer_replace import LayerReplaceDAO
 from .main_table import MainTableDAO

@@ -28,6 +28,13 @@ async def init_layer_replace(provider: DbProvider, paths: Paths) -> None:
         await init_db.init_layer_replace(holder.layer_replace_initializer)
 
 
+async def init_gtm_replace(provider: DbProvider, paths: Paths) -> None:
+    async with asynccontextmanager(provider.local_dao)(
+        file_path=paths.gtm_replace
+    ) as holder:
+        await init_db.init_gtm_replace(holder.gtm_replace_initializer)
+
+
 async def init_monthly_report(provider: DbProvider, paths: Paths) -> None:
     async with asynccontextmanager(provider.local_dao)(
         file_path=paths.monthly_report

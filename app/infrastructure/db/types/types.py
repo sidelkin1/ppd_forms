@@ -7,6 +7,7 @@ from app.infrastructure.db.types.base import BaseType
 from app.infrastructure.db.types.unify import (
     LayerMapper,
     RegexMapper,
+    SimpleMapper,
     SplitMode,
     WellMapper,
 )
@@ -54,7 +55,7 @@ class MultiLayerType(BaseType):
 
 
 class GtmType(BaseType):
-    mapper = LayerMapper(split=False, delimiter=settings.delimiter)
+    mapper = SimpleMapper(split=False, delimiter=settings.delimiter)
 
 
 field_type = Annotated[str, mapped_column(FieldType(50))]

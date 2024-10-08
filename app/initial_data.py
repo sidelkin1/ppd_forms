@@ -19,6 +19,7 @@ async def initialize_replace(
         tg.create_task(db.init_field_replace(provider, paths))
         tg.create_task(db.init_reservoir_replace(provider, paths))
         tg.create_task(db.init_layer_replace(provider, paths))
+        tg.create_task(db.init_gtm_replace(provider, paths))
 
 
 async def initialize_mapper(provider: DbProvider) -> None:
@@ -29,6 +30,7 @@ async def initialize_mapper(provider: DbProvider) -> None:
         tg.create_task(mapper.init_multi_split_reservoir_mapper(provider))
         tg.create_task(mapper.init_layer_mapper(provider))
         tg.create_task(mapper.init_multi_layer_mapper(provider))
+        tg.create_task(mapper.init_gtm_mapper(provider))
 
 
 async def initialize_main(provider: DbProvider, paths: Paths) -> None:

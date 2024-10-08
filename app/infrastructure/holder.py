@@ -36,6 +36,10 @@ class HolderDAO:
         return local.LayerReplaceDAO(self.kwargs["local_session"])
 
     @property
+    def local_gtm_replace(self) -> local.GtmReplaceDAO:
+        return local.GtmReplaceDAO(self.kwargs["local_session"])
+
+    @property
     def local_inj_well_database(self) -> local.InjWellDatabaseDAO:
         return local.InjWellDatabaseDAO(self.kwargs["local_session"])
 
@@ -98,6 +102,10 @@ class HolderDAO:
     @property
     def csv_layer_replace(self) -> csv.LayerReplaceDAO:
         return csv.LayerReplaceDAO(self.kwargs["file_path"])
+
+    @property
+    def csv_gtm_replace(self) -> csv.GtmReplaceDAO:
+        return csv.GtmReplaceDAO(self.kwargs["file_path"])
 
     @property
     def csv_inj_well_database(self) -> csv.InjWellDatabaseDAO:
@@ -173,6 +181,14 @@ class HolderDAO:
     ) -> initializers.LayerReplaceInitializer:
         return initializers.LayerReplaceInitializer(
             self.csv_layer_replace, self.local_layer_replace
+        )
+
+    @property
+    def gtm_replace_initializer(
+        self,
+    ) -> initializers.GtmReplaceInitializer:
+        return initializers.GtmReplaceInitializer(
+            self.csv_gtm_replace, self.local_gtm_replace
         )
 
     @property

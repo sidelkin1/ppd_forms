@@ -58,5 +58,9 @@ async def init_layer_mapper(dao: local.LayerReplaceDAO) -> None:
     await _update_simple_mapper(types.LayerType.mapper, dao)
 
 
+async def init_gtm_mapper(dao: local.GtmReplaceDAO) -> None:
+    await _update_simple_mapper(types.GtmType.mapper, dao)
+
+
 async def init_multi_layer_mapper(dao: local.LayerReplaceDAO) -> None:
     await _update_simple_mapper(types.MultiLayerType.mapper, dao)

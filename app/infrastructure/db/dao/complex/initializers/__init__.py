@@ -1,5 +1,6 @@
 from .base import BaseInitializer
 from .field_replace import FieldReplaceInitializer
+from .gtm_replace import GtmReplaceInitializer
 from .inj_well_database import InjWellDatabaseInitializer
 from .layer_replace import LayerReplaceInitializer
 from .monthly_report import MonthlyReportInitializer

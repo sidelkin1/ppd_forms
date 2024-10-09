@@ -12,3 +12,4 @@ from .regex_replace import RegexReplaceDAO
 from .reservoir_replace import ReservoirReplaceDAO
 from .simple_replace import SimpleReplaceDAO
 from .well_profile import WellProfileDAO
+from .well_test import WellTestDAO

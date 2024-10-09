@@ -52,6 +52,10 @@ class HolderDAO:
         return local.NeighborhoodDAO(self.kwargs["local_session"])
 
     @property
+    def local_well_test(self) -> local.WellTestDAO:
+        return local.WellTestDAO(self.kwargs["local_session"])
+
+    @property
     def ofm_monthly_report(self) -> ofm.MonthlyReportDAO:
         return ofm.MonthlyReportDAO(self.kwargs["ofm_session"])
 
@@ -144,6 +148,10 @@ class HolderDAO:
     @property
     def excel_prolong_expected(self) -> excel.ProlongExpectedDAO:
         return excel.ProlongExpectedDAO(self.kwargs["file_path"])
+
+    @property
+    def excel_well_test(self) -> excel.WellTestDAO:
+        return excel.WellTestDAO(self.kwargs["file_path"])
 
     @property
     def monthly_report_initializer(
@@ -339,6 +347,12 @@ class HolderDAO:
     def well_profile_loader(self) -> loaders.WellProfileLoader:
         return loaders.WellProfileLoader(
             self.ofm_well_profile, self.local_well_profile
+        )
+
+    @property
+    def well_test_loader(self) -> loaders.WellTestLoader:
+        return loaders.WellTestLoader(
+            self.excel_well_test, self.local_well_test
         )
 
     @property

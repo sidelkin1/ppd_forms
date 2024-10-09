@@ -5,3 +5,4 @@ from .neighborhood import NeighborhoodLoader
 from .new_strategy_inj import NewStrategyInjLoader
 from .new_strategy_oil import NewStrategyOilLoader
 from .well_profile import WellProfileLoader
+from .well_test import WellTestLoader

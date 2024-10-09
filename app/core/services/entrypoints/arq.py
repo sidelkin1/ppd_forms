@@ -128,6 +128,26 @@ async def reload_neighbs(response: ExcelResponse, ctx: dict[str, Any]) -> None:
         await holder.neighborhood_loader.reload()
 
 
+@registry.add("excel:gdis:refresh")
+async def refresh_gdis(response: ExcelResponse, ctx: dict[str, Any]) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["local_dao"](file_path=path) as holder:
+        holder = cast(HolderDAO, holder)
+        await holder.well_test_loader.refresh()
+
+
+@registry.add("excel:gdis:reload")
+async def reload_gdis(response: ExcelResponse, ctx: dict[str, Any]) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["local_dao"](file_path=path) as holder:
+        holder = cast(HolderDAO, holder)
+        await holder.well_test_loader.reload()
+
+
 @registry.add("database:report:refresh")
 async def refresh_mer(response: DatabaseResponse, ctx: dict[str, Any]) -> None:
     async with ctx["ofm_local_dao"]() as holder:

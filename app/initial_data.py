@@ -1,11 +1,11 @@
 import asyncio
 import logging
 
-from app.api.dependencies.db import DbProvider
 from app.common.config.models.paths import Paths
 from app.core.services.entrypoints import db, mapper
 from app.infrastructure.db.config.main import get_postgres_settings
 from app.infrastructure.db.factories.local import create_pool
+from app.infrastructure.provider import DbProvider
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

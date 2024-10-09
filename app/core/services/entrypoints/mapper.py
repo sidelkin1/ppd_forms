@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
-from app.api.dependencies.db import DbProvider
 from app.core.services import init_mapper
+from app.infrastructure.provider import DbProvider
 
 
 async def init_field_mapper(provider: DbProvider) -> None:

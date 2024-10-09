@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
 
-from app.api.dependencies.db import DbProvider
 from app.common.config.models.paths import Paths
 from app.core.services import init_db
+from app.infrastructure.provider import DbProvider
 
 
 async def init_field_replace(provider: DbProvider, paths: Paths) -> None:

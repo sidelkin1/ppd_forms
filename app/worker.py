@@ -8,7 +8,6 @@ from arq import cron
 from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
-from app.api.dependencies.db import DbProvider
 from app.api.dependencies.path import PathProvider
 from app.api.models.responses import BaseResponse
 from app.common.config.models.paths import Paths
@@ -32,6 +31,7 @@ from app.infrastructure.db.models import ofm
 from app.infrastructure.files.config.main import get_csv_settings
 from app.infrastructure.log.config.main import get_log_settings
 from app.infrastructure.log.main import configure_logging
+from app.infrastructure.provider import DbProvider
 from app.infrastructure.redis.config.main import get_redis_settings
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from app.initial_data import initialize_mapper

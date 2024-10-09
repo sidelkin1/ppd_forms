@@ -150,6 +150,7 @@ module = [
     "app.infrastructure.db.models.local.new_strategy_inj",
     "app.infrastructure.db.models.local.new_strategy_oil",
     "app.infrastructure.db.models.local.well_profile",
+    "app.infrastructure.db.models.local.well_test",
 ]
 disable_error_code = ["misc"]
 

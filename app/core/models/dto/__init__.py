@@ -8,6 +8,7 @@ from .db.replace import RegexReplaceDB, SimpleReplaceDB
 from .db.reservoir_list import UneftReservoirDB
 from .db.well_list import UneftWellDB
 from .db.well_profile import WellProfileDB
+from .db.well_test import WellTestDB
 from .jobs.job_stamp import JobStamp
 from .reports.prolong import ProlongExpected
 from .tasks.base import TaskBase

@@ -75,7 +75,7 @@
   - text: Максимальный Qн
     value: max_rate
     selected: false
-  description: Потери Qн по факторам (аналог PackagesRealease)
+  description: Потери Qн по факторам (аналог PackagesRelease)
 - title: Контуры ФНВ
   path: fnv
   min_radius: 30

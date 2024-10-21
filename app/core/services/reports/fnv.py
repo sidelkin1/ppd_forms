@@ -308,7 +308,7 @@ async def _process_well(
 ) -> pd.DataFrame:
     await logger.ainfo("-" * 160)
     await logger.ainfo(">>> Скважина: %s", uwi)
-    poro = await dao.poro(uwi)
+    poro = await dao.poro(alternative, uwi)
     await logger.ainfo("Пористость: %s", uwi)
     if not poro.size:
         raise FnvException("нет пористости")

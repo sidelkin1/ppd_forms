@@ -156,7 +156,7 @@ class FnvMock(FnvReporter):
     async def layers(self, field_id: int) -> pd.DataFrame:
         return pd.DataFrame(self.fake_layers[field_id])
 
-    async def poro(self, uwi: str) -> pd.DataFrame:
+    async def poro(self, alternative: bool, uwi: str) -> pd.DataFrame:
         return pd.DataFrame(self.fake_poro[uwi])
 
     async def events(self, alternative: bool, uwi: str) -> pd.DataFrame:

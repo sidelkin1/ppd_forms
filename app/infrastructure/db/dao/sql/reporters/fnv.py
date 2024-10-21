@@ -12,6 +12,7 @@ class FnvReporter(OfmBaseDAO):
                 "cumwat": fnv.select_cumwat(),
                 "layers": fnv.select_layers(),
                 "poro": fnv.select_poro(),
+                "poro_alt": fnv.select_poro_alt(),
                 "events": fnv.select_events(),
                 "events_alt": fnv.select_events_alt(),
                 "totwat": fnv.select_totwat(),
@@ -25,7 +26,9 @@ class FnvReporter(OfmBaseDAO):
     async def layers(self, field_id: int) -> pd.DataFrame:
         return await self.read_one(key="layers", field_id=field_id)
 
-    async def poro(self, uwi: str) -> pd.DataFrame:
+    async def poro(self, alternative: bool, uwi: str) -> pd.DataFrame:
+        if alternative:
+            return await self.read_one(key="poro_alt", uwi=uwi)
         return await self.read_one(key="poro", uwi=uwi)
 
     async def events(self, alternative: bool, uwi: str) -> pd.DataFrame:

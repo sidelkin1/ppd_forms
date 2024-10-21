@@ -3,7 +3,7 @@ from sqlalchemy import Select, and_, bindparam, func, select
 from app.infrastructure.db.models.ofm.reflected import HeaderId, LayersPty
 
 
-def select_poro() -> Select:
+def _select_poro(porosity: str) -> Select:
     return (
         select(
             LayersPty.layer_name,
@@ -13,7 +13,7 @@ def select_poro() -> Select:
             func.min(LayersPty.top).label("ktop"),
             func.max(LayersPty.botm).label("kbot"),
             (
-                func.sum(LayersPty.h_eff * LayersPty.porosity)
+                func.sum(LayersPty.h_eff * getattr(LayersPty, porosity))
                 / func.sum(LayersPty.h_eff)
             ).label("poro"),
             func.avg(LayersPty.kn).label("knas"),
@@ -27,7 +27,7 @@ def select_poro() -> Select:
             LayersPty.uwi == bindparam("uwi"),
             LayersPty.h_eff.is_not(None),
             LayersPty.h_eff > 0,
-            LayersPty.porosity.is_not(None),
+            getattr(LayersPty, porosity).is_not(None),
             LayersPty.numv.in_((1, 3)),
         )
         .group_by(
@@ -38,3 +38,11 @@ def select_poro() -> Select:
         )
         .order_by("ktop")
     )
+
+
+def select_poro() -> Select:
+    return _select_poro("porosity")
+
+
+def select_poro_alt() -> Select:
+    return _select_poro("porosity_alt")

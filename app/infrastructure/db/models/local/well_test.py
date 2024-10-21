@@ -11,7 +11,7 @@ from app.infrastructure.db.models.local.mixins import date_stamp_factory
 class WellTest(date_stamp_factory("end_date"), Base):
     field: Mapped[types.field_type]
     well: Mapped[types.well_type]
-    reservoir: Mapped[types.reservoir_type]
+    reservoir: Mapped[types.multi_split_reservoir_type]
     well_type: Mapped[str | None]
     well_test: Mapped[str]
     start_date: Mapped[date]
@@ -25,8 +25,11 @@ class WellTest(date_stamp_factory("end_date"), Base):
     reliability: Mapped[str | None]
 
     __table_args__ = (
-        UniqueConstraint("field", "well", "end_date"),
+        UniqueConstraint(
+            "field", "well", "reservoir", "well_test", "end_date"
+        ),
         Index(None, "field"),
         Index(None, "well"),
+        Index(None, "reservoir"),
         Index(None, "end_date"),
     )

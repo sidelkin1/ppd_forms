@@ -11,6 +11,7 @@ from .db.well_profile import WellProfileDB
 from .db.well_test import WellTestDB
 from .jobs.job_stamp import JobStamp
 from .reports.prolong import ProlongExpected
+from .reports.well_test import WellTestResult
 from .tasks.base import TaskBase
 from .tasks.compensation import TaskCompensation
 from .tasks.database import TaskDatabase
@@ -24,3 +25,4 @@ from .tasks.oil_loss import TaskOilLoss
 from .tasks.prolong import TaskProlong
 from .tasks.report import TaskReport
 from .tasks.uneft import TaskFields, TaskReservoirs, TaskUneft, TaskWells
+from .tasks.well_test import TaskWellTest

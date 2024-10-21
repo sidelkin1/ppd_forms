@@ -12,3 +12,4 @@ class ReportName(str, Enum):
     prolong = "prolong"
     mmb = "mmb"
     compensation = "compensation"
+    well_test = "well_test"

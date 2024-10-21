@@ -6,3 +6,4 @@ from .matrix_effect import MatrixEffect
 from .mmb_params import MmbParams
 from .on_date import OnDate
 from .prolong_params import ProlongParams
+from .well_test_params import WellTestParams

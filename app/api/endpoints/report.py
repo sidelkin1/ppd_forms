@@ -15,6 +15,7 @@ from app.api.models.responses import (
     OilLossResponse,
     ProlongResponse,
     ReportResponse,
+    WellTestResponse,
 )
 from app.api.utils.validators import check_file_exists
 from app.core.models.dto import (
@@ -27,6 +28,7 @@ from app.core.models.dto import (
     TaskOilLoss,
     TaskProlong,
     TaskReport,
+    TaskWellTest,
 )
 from app.core.models.enums import FileExtension, LossMode, ReportName
 from app.core.models.schemas import (
@@ -37,6 +39,7 @@ from app.core.models.schemas import (
     MmbParams,
     OnDate,
     ProlongParams,
+    WellTestParams,
 )
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -226,6 +229,28 @@ async def generate_compensation_report(
         on_date=on_date.on_date,
     )
     response = CompensationResponse(task=task, job=job)
+    await redis.enqueue_task(response, user.username)
+    return response
+
+
+@router.post(
+    "/well_test",
+    status_code=status.HTTP_201_CREATED,
+    response_model=WellTestResponse,
+    response_model_exclude_none=True,
+)
+async def generate_well_test_report(
+    params: WellTestParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskWellTest(
+        name=ReportName.well_test,
+        file=params.file,
+        gtm_period=params.gtm_period,
+    )
+    response = WellTestResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)
     return response
 

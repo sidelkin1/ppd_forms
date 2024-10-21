@@ -131,7 +131,7 @@ def upgrade() -> None:
     sa.Column('field', sa.String(length=50), nullable=False),
     sa.Column('well_name', sa.String(length=10), nullable=False),
     sa.Column('cid_all', app.infrastructure.db.migrations.types.MultiResevoirType(length=200), nullable=False),
-    sa.Column('cid_layer', sa.String(length=100), nullable=True),
+    sa.Column('cid_layer', app.infrastructure.db.migrations.types.MultiResevoirType(length=200), nullable=True),
     sa.Column('layer', app.infrastructure.db.migrations.types.MultiLayerType(length=100), nullable=True),
     sa.Column('rec_date', sa.Date(), nullable=False),
     sa.Column('uwi', sa.String(length=10), nullable=False),

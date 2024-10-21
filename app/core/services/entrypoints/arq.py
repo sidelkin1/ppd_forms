@@ -16,6 +16,7 @@ from app.api.models.responses import (
     ReportResponse,
     ReservoirsResponse,
     WellsResponse,
+    WellTestResponse,
 )
 from app.core.config.main import get_mmb_settings
 from app.core.config.models.app import AppSettings
@@ -32,6 +33,7 @@ from app.core.services.reports import (
     opp_per_year_report,
     profile_report,
     prolong_report,
+    well_test_report,
 )
 from app.core.services.uneft import uneft_fields, uneft_reservoirs, uneft_wells
 from app.infrastructure.files.config.models.csv import CsvSettings
@@ -433,6 +435,28 @@ async def create_compensation_report(
             response.task.on_date,
             holder.compensation_reporter,
             csv_config,
+        )
+
+
+@registry.add("report:well_test")
+async def create_well_test_report(
+    response: WellTestResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    app_config: AppSettings = ctx["app_config"]
+    async with ctx["local_dao"](
+        path=path, delimiter=app_config.delimiter
+    ) as holder:
+        holder = cast(HolderDAO, holder)
+        await well_test_report(
+            path_provider.dir_path(user_id, file_id),
+            path_provider.data_dir / "well_test_template.xlsx",
+            response.task.gtm_period,
+            holder.well_test_reporter,
+            ctx["pool"],
         )
 
 

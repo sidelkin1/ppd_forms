@@ -284,6 +284,10 @@ class HolderDAO:
         return db_reporters.MmbAltReporter(self.kwargs["ofm_pool"])
 
     @property
+    def db_well_test_reporter(self) -> db_reporters.WellTestReporter:
+        return db_reporters.WellTestReporter(self.kwargs["local_pool"])
+
+    @property
     def file_matbal_reporter(self) -> file_reporters.MatbalReporter:
         return file_reporters.MatbalReporter(
             self.kwargs["path"],
@@ -294,6 +298,12 @@ class HolderDAO:
     @property
     def file_mmb_reporter(self) -> file_reporters.MmbReporter:
         return file_reporters.MmbReporter(self.kwargs["path"])
+
+    @property
+    def file_well_test_reporter(self) -> file_reporters.WellTestReporter:
+        return file_reporters.WellTestReporter(
+            self.kwargs["path"], self.kwargs["delimiter"]
+        )
 
     @property
     def matbal_reporter(self) -> complex_reporters.MatbalReporter:
@@ -307,6 +317,12 @@ class HolderDAO:
             self.db_mmb_reporter,
             self.db_mmb_alt_reporter,
             self.file_mmb_reporter,
+        )
+
+    @property
+    def well_test_reporter(self) -> complex_reporters.WellTestReporter:
+        return complex_reporters.WellTestReporter(
+            self.db_well_test_reporter, self.file_well_test_reporter
         )
 
     @property

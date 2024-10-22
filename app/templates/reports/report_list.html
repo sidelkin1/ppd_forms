@@ -7,7 +7,8 @@
     form_fnv,
     form_matbal,
     form_prolong,
-    form_mmb
+    form_mmb,
+    form_well_test
 %}
 {% from '/macros/accordion.html' import accordion_form %}
 
@@ -59,6 +60,8 @@
                                 {{ form_mmb(report, "Выгрузить", "loadMMB") }}
                             {% elif report.path == "compensation" %}
                                 {{ form_on_date(report.path, "Выгрузить", "loadOnDate") }}
+                            {% elif report.path == "well_test" %}
+                                {{ form_well_test(report, "Выгрузить", "loadWellTest") }}
                             {% else %}
                                 {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
                             {% endif %}

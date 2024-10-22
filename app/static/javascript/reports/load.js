@@ -312,3 +312,37 @@ async function loadMMB(reportName) {
   loader.classList.add("d-none");
   button.classList.remove("disabled");
 }
+
+async function loadWellTest(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const wellTest = document.getElementById(`${reportName}WellTest`).files[0];
+  const gtmPeriod = document.getElementById(`${reportName}GtmPeriod`).value;
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const files = await sendReportFiles(reportName, [wellTest], "/excel/");
+  if (files) {
+    const url = `/reports/${reportName}`;
+    const data = {
+      file: files[0] ? files[0].filename : null,
+      gtm_period: gtmPeriod,
+    };
+    const result = await assignWork(reportName, url, data);
+    if (result) {
+      await checkStatus(
+        reportName,
+        result.job.job_id,
+        `/reports/${result.job.file_id}/zip`
+      );
+    }
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}

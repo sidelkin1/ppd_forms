@@ -10,11 +10,11 @@ class WellProfileDB(BaseModel):
     field: str
     uwi: str
     well_name: str
-    well_type: str | None
+    well_type: EmptyStrToNone[str]
     rec_date: date
     cid_all: str
-    cid_layer: str | None
-    layer: str | None
+    cid_layer: EmptyStrToNone[str]
+    layer: EmptyStrToNone[str]
     top: float
     bottom: float
     abstop: EmptyStrToNone[float]
@@ -22,6 +22,6 @@ class WellProfileDB(BaseModel):
     diff_absorp: EmptyStrToNone[float]
     tot_absorp: EmptyStrToNone[float]
     liq_rate: EmptyStrToNone[float]
-    remarks: str | None
+    remarks: EmptyStrToNone[str]
 
     model_config = ConfigDict(extra="forbid", from_attributes=True)

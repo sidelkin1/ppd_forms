@@ -1,10 +1,10 @@
 import asyncio
 import logging
+from typing import Annotated, Self
 
-from arq.jobs import Job
-from fastapi import WebSocket
+from fastapi import Depends, WebSocket
 
-from app.api.models.responses import JobResponse
+from app.api.dependencies.job import CurrentJobDep, JobResponseDep
 from app.core.models.enums import JobStatus
 
 logger = logging.getLogger(__name__)
@@ -14,8 +14,8 @@ class JobTracker:
     def __init__(
         self,
         websocket: WebSocket,
-        job: Job,
-        response: JobResponse,
+        job: CurrentJobDep,
+        response: JobResponseDep,
         abort_on_disconnect: bool = False,
     ) -> None:
         self.websocket = websocket
@@ -23,7 +23,7 @@ class JobTracker:
         self.response = response
         self.abort_on_disconnect = abort_on_disconnect
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         await self.websocket.accept()
         self.socket_task = asyncio.create_task(self._socket_listen())
         self.job_task = asyncio.create_task(self._job_result())
@@ -82,3 +82,10 @@ class JobTracker:
                 )
         else:
             await self.send_response()
+
+
+def get_job_tracker() -> JobTracker:
+    raise NotImplementedError
+
+
+JobTrackerDep = Annotated[JobTracker, Depends(get_job_tracker)]

@@ -1,6 +1,5 @@
 from arq import ArqRedis
 from fastapi import FastAPI
-from fastapi_pagination import Params
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.config.models.auth import AuthSettings
@@ -15,10 +14,17 @@ from .auth import (
     get_current_user_or_none,
 )
 from .db import DbProvider, dao_provider
-from .job import JobProvider, get_current_job, get_job_provider, get_new_job
+from .job import (
+    JobProvider,
+    get_current_job,
+    get_job_provider,
+    get_job_reponse,
+    get_new_job,
+)
 from .pagination import PageSize, get_pagination_params
 from .path import PathProvider, get_path_provider
 from .redis import RedisProvider, redis_provider
+from .tracker import JobTracker, get_job_tracker
 
 
 def setup(
@@ -47,7 +53,9 @@ def setup(
     job_provider = JobProvider()
     app.dependency_overrides[get_new_job] = job_provider.create
     app.dependency_overrides[get_current_job] = job_provider.current
+    app.dependency_overrides[get_job_reponse] = job_provider.response
     app.dependency_overrides[get_job_provider] = lambda: job_provider
+    app.dependency_overrides[get_job_tracker] = JobTracker
 
     app.dependency_overrides[get_pagination_params] = PageSize(
         app_config.page_size

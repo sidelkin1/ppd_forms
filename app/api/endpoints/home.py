@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi_pagination import paginate
 
 from app.api.dependencies.auth import AuthDep, UserDep, UserOrNoneDep
-from app.api.dependencies.pagination import PageParamsDeps
+from app.api.dependencies.pagination import PageParamsDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.endpoints.auth import revoke, token
@@ -100,7 +100,7 @@ async def results(
     request: Request,
     user: UserOrNoneDep,
     redis: RedisDep,
-    params: PageParamsDeps,
+    params: PageParamsDep,
     path: PathDep,
 ):
     if user is None:

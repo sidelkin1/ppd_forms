@@ -39,11 +39,8 @@ def _fill_template(
 def _concat_tests(
     tests: pd.DataFrame, results: list[WellTestResult]
 ) -> pd.DataFrame:
-    return (
-        (df := pd.DataFrame(results, columns=tests.columns))
-        if tests.empty
-        else pd.concat([tests, df], ignore_index=True)
-    )
+    df = pd.DataFrame(results, columns=tests.columns)
+    return df if tests.empty else pd.concat([tests, df], ignore_index=True)
 
 
 def _process_data(

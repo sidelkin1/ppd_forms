@@ -34,6 +34,13 @@ async def init_layer_replace(
     await dao.commit()
 
 
+async def init_gtm_replace(
+    dao: initializers.GtmReplaceInitializer,
+) -> None:
+    await dao.initialize()
+    await dao.commit()
+
+
 async def init_inj_well_database(
     dao: initializers.InjWellDatabaseInitializer,
 ) -> None:

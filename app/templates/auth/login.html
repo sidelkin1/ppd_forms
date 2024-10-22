@@ -9,7 +9,7 @@
                     Войти в учетную запись
                 </h5>
                 <div class="card-body">
-                    <form 
+                    <form
                         class="mb-3"
                         method="POST"
                         action="{{ url_for('login').include_query_params(next=next) }}"
@@ -54,7 +54,7 @@
 
 {% block js %}
 
-    <script>        
+    <script>
         function showSpinner() {
             document.getElementById('submitStatus').classList.remove("d-none");
             document.getElementById('submitButton').disabled = true;

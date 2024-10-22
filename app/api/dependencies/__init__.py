@@ -35,7 +35,7 @@ def setup(
     auth_config: AuthSettings,
     paths: Paths,
 ) -> None:
-    app.dependency_overrides[dao_provider] = DbProvider(local_pool=pool).dao
+    app.dependency_overrides[dao_provider] = DbProvider(pool).dao
     app.dependency_overrides[redis_provider] = RedisProvider(
         pool=redis, expires=app_config.keep_result
     ).dao

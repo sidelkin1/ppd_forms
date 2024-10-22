@@ -14,9 +14,6 @@ class BaseType(types.TypeDecorator):
         super().__init_subclass__(**kwargs)
         cls.cache_ok = BaseType.cache_ok
 
-    def process_bind_param(self, value, dialect):
-        return self.mapper[value]
-
     @property
     def python_type(self):
         return str

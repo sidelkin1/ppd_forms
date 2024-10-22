@@ -1,5 +1,6 @@
 from .base import BaseDAO
 from .field_replace import FieldReplaceDAO
+from .gtm_replace import GtmReplaceDAO
 from .inj_well_database import InjWellDatabaseDAO
 from .layer_replace import LayerReplaceDAO
 from .main_table import MainTableDAO
@@ -11,3 +12,4 @@ from .regex_replace import RegexReplaceDAO
 from .reservoir_replace import ReservoirReplaceDAO
 from .simple_replace import SimpleReplaceDAO
 from .well_profile import WellProfileDAO
+from .well_test import WellTestDAO

@@ -1,6 +1,6 @@
 from functools import _lru_cache_wrapper
 
-from app.infrastructure.db.types.unify import BaseMapper, SplitMode
+from app.infrastructure.db.mappers import BaseMapper, SplitMode
 
 
 def test_split_words_extract(base_mapper: BaseMapper):

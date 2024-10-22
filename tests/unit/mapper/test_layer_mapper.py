@@ -1,5 +1,5 @@
-from app.infrastructure.db.types.unify import LayerMapper
-from app.infrastructure.db.types.unify.layer_mapper import flatten
+from app.infrastructure.db.mappers import LayerMapper
+from app.infrastructure.db.mappers.layer import flatten
 
 
 def test_flatten():

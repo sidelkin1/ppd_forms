@@ -4,11 +4,10 @@ import aiofiles
 import pandas as pd
 from fastapi.concurrency import run_in_threadpool
 
-from app.infrastructure.db.types.unify import WellMapper
+from app.infrastructure.db.mappers import well_mapper
 
 
 class MatbalReporter:
-    mapper = WellMapper(split=True, delimiter=",")
     converters = {
         "date": lambda s: pd.to_datetime(s, format="%d.%m.%Y").date()
     }
@@ -23,7 +22,7 @@ class MatbalReporter:
         if self.wells is None:
             return None
         async with aiofiles.open(self.wells, encoding="utf8") as file:
-            wells = self.mapper[await file.read()].split(",")
+            wells = well_mapper[await file.read()].split(",")
         return wells
 
     async def get_measurements(self) -> pd.DataFrame | None:

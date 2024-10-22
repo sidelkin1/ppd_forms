@@ -8,3 +8,4 @@ from .oil_loss import oil_loss_report
 from .opp_per_year import opp_per_year_report
 from .profile import profile_report
 from .prolong import prolong_report
+from .well_test import well_test_report

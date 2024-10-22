@@ -19,11 +19,11 @@ from sqlalchemy.pool import NullPool
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
-from app.api.dependencies.db import DbProvider
 from app.common.config.models.paths import Paths
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.config.models.local import PostgresSettings
 from app.infrastructure.holder import HolderDAO
+from app.infrastructure.provider import DbProvider
 from app.infrastructure.redis.config.main import RedisSettings
 from app.initial_data import (
     initialize_all,

@@ -14,6 +14,7 @@ _dao_mapper = {
     ExcelTableName.ns_oil: "local_new_strategy_oil",
     ExcelTableName.inj_db: "local_inj_well_database",
     ExcelTableName.neighbs: "local_neighborhood",
+    ExcelTableName.gdis: "local_well_test",
 }
 
 

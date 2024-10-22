@@ -36,6 +36,10 @@ class HolderDAO:
         return local.LayerReplaceDAO(self.kwargs["local_session"])
 
     @property
+    def local_gtm_replace(self) -> local.GtmReplaceDAO:
+        return local.GtmReplaceDAO(self.kwargs["local_session"])
+
+    @property
     def local_inj_well_database(self) -> local.InjWellDatabaseDAO:
         return local.InjWellDatabaseDAO(self.kwargs["local_session"])
 
@@ -46,6 +50,10 @@ class HolderDAO:
     @property
     def local_neighborhood(self) -> local.NeighborhoodDAO:
         return local.NeighborhoodDAO(self.kwargs["local_session"])
+
+    @property
+    def local_well_test(self) -> local.WellTestDAO:
+        return local.WellTestDAO(self.kwargs["local_session"])
 
     @property
     def ofm_monthly_report(self) -> ofm.MonthlyReportDAO:
@@ -100,6 +108,10 @@ class HolderDAO:
         return csv.LayerReplaceDAO(self.kwargs["file_path"])
 
     @property
+    def csv_gtm_replace(self) -> csv.GtmReplaceDAO:
+        return csv.GtmReplaceDAO(self.kwargs["file_path"])
+
+    @property
     def csv_inj_well_database(self) -> csv.InjWellDatabaseDAO:
         return csv.InjWellDatabaseDAO(self.kwargs["file_path"])
 
@@ -138,6 +150,10 @@ class HolderDAO:
         return excel.ProlongExpectedDAO(self.kwargs["file_path"])
 
     @property
+    def excel_well_test(self) -> excel.WellTestDAO:
+        return excel.WellTestDAO(self.kwargs["file_path"])
+
+    @property
     def monthly_report_initializer(
         self,
     ) -> initializers.MonthlyReportInitializer:
@@ -173,6 +189,14 @@ class HolderDAO:
     ) -> initializers.LayerReplaceInitializer:
         return initializers.LayerReplaceInitializer(
             self.csv_layer_replace, self.local_layer_replace
+        )
+
+    @property
+    def gtm_replace_initializer(
+        self,
+    ) -> initializers.GtmReplaceInitializer:
+        return initializers.GtmReplaceInitializer(
+            self.csv_gtm_replace, self.local_gtm_replace
         )
 
     @property
@@ -260,6 +284,10 @@ class HolderDAO:
         return db_reporters.MmbAltReporter(self.kwargs["ofm_pool"])
 
     @property
+    def db_well_test_reporter(self) -> db_reporters.WellTestReporter:
+        return db_reporters.WellTestReporter(self.kwargs["local_pool"])
+
+    @property
     def file_matbal_reporter(self) -> file_reporters.MatbalReporter:
         return file_reporters.MatbalReporter(
             self.kwargs["path"],
@@ -270,6 +298,12 @@ class HolderDAO:
     @property
     def file_mmb_reporter(self) -> file_reporters.MmbReporter:
         return file_reporters.MmbReporter(self.kwargs["path"])
+
+    @property
+    def file_well_test_reporter(self) -> file_reporters.WellTestReporter:
+        return file_reporters.WellTestReporter(
+            self.kwargs["path"], self.kwargs["delimiter"]
+        )
 
     @property
     def matbal_reporter(self) -> complex_reporters.MatbalReporter:
@@ -283,6 +317,12 @@ class HolderDAO:
             self.db_mmb_reporter,
             self.db_mmb_alt_reporter,
             self.file_mmb_reporter,
+        )
+
+    @property
+    def well_test_reporter(self) -> complex_reporters.WellTestReporter:
+        return complex_reporters.WellTestReporter(
+            self.db_well_test_reporter, self.file_well_test_reporter
         )
 
     @property
@@ -323,6 +363,12 @@ class HolderDAO:
     def well_profile_loader(self) -> loaders.WellProfileLoader:
         return loaders.WellProfileLoader(
             self.ofm_well_profile, self.local_well_profile
+        )
+
+    @property
+    def well_test_loader(self) -> loaders.WellTestLoader:
+        return loaders.WellTestLoader(
+            self.excel_well_test, self.local_well_test
         )
 
     @property

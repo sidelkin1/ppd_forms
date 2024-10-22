@@ -1,4 +1,4 @@
-from app.infrastructure.db.types.unify import WellMapper
+from app.infrastructure.db.mappers import WellMapper
 
 
 def test_translation_to_english(well_mapper_default: WellMapper):

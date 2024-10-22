@@ -53,8 +53,8 @@
   - text: ОПЗ
     value: ОПЗ
     selected: false
-  - text: Перестрел
-    value: Перестрел
+  - text: Реперфорация
+    value: Реперфорация
     selected: false
   - text: ИДН
     value: ИДН
@@ -75,7 +75,7 @@
   - text: Максимальный Qн
     value: max_rate
     selected: false
-  description: Потери Qн по факторам (аналог PackagesRealease)
+  description: Потери Qн по факторам (аналог PackagesRelease)
 - title: Контуры ФНВ
   path: fnv
   min_radius: 30
@@ -125,3 +125,8 @@
 - title: Выгрузка для компенсаций
   path: compensation
   description: Выгрузка для сводной таблицы с целевыми компенсациями
+- title: Отчет по ГДИС
+  path: well_test
+  file: Отчет ГДИС
+  gtm_period: Период ГТМ
+  description: Выгрузка для отчета по ГДИС (аналитика, ГТМ и т.д.)

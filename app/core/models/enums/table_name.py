@@ -11,3 +11,4 @@ class ExcelTableName(str, Enum):
     ns_oil = "ns_oil"
     inj_db = "inj_db"
     neighbs = "neighbs"
+    gdis = "gdis"

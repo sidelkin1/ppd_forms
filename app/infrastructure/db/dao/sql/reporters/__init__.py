@@ -10,3 +10,4 @@ from .ofm import OfmBaseDAO
 from .oil_loss import FirstRateOilLossReporter, MaxRateOilLossReporter
 from .opp_per_year import OppPerYearReporter
 from .well_profile import WellProfileReporter
+from .well_test import WellTestReporter

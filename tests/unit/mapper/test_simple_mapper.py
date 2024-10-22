@@ -1,4 +1,4 @@
-from app.infrastructure.db.types.unify import SimpleMapper
+from app.infrastructure.db.mappers import SimpleMapper
 
 
 def test_replace_word_in_dictionary(simple_mapper: SimpleMapper):

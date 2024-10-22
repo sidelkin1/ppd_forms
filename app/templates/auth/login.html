@@ -9,7 +9,12 @@
                     Войти в учетную запись
                 </h5>
                 <div class="card-body">
-                    <form class="mb-3" method="POST" action="{{ url_for('login').include_query_params(next=next) }}">
+                    <form
+                        class="mb-3"
+                        method="POST"
+                        action="{{ url_for('login').include_query_params(next=next) }}"
+                        onsubmit="showSpinner()"
+                    >
                         <div class="mb-3">
                             <input type="text" required
                                 placeholder="Введите имя пользователя"
@@ -25,7 +30,15 @@
                                 class="form-control"
                             >
                         </div>
-                        <button type="submit" class="btn btn-primary">Отправить</button>
+                        <button type="submit" class="btn btn-primary" id="submitButton">
+                            <span
+                                class="spinner-border spinner-border-sm d-none"
+                                id="submitStatus"
+                                role="status"
+                            >
+                            </span>
+                            Отправить
+                        </button>
                     </form>
                     {% if error %}
                         <div class="alert alert-danger" role="alert">
@@ -36,5 +49,16 @@
             </div>
         </div>
     </div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script>
+        function showSpinner() {
+            document.getElementById('submitStatus').classList.remove("d-none");
+            document.getElementById('submitButton').disabled = true;
+        }
+    </script>
 
 {% endblock %}

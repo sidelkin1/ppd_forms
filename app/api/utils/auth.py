@@ -25,10 +25,12 @@ def default_verify(
     return is_correct_username and is_correct_password
 
 
-def ldap_verify(url: AnyUrl, username: str, password: str) -> bool:
+def ldap_verify(
+    url: AnyUrl, username: str, password: str, timeout_s: int
+) -> bool:
     conn = None
     try:
-        server = Server(str(url), get_info=ALL)
+        server = Server(str(url), get_info=ALL, connect_timeout=timeout_s)
         conn = Connection(
             server,
             user=f"{username}@{url.host}",

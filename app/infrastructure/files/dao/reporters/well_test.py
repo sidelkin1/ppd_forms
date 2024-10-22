@@ -1,5 +1,4 @@
 import re
-from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
@@ -9,8 +8,10 @@ from fastapi.concurrency import run_in_threadpool
 from app.core.models.dto import WellTestResult
 from app.infrastructure.db.mappers import (
     BaseMapper,
+    field_mapper,
     multi_split_reservoir_mapper,
     reservoir_mapper,
+    well_mapper,
 )
 
 
@@ -23,6 +24,13 @@ class WellTestReporter:
         "well": "Номер скважины",
         "well_type": "Назначение скважины",
         "end_date": "Дата/время окончания исследования",
+    }
+    common_converters = {
+        "field": lambda s: field_mapper[s],
+        "well": lambda s: well_mapper[s],
+        "end_date": lambda s: pd.to_datetime(
+            s, format="%d.%m.%Y %H:%M:%S"
+        ).date(),
     }
     numeric_parameters = {
         "permeability": r"Проницаемость\s*$",
@@ -46,24 +54,19 @@ class WellTestReporter:
         match = df.loc[df["key"].str.contains(pattern, na=False), "value"]
         return "" if match.empty else str(match.squeeze())
 
-    def _parse_end_date(self, df: pd.DataFrame, pattern: str) -> date:
-        return pd.to_datetime(
-            self._find_parameter(df, pattern),
-            format="%d.%m.%Y %H:%M:%S",
-        ).date()
-
     def _parse_numeric(self, df: pd.DataFrame, pattern: str) -> float:
         return pd.to_numeric(
             self._find_parameter(df, pattern).replace(",", "."),
             errors="coerce",
         )
 
-    def _getcommon_parameters(self, df: pd.DataFrame) -> dict[str, Any]:
+    def _get_common_parameters(self, df: pd.DataFrame) -> dict[str, Any]:
         return {
-            key: self._parse_end_date(df, pattern)
-            if key == "end_date"
-            else self._find_parameter(df, pattern)
+            key: self.common_converters[key](value)
+            if key in self.common_converters
+            else value
             for key, pattern in self.common_parameters.items()
+            if (value := self._find_parameter(df, pattern))
         }
 
     def _get_numeric_parameters(self, df: pd.DataFrame) -> dict[str, Any]:
@@ -96,7 +99,7 @@ class WellTestReporter:
     def _get_results(self) -> list[WellTestResult]:
         df = pd.read_excel(self.path, sheet_name=self.sheet_name)
         df.columns = self.columns  # type: ignore[assignment]
-        common_parameters = self._getcommon_parameters(df)
+        common_parameters = self._get_common_parameters(df)
         numeric_parameters = self._get_numeric_parameters(df)
         reservoirs = self._get_raw_reservoirs(df)
         return [

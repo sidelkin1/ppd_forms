@@ -24,6 +24,7 @@ class WellTestReporter:
         "well": "Номер скважины",
         "well_type": "Назначение скважины",
         "end_date": "Дата/время окончания исследования",
+        "reliability": "Достоверность",
     }
     common_converters = {
         "field": lambda s: field_mapper[s],
@@ -37,12 +38,14 @@ class WellTestReporter:
         "skin_factor": r"Совокупный скин-фактор, S\s*$",
         "resp_owc": r"пластовое давление на ВНК\s*$",
         "prod_index": r"Коэффициент (?:продуктивности|при[её]мистости)\s*$",
+        "frac_length": r"Полудлина трещины, Xf\s*$",
     }
     reservoir_numeric_parameters = {
         "permeability": r"Проницаемость.*{}",
         "skin_factor": r"скин-фактор.*{}",
         "resp_owc": r"пластовое давление на ВНК.*{}",
         "prod_index": r"Коэффициент (?:продуктивности|при[её]мистости).*{}",
+        "frac_length": r"Полудлина трещины, Xf.*{}",
     }
     reservoir_cell = 8
 

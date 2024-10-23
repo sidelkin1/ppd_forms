@@ -19,6 +19,8 @@ def select_well_tests() -> Select:
             ).label("permeability"),
             WellTest.skin_factor,
             WellTest.prod_index,
+            WellTest.frac_length,
+            WellTest.reliability,
         )
         .where(
             WellTest.field == bindparam("field"),

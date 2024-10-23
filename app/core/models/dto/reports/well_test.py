@@ -13,3 +13,5 @@ class WellTestResult(TypedDict):
     skin_factor: float | None
     resp_owc: float | None
     prod_index: float | None
+    frac_length: float | None
+    reliability: str | None

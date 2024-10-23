@@ -13,11 +13,11 @@ from app.infrastructure.db.dao.complex.reporters import WellTestReporter
 
 _EXCEL_GDIS_START_ROW = 2
 _EXCEL_GDIS_START_COLUMN = 1
-_EXCEL_GDIS_LAST_COLUMN = 10
+_EXCEL_GDIS_LAST_COLUMN = 12
 
 _EXCEL_GTM_START_ROW = 2
-_EXCEL_GTM_START_COLUMN = 13
-_EXCEL_GTM_LAST_COLUMN = 19
+_EXCEL_GTM_START_COLUMN = 14
+_EXCEL_GTM_LAST_COLUMN = 20
 
 
 def _fill_template(

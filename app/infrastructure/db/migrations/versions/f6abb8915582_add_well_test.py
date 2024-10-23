@@ -2,7 +2,7 @@
 
 Revision ID: f6abb8915582
 Revises: 298793a8db2e
-Create Date: 2024-10-21 11:50:15.619079
+Create Date: 2024-10-23 08:37:47.787363
 
 """
 from alembic import op
@@ -33,6 +33,7 @@ def upgrade() -> None:
     sa.Column('liq_perm', sa.Float(), nullable=True),
     sa.Column('skin_factor', sa.Float(), nullable=True),
     sa.Column('prod_index', sa.Float(), nullable=True),
+    sa.Column('frac_length', sa.Float(), nullable=True),
     sa.Column('reliability', sa.String(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__welltest')),

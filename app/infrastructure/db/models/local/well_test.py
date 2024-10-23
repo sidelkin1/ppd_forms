@@ -22,6 +22,7 @@ class WellTest(date_stamp_factory("end_date"), Base):
     liq_perm: Mapped[float | None]
     skin_factor: Mapped[float | None]
     prod_index: Mapped[float | None]
+    frac_length: Mapped[float | None]
     reliability: Mapped[str | None]
 
     __table_args__ = (

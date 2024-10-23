@@ -20,6 +20,7 @@ class WellTestDB(BaseModel):
     skin_factor: NanToNone[float]
     resp_owc: NanToNone[float]
     prod_index: NanToNone[float]
+    frac_length: NanToNone[float]
     reliability: EmptyStrOrNanToNone[str]
 
     model_config = ConfigDict(extra="forbid", from_attributes=True)

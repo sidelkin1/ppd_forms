@@ -12,7 +12,7 @@ excel_options = {
     },
     "sheet_name": "welltest_list",
     "header": 4,
-    "usecols": [5, 7, 8, 9, 55, 56, 57, 71, 72, 73, 74, 77, 78, 84],
+    "usecols": [5, 7, 8, 9, 55, 56, 57, 71, 72, 73, 74, 77, 78, 80, 84],
 }
 
 column_names = [
@@ -29,5 +29,6 @@ column_names = [
     "skin_factor",
     "resp_owc",
     "prod_index",
+    "frac_length",
     "reliability",
 ]

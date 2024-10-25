@@ -10,6 +10,7 @@ from openpyxl.writer.excel import save_workbook
 from app.core.models.dto import WellTestResult
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.complex.reporters import WellTestReporter
+from app.infrastructure.files.config.models.csv import CsvSettings
 
 _EXCEL_GDIS_START_ROW = 2
 _EXCEL_GDIS_START_COLUMN = 1
@@ -18,6 +19,17 @@ _EXCEL_GDIS_LAST_COLUMN = 12
 _EXCEL_GTM_START_ROW = 2
 _EXCEL_GTM_START_COLUMN = 14
 _EXCEL_GTM_LAST_COLUMN = 20
+
+_EXCEL_NEIGHBS_START_ROW = 2
+_EXCEL_NEIGHBS_START_COLUMN = 22
+_EXCEL_NEIGHBS_LAST_COLUMN = 29
+
+
+def _get_uids(neighbs: pd.DataFrame) -> list[str]:
+    if neighbs.empty:
+        return []
+    cols = ["field", "well", "reservoir"]
+    return neighbs[cols].agg("".join, axis=1).to_list()
 
 
 def _fill_template(
@@ -43,15 +55,35 @@ def _concat_tests(
     return df if tests.empty else pd.concat([tests, df], ignore_index=True)
 
 
+def _add_distance(tests: pd.DataFrame, neighbs: pd.DataFrame) -> pd.DataFrame:
+    cols = ["field", "well", "reservoir"]
+    return pd.merge(tests, neighbs, on=cols, how="left").sort_values(
+        ["reservoir", "distance"]
+    )
+
+
+def _save_csv(df: pd.DataFrame, path: Path, csv_config: CsvSettings) -> None:
+    df.to_csv(
+        path,
+        date_format="%d.%m.%Y",
+        sep=csv_config.delimiter,
+        encoding=csv_config.encoding,
+        index=False,
+    )
+
+
 def _process_data(
     results: list[WellTestResult],
     gtms: pd.DataFrame,
     tests: pd.DataFrame,
+    neighbs: pd.DataFrame,
+    neighb_tests: pd.DataFrame,
     path: Path,
     template: Path,
 ) -> None:
     result = path / template.name
     tests = _concat_tests(tests, results)
+    neighb_tests = _add_distance(neighb_tests, neighbs)
     try:
         wb = openpyxl.load_workbook(template)
         ws = wb["Лист1"]
@@ -72,6 +104,13 @@ def _process_data(
             _EXCEL_GTM_START_COLUMN,
             _EXCEL_GTM_LAST_COLUMN,
         )
+        _fill_template(
+            ws,
+            neighb_tests,
+            _EXCEL_NEIGHBS_START_ROW,
+            _EXCEL_NEIGHBS_START_COLUMN,
+            _EXCEL_NEIGHBS_LAST_COLUMN,
+        )
         save_workbook(wb, result)
     finally:
         wb.close()
@@ -81,6 +120,8 @@ async def well_test_report(
     path: Path,
     template: Path,
     gtm_period: int,
+    gdis_period: int,
+    radius: float,
     dao: WellTestReporter,
     pool: ProcessPoolManager,
 ) -> None:
@@ -101,5 +142,24 @@ async def well_test_report(
         reservoirs,
         results[0]["end_date"],
     )
-    await pool.run(_process_data, results, gtms, tests, path, template)
+    neighbs = await dao.get_neighbs(
+        results[0]["field"], results[0]["well"], reservoirs, radius
+    )
+    uids = _get_uids(neighbs)
+    date_from = results[0]["end_date"].replace(day=1) - relativedelta(
+        years=gdis_period
+    )
+    neighb_tests = await dao.get_neighb_tests(
+        uids, date_from, results[0]["end_date"]
+    )
+    await pool.run(
+        _process_data,
+        results,
+        gtms,
+        tests,
+        neighbs,
+        neighb_tests,
+        path,
+        template,
+    )
     make_archive(str(path), "zip", root_dir=path)

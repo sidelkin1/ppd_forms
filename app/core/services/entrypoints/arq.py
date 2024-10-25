@@ -447,7 +447,7 @@ async def create_well_test_report(
     file_id = cast(str, response.job.file_id)
     path = path_provider.upload_dir(user_id) / response.task.file
     app_config: AppSettings = ctx["app_config"]
-    async with ctx["local_dao"](
+    async with ctx["ofm_local_dao"](
         path=path, delimiter=app_config.delimiter
     ) as holder:
         holder = cast(HolderDAO, holder)
@@ -455,6 +455,8 @@ async def create_well_test_report(
             path_provider.dir_path(user_id, file_id),
             path_provider.data_dir / "well_test_template.xlsx",
             response.task.gtm_period,
+            response.task.gdis_period,
+            response.task.radius,
             holder.well_test_reporter,
             ctx["pool"],
         )

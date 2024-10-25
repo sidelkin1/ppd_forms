@@ -24,7 +24,7 @@ class WellTestReporter:
         "well": "Номер скважины",
         "well_type": "Назначение скважины",
         "end_date": "Дата/время окончания исследования",
-        "reliability": "Достоверность",
+        "reliability": r"Достоверность\s*/",
     }
     common_converters = {
         "field": lambda s: field_mapper[s],
@@ -35,14 +35,14 @@ class WellTestReporter:
     }
     numeric_parameters = {
         "permeability": r"Проницаемость\s*$",
-        "skin_factor": r"Совокупный скин-фактор, S\s*$",
+        "skin_factor": r"скин\s*-?\s*фактор(?:,\s*S)?\s*$",
         "resp_owc": r"пластовое давление на ВНК\s*$",
         "prod_index": r"Коэффициент (?:продуктивности|при[её]мистости)\s*$",
         "frac_length": r"Полудлина трещины, Xf\s*$",
     }
     reservoir_numeric_parameters = {
         "permeability": r"Проницаемость.*{}",
-        "skin_factor": r"скин-фактор.*{}",
+        "skin_factor": r"скин\s*-?\s*фактор.*{}",
         "resp_owc": r"пластовое давление на ВНК.*{}",
         "prod_index": r"Коэффициент (?:продуктивности|при[её]мистости).*{}",
         "frac_length": r"Полудлина трещины, Xf.*{}",
@@ -54,7 +54,10 @@ class WellTestReporter:
         self.delimiter = delimiter
 
     def _find_parameter(self, df: pd.DataFrame, pattern: str) -> str:
-        match = df.loc[df["key"].str.contains(pattern, na=False), "value"]
+        match = df.loc[
+            df["key"].str.contains(pattern, na=False, flags=re.IGNORECASE),
+            "value",
+        ]
         return "" if match.empty else str(match.squeeze())
 
     def _parse_numeric(self, df: pd.DataFrame, pattern: str) -> float:

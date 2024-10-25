@@ -249,6 +249,8 @@ async def generate_well_test_report(
         name=ReportName.well_test,
         file=params.file,
         gtm_period=params.gtm_period,
+        gdis_period=params.gdis_period,
+        radius=params.radius,
     )
     response = WellTestResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)

@@ -1,4 +1,4 @@
-from pydantic import PositiveInt
+from pydantic import NonNegativeFloat, PositiveInt
 
 from app.core.models.dto.tasks.base import TaskBase
 from app.core.models.enums import ReportName, TaskId
@@ -10,3 +10,5 @@ class TaskWellTest(
     name: ReportName
     file: str
     gtm_period: PositiveInt
+    gdis_period: PositiveInt
+    radius: NonNegativeFloat

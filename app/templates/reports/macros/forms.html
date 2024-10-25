@@ -174,5 +174,13 @@
         <input type="number" class="form-control" id="{{ report.path }}GtmPeriod" name="gtm" placeholder>
         <label for="{{ report.path }}GtmPeriod">{{ report.gtm_period }}</label>
     </div>
+    <div class="form-floating mb-3">
+        <input type="number" class="form-control" id="{{ report.path }}GdisPeriod" name="gdis" placeholder>
+        <label for="{{ report.path }}GdisPeriod">{{ report.gdis_period }}</label>
+    </div>
+    <div class="form-floating mb-3">
+        <input type="number" class="form-control" id="{{ report.path }}Radius" name="radius" placeholder>
+        <label for="{{ report.path }}Radius">{{ report.radius }}</label>
+    </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}

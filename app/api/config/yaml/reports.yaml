@@ -128,5 +128,7 @@
 - title: Отчет по ГДИС
   path: well_test
   file: Отчет ГДИС
-  gtm_period: Период ГТМ
+  gtm_period: Период ГТМ (мес)
+  gdis_period: Период ГДИС (лет)
+  radius: Радиус
   description: Выгрузка для отчета по ГДИС (аналитика, ГТМ и т.д.)

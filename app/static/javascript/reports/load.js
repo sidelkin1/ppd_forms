@@ -320,6 +320,8 @@ async function loadWellTest(reportName) {
   const success = document.getElementById(`${reportName}Success`);
   const wellTest = document.getElementById(`${reportName}WellTest`).files[0];
   const gtmPeriod = document.getElementById(`${reportName}GtmPeriod`).value;
+  const gdisPeriod = document.getElementById(`${reportName}GdisPeriod`).value;
+  const radius = document.getElementById(`${reportName}Radius`).value;
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -332,6 +334,8 @@ async function loadWellTest(reportName) {
     const data = {
       file: files[0] ? files[0].filename : null,
       gtm_period: gtmPeriod,
+      gdis_period: gdisPeriod,
+      radius: radius,
     };
     const result = await assignWork(reportName, url, data);
     if (result) {

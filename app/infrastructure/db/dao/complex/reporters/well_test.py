@@ -10,8 +10,9 @@ from app.infrastructure.files.dao import reporters as files
 
 @dataclass
 class WellTestReporter:
-    history: db.WellTestReporter
+    history: db.LocalWellTestReporter
     results: files.WellTestReporter
+    neighbs: db.OfmWellTestReporter
 
     async def get_results(self) -> list[WellTestResult]:
         return await self.results.get_results()
@@ -35,5 +36,26 @@ class WellTestReporter:
             field=field,
             well=well,
             reservoirs=reservoirs,
+            report_date=report_date,
+        )
+
+    async def get_neighbs(
+        self, field: str, well: str, reservoirs: list[str], radius: float
+    ) -> pd.DataFrame:
+        return await self.neighbs.read_one(
+            key="neighbs",
+            field=field,
+            well=well,
+            reservoirs=reservoirs,
+            radius=radius,
+        )
+
+    async def get_neighb_tests(
+        self, uids: list[str], date_from: date, report_date: date
+    ) -> pd.DataFrame:
+        return await self.history.read_one(
+            key="neighbs",
+            uids=uids,
+            date_from=date_from,
             report_date=report_date,
         )

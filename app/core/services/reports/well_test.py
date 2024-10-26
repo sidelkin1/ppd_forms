@@ -10,7 +10,6 @@ from openpyxl.writer.excel import save_workbook
 from app.core.models.dto import WellTestResult
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.complex.reporters import WellTestReporter
-from app.infrastructure.files.config.models.csv import CsvSettings
 
 _EXCEL_GDIS_START_ROW = 2
 _EXCEL_GDIS_START_COLUMN = 1
@@ -59,16 +58,6 @@ def _add_distance(tests: pd.DataFrame, neighbs: pd.DataFrame) -> pd.DataFrame:
     cols = ["field", "well", "reservoir"]
     return pd.merge(tests, neighbs, on=cols, how="left").sort_values(
         ["reservoir", "distance"]
-    )
-
-
-def _save_csv(df: pd.DataFrame, path: Path, csv_config: CsvSettings) -> None:
-    df.to_csv(
-        path,
-        date_format="%d.%m.%Y",
-        sep=csv_config.delimiter,
-        encoding=csv_config.encoding,
-        index=False,
     )
 
 

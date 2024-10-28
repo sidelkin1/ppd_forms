@@ -81,3 +81,10 @@ async def init_new_strategy_oil(provider: DbProvider, paths: Paths) -> None:
         await init_db.init_new_strategy_oil(
             holder.new_strategy_oil_initializer
         )
+
+
+async def init_well_test(provider: DbProvider, paths: Paths) -> None:
+    async with asynccontextmanager(provider.local_dao)(
+        file_path=paths.well_test
+    ) as holder:
+        await init_db.init_well_test(holder.well_test_initializer)

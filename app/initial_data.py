@@ -37,6 +37,7 @@ async def initialize_main(provider: DbProvider, paths: Paths) -> None:
     async with asyncio.TaskGroup() as tg:
         # tg.create_task(db.init_monthly_report(provider, settings))
         tg.create_task(db.init_well_profile(provider, paths))
+        tg.create_task(db.init_well_test(provider, paths))
 
 
 async def initialize_all(provider: DbProvider, paths: Paths) -> None:

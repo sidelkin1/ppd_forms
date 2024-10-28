@@ -52,6 +52,10 @@ class Paths(BaseModel):
         return self.data_dir / "new_strategy_oil.csv"
 
     @property
+    def well_test(self):
+        return self.data_dir / "well_test.csv"
+
+    @property
     def report_config(self):
         return self.app_dir / "api" / "config" / "yaml" / "reports.yaml"
 

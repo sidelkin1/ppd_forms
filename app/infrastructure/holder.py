@@ -128,6 +128,10 @@ class HolderDAO:
         return csv.NewStrategyOilDAO(self.kwargs["file_path"])
 
     @property
+    def csv_well_test(self) -> csv.WellTestDAO:
+        return csv.WellTestDAO(self.kwargs["file_path"])
+
+    @property
     def excel_new_strategy_inj(self) -> excel.NewStrategyInjDAO:
         return excel.NewStrategyInjDAO(
             self.kwargs["file_path"], self.kwargs["delimiter"]
@@ -229,6 +233,12 @@ class HolderDAO:
     ) -> initializers.NewStrategyOilInitializer:
         return initializers.NewStrategyOilInitializer(
             self.csv_new_strategy_oil, self.local_new_strategy_oil
+        )
+
+    @property
+    def well_test_initializer(self) -> initializers.WellTestInitializer:
+        return initializers.WellTestInitializer(
+            self.csv_well_test, self.local_well_test
         )
 
     @property

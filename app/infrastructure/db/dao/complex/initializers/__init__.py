@@ -9,3 +9,4 @@ from .new_strategy_inj import NewStrategyInjInitializer
 from .new_strategy_oil import NewStrategyOilInitializer
 from .reservoir_replace import ReservoirReplaceInitializer
 from .well_profile import WellProfileInitializer
+from .well_test import WellTestInitializer

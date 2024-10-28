@@ -2,7 +2,7 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict
 
-from app.core.models.dto.db.validators import EmptyStrOrNanToNone, NanToNone
+from app.core.models.dto.db.validators import EmptyStrOrNanToNone
 
 
 class WellTestDB(BaseModel):
@@ -14,13 +14,13 @@ class WellTestDB(BaseModel):
     well_test: str
     start_date: date
     end_date: date
-    oil_perm: NanToNone[float]
-    wat_perm: NanToNone[float]
-    liq_perm: NanToNone[float]
-    skin_factor: NanToNone[float]
-    resp_owc: NanToNone[float]
-    prod_index: NanToNone[float]
-    frac_length: NanToNone[float]
+    oil_perm: EmptyStrOrNanToNone[float]
+    wat_perm: EmptyStrOrNanToNone[float]
+    liq_perm: EmptyStrOrNanToNone[float]
+    skin_factor: EmptyStrOrNanToNone[float]
+    resp_owc: EmptyStrOrNanToNone[float]
+    prod_index: EmptyStrOrNanToNone[float]
+    frac_length: EmptyStrOrNanToNone[float]
     reliability: EmptyStrOrNanToNone[str]
 
     model_config = ConfigDict(extra="forbid", from_attributes=True)

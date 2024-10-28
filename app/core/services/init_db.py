@@ -67,3 +67,8 @@ async def init_new_strategy_oil(
 ) -> None:
     await dao.initialize()
     await dao.commit()
+
+
+async def init_well_test(dao: initializers.WellTestInitializer) -> None:
+    await dao.initialize()
+    await dao.commit()

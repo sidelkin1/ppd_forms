@@ -9,3 +9,4 @@ from .new_strategy_inj import NewStrategyInjDAO
 from .new_strategy_oil import NewStrategyOilDAO
 from .reservoir_replace import ReservoirReplaceDAO
 from .well_profile import WellProfileDAO
+from .well_test import WellTestDAO

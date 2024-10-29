@@ -127,7 +127,7 @@
   description: Выгрузка для сводной таблицы с целевыми компенсациями
 - title: Отчет по ГДИС
   path: well_test
-  file: Отчет ГДИС
+  file: Отчет Сиам
   gtm_period: Период ГТМ (мес)
   gdis_period: Период ГДИС (лет)
   radius: Радиус

@@ -18,6 +18,7 @@ class WellTestDAO(MainTableDAO[WellTest, WellTestDB]):
         "skin_factor",
         "resp_owc",
         "prod_index",
+        "frac_length",
         "reliability",
     ]
 

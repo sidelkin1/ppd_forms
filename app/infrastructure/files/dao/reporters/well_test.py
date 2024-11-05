@@ -53,6 +53,15 @@ class WellTestReporter:
         self.path = path
         self.delimiter = delimiter
 
+    def _read_report(self) -> pd.DataFrame:
+        df = pd.read_excel(self.path, sheet_name=self.sheet_name)
+        if len(df.columns) > len(self.columns):
+            # В ряде случаев кол-во столбцов в отчете на 1 больше, чем нужно
+            df.iloc[:, -2] = df.iloc[:, -2].fillna(df.iloc[:, -1])
+            df = df.iloc[:, :-1]
+        df.columns = self.columns  # type: ignore[assignment]
+        return df
+
     def _find_parameter(self, df: pd.DataFrame, pattern: str) -> str:
         match = df.loc[
             df["key"].str.contains(pattern, na=False, flags=re.IGNORECASE),
@@ -103,8 +112,7 @@ class WellTestReporter:
         ]
 
     def _get_results(self) -> list[WellTestResult]:
-        df = pd.read_excel(self.path, sheet_name=self.sheet_name)
-        df.columns = self.columns  # type: ignore[assignment]
+        df = self._read_report()
         common_parameters = self._get_common_parameters(df)
         numeric_parameters = self._get_numeric_parameters(df)
         reservoirs = self._get_raw_reservoirs(df)

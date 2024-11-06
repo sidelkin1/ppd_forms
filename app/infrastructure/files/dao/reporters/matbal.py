@@ -4,7 +4,7 @@ import aiofiles
 import pandas as pd
 from fastapi.concurrency import run_in_threadpool
 
-from app.infrastructure.db.mappers import well_mapper
+from app.infrastructure.db.mappers import multi_well_mapper
 
 
 class MatbalReporter:
@@ -22,7 +22,7 @@ class MatbalReporter:
         if self.wells is None:
             return None
         async with aiofiles.open(self.wells, encoding="utf8") as file:
-            wells = well_mapper[await file.read()].split(",")
+            wells = multi_well_mapper[await file.read()].split(",")
         return wells
 
     async def get_measurements(self) -> pd.DataFrame | None:

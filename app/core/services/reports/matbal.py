@@ -4,8 +4,6 @@ from shutil import make_archive
 from typing import NamedTuple, cast
 
 import openpyxl
-import openpyxl.worksheet
-import openpyxl.worksheet.worksheet
 import pandas as pd
 from openpyxl.formula.translate import Translator
 from openpyxl.worksheet.cell_range import CellRange

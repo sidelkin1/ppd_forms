@@ -1,18 +1,71 @@
 from datetime import date
 from pathlib import Path
 from shutil import make_archive
+from typing import NamedTuple, cast
 
 import openpyxl
+import openpyxl.worksheet
+import openpyxl.worksheet.worksheet
 import pandas as pd
+from openpyxl.formula.translate import Translator
+from openpyxl.worksheet.cell_range import CellRange
+from openpyxl.worksheet.formula import ArrayFormula
+from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.writer.excel import save_workbook
 
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.complex.reporters import MatbalReporter
 
-_EXCEL_RATE_START_ROW = 15
-_EXCEL_RATE_START_COLUMN = 2
-_EXCEL_RATE_LAST_COLUMN = 6
+_CELL_ROW_NUM = "A15"
+_CELL_DATE = "B15"
+_CELL_OIL_RATE = "C15"
+_CELL_WAT_RATE = "D15"
+_CELL_INJ_RATE = "E15"
+_CELL_ACTUAL_RESP = "F15"
+_CELL_RESP_WEIGHT = "G15"
+_CELL_CALC_RESP = "H15"
+_CELL_AQ_RATE = "J15"
+_CELL_BOUND_RATE = "K15"
+_CELL_DIFF_RESP = "L15"
+_CELL_RHS_TERM_1 = "M15"
+_CELL_RHS_TERM_2 = "N15"
+_CELL_CALC_LIQ_RATE = "O15"
+_CELL_CALC_INJ_RATE = "P15"
+
+_RANGE_CALC_RESP = "H15:I15"
+
+_FORMULA_CALC_RESP = Translator(
+    "=TRANSPOSE(MMULT($U$11:$V$12,TRANSPOSE(M15:N15)))", _CELL_CALC_RESP
+)
+_FORMULA_AQ_RATE = Translator("=alpha*(I15-H15)", _CELL_AQ_RATE)
+_FORMULA_BOUND_RATE = Translator("=beta*(Pi-I15)", _CELL_BOUND_RATE)
+_FORMULA_DIFF_RESP = Translator(
+    '=IF(F15>0,G15*(H15-F15)^2," ")', _CELL_DIFF_RESP
+)
+_FORMULA_RHS_TERM_1 = Translator(
+    "=N*1000*Boi*Cfactor*H14"
+    "+(lambda*E15-D15)*B(Bwi,Pi,Cw,H14)"
+    "-C15*B(Boi,Pi,Co,H14)",
+    _CELL_RHS_TERM_1,
+)
+_FORMULA_RHS_TERM_2 = Translator(
+    "=Waq*1000*(Cw+Cf)*I14+beta*Pi", _CELL_RHS_TERM_2
+)
+_FORMULA_CALC_LIQ_RATE = Translator(
+    "=(C15+D15)/(EDATE(B15,1)-B15)", _CELL_CALC_LIQ_RATE
+)
+_FORMULA_CALC_INJ_RATE = Translator(
+    "=E15/(EDATE(B15,1)-B15)*lambda", _CELL_CALC_INJ_RATE
+)
+
+
+class _DataFrameRow(NamedTuple):
+    date: date
+    Qoil: float
+    Qwat: float
+    Qinj: float
+    Pres: float
 
 
 def _expand_date_range(
@@ -48,22 +101,58 @@ def _join_rates_and_measurements(
     return df
 
 
+def _fill_rates_and_measurements(
+    ws: Worksheet, row_num: int, df_row: _DataFrameRow
+) -> None:
+    ws[_CELL_ROW_NUM].offset(row=row_num).value = row_num + 1
+    ws[_CELL_DATE].offset(row=row_num).value = df_row.date
+    ws[_CELL_OIL_RATE].offset(row=row_num).value = df_row.Qoil
+    ws[_CELL_WAT_RATE].offset(row=row_num).value = df_row.Qwat
+    ws[_CELL_INJ_RATE].offset(row=row_num).value = df_row.Qinj
+    ws[_CELL_ACTUAL_RESP].offset(row=row_num).value = df_row.Pres
+    ws[_CELL_RESP_WEIGHT].offset(row=row_num).value = 1 if df_row.Pres else ""
+
+
+def _fill_formulas(ws: Worksheet, row_num: int, calc_resp_range: str) -> None:
+    ws[_CELL_CALC_RESP].offset(row=row_num).value = ArrayFormula(
+        calc_resp_range,
+        _FORMULA_CALC_RESP.translate_formula(row_delta=row_num),
+    )
+    ws[_CELL_AQ_RATE].offset(
+        row=row_num
+    ).value = _FORMULA_AQ_RATE.translate_formula(row_delta=row_num)
+    ws[_CELL_BOUND_RATE].offset(
+        row=row_num
+    ).value = _FORMULA_BOUND_RATE.translate_formula(row_delta=row_num)
+    ws[_CELL_DIFF_RESP].offset(
+        row=row_num
+    ).value = _FORMULA_DIFF_RESP.translate_formula(row_delta=row_num)
+    ws[_CELL_RHS_TERM_1].offset(
+        row=row_num
+    ).value = _FORMULA_RHS_TERM_1.translate_formula(row_delta=row_num)
+    ws[_CELL_RHS_TERM_2].offset(
+        row=row_num
+    ).value = _FORMULA_RHS_TERM_2.translate_formula(row_delta=row_num)
+    ws[_CELL_CALC_LIQ_RATE].offset(
+        row=row_num
+    ).value = _FORMULA_CALC_LIQ_RATE.translate_formula(row_delta=row_num)
+    ws[_CELL_CALC_INJ_RATE].offset(
+        row=row_num
+    ).value = _FORMULA_CALC_INJ_RATE.translate_formula(row_delta=row_num)
+
+
 def _fill_template(df: pd.DataFrame, path: Path, template: Path) -> None:
     result = path / template.name
     try:
         wb = openpyxl.load_workbook(template, keep_vba=True)
         ws = wb["MB_simple"]
-        for row, df_row in zip(
-            ws.iter_rows(
-                min_row=_EXCEL_RATE_START_ROW,
-                min_col=_EXCEL_RATE_START_COLUMN,
-                max_col=_EXCEL_RATE_LAST_COLUMN,
-                max_row=df.shape[0] + _EXCEL_RATE_START_ROW - 1,
-            ),
-            df.itertuples(index=False),
-        ):
-            for cell, value in zip(row, df_row):
-                cell.value = value
+        calc_range = CellRange(_RANGE_CALC_RESP)
+        for row_num, df_row in enumerate(df.itertuples(index=False)):
+            _fill_rates_and_measurements(
+                ws, row_num, cast(_DataFrameRow, df_row)
+            )
+            _fill_formulas(ws, row_num, calc_range.coord)
+            calc_range.shift(row_shift=1)
         save_workbook(wb, result)
     finally:
         wb.close()

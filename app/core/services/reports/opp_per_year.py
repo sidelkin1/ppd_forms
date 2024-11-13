@@ -10,18 +10,30 @@ from app.infrastructure.db.dao.sql.reporters import OppPerYearReporter
 from app.infrastructure.files.config.models.csv import CsvSettings
 
 
-def _process_data(df: pd.DataFrame) -> pd.DataFrame:
-    df["reservoir"] = df["reservoir"].str.split(" ")
-    df = df.explode("reservoir")
+def _get_per_well(df: pd.DataFrame) -> pd.DataFrame:
+    per_well = df.drop_duplicates().copy()
+    per_well["rec_date"] = per_well["rec_date"].dt.date
+    return per_well
+
+
+def _get_per_year(df: pd.DataFrame) -> pd.DataFrame:
     grouper = [
         pd.Grouper(key="field"),
         pd.Grouper(key="reservoir"),
         pd.Grouper(key="well_type"),
         pd.Grouper(freq="YS", key="rec_date"),
     ]
-    df = df.groupby(grouper, as_index=False).agg(["size", "nunique"])
-    df["rec_date"] = df["rec_date"].dt.date
-    return df
+    per_year = df.groupby(grouper, as_index=False).agg(["size", "nunique"])
+    per_year["rec_date"] = per_year["rec_date"].dt.date
+    return per_year
+
+
+def _process_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    df["reservoir"] = df["reservoir"].str.split(" ")
+    df = df.explode("reservoir")
+    per_well = _get_per_well(df)
+    per_year = _get_per_year(df)
+    return per_well, per_year
 
 
 async def opp_per_year_report(
@@ -33,9 +45,15 @@ async def opp_per_year_report(
     csv_config: CsvSettings,
 ) -> None:
     df = await dao.read_one(date_from=date_from, date_to=date_to)
-    df = await pool.run(_process_data, df)
+    per_well, per_year = await pool.run(_process_data, df)
     await save_to_csv(
-        df,
+        per_well,
+        path / "opp_per_well.csv",
+        csv_config.encoding,
+        csv_config.delimiter,
+    )
+    await save_to_csv(
+        per_year,
         path / "opp_per_year.csv",
         csv_config.encoding,
         csv_config.delimiter,

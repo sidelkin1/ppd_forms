@@ -22,7 +22,9 @@ class MatbalReporter:
         if self.wells is None:
             return None
         async with aiofiles.open(self.wells, encoding="utf8") as file:
-            wells = multi_well_mapper[await file.read()].split(",")
+            wells = multi_well_mapper[await file.read()].split(
+                multi_well_mapper.delimiter
+            )
         return wells
 
     async def get_measurements(self) -> pd.DataFrame | None:

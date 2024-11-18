@@ -19,7 +19,7 @@ class NewStrategyOilDAO(BaseDAO[NewStrategyOilDB]):
         df["vnr_date"] = df["vnr_date"].fillna(df["start_date"])
         df["start_date"] = df["start_date"].fillna(df["vnr_date"])
         cols = ["start_date", "vnr_date"]
-        df.dropna(subset=cols, inplace=True)
+        df = df.dropna(subset=cols)
         return [
             self.model.model_validate(row)
             for row in df.itertuples(index=False)

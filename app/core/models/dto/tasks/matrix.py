@@ -13,3 +13,4 @@ class TaskMatrix(
     pred_period: PositiveInt
     excludes: list[ExcludeGTM]
     on_date: date
+    wells: str | None = None

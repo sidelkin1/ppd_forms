@@ -315,7 +315,10 @@ async def create_matrix_report(
     file_id = cast(str, response.job.file_id)
     app_config: AppSettings = ctx["app_config"]
     csv_config: CsvSettings = ctx["csv_config"]
-    async with ctx["local_dao"]() as holder:
+    path = path_provider.upload_dir(user_id)
+    async with ctx["local_dao"](
+        path=path, wells=response.task.wells
+    ) as holder:
         holder = cast(HolderDAO, holder)
         await matrix_report(
             path_provider.dir_path(user_id, file_id),

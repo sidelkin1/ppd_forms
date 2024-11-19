@@ -9,3 +9,4 @@ class MatrixEffect(DateRange, OnDate):
     base_period: PositiveInt = Field(..., examples=[1])
     pred_period: PositiveInt = Field(..., examples=[12])
     excludes: list[ExcludeGTM] = Field(..., examples=[[ExcludeGTM.perf]])
+    wells: str | None = None

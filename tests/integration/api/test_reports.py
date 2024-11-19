@@ -42,7 +42,9 @@ async def test_generate_report_success(
     )
     assert resp.is_success
     data = resp.json()
-    assert data["task"] == task_report.model_dump(mode="json")
+    assert data["task"] == task_report.model_dump(
+        mode="json", exclude_none=True
+    )
     job = Job(job_id=data["job"]["job_id"], redis=arq_redis)
     assert JobStatus.queued is await job.status()
 

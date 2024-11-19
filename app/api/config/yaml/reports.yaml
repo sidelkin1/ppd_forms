@@ -62,6 +62,7 @@
   - text: РИР
     value: РИР
     selected: false
+  wells: Список скважин
   description: Эффект ГТМ ППД по матрице для ОУЗ
 - title: Потери нефти по НФ
   path: oil_loss

@@ -40,6 +40,10 @@
             </option>
         {% endfor %}
     </select>
+    <div class="mb-3">
+        <label class="form-check-label" for="{{ report.path }}Wells">{{ report.wells }}</label>
+        <input type="file" class="form-control" id="{{ report.path }}Wells" name="file"/>
+    </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
 

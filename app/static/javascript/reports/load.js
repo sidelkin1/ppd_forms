@@ -115,28 +115,33 @@ async function loadMatrix(reportName) {
   ]
     .filter((opt) => opt.value !== "--")
     .map((opt) => opt.value);
+  const wells = document.getElementById(`${reportName}Wells`).files[0];
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
   alert.classList.add("d-none");
   success.classList.add("d-none");
 
-  const url = `/reports/${reportName}`;
-  const data = {
-    date_from: dateFrom,
-    date_to: dateTo,
-    excludes: excludes,
-    base_period: basePeriod,
-    pred_period: predPeriod,
-    on_date: onDate,
-  };
-  const result = await assignWork(reportName, url, data);
-  if (result) {
-    await checkStatus(
-      reportName,
-      result.job.job_id,
-      `/reports/${result.job.file_id}/zip`
-    );
+  const files = await sendReportFiles(reportName, [wells], "/excel/");
+  if (files) {
+    const url = `/reports/${reportName}`;
+    const data = {
+      date_from: dateFrom,
+      date_to: dateTo,
+      excludes: excludes,
+      base_period: basePeriod,
+      pred_period: predPeriod,
+      on_date: onDate,
+      wells: files[0] ? files[0].filename : null,
+    };
+    const result = await assignWork(reportName, url, data);
+    if (result) {
+      await checkStatus(
+        reportName,
+        result.job.job_id,
+        `/reports/${result.job.file_id}/zip`
+      );
+    }
   }
 
   loader.classList.add("d-none");

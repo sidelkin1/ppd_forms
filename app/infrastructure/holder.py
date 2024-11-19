@@ -274,7 +274,7 @@ class HolderDAO:
         return db_reporters.OppPerYearReporter(self.kwargs["ofm_pool"])
 
     @property
-    def matrix_reporter(self) -> db_reporters.MatrixReporter:
+    def db_matrix_reporter(self) -> db_reporters.MatrixReporter:
         return db_reporters.MatrixReporter(self.kwargs["local_pool"])
 
     @property
@@ -322,6 +322,12 @@ class HolderDAO:
         )
 
     @property
+    def file_matrix_reporter(self) -> file_reporters.MatrixReporter:
+        return file_reporters.MatrixReporter(
+            self.kwargs["path"], self.kwargs["wells"]
+        )
+
+    @property
     def matbal_reporter(self) -> complex_reporters.MatbalReporter:
         return complex_reporters.MatbalReporter(
             self.db_matbal_reporter, self.file_matbal_reporter
@@ -346,6 +352,12 @@ class HolderDAO:
     @property
     def compensation_reporter(self) -> db_reporters.CompensationReporter:
         return db_reporters.CompensationReporter(self.kwargs["ofm_pool"])
+
+    @property
+    def matrix_reporter(self) -> complex_reporters.MatrixReporter:
+        return complex_reporters.MatrixReporter(
+            self.db_matrix_reporter, self.file_matrix_reporter
+        )
 
     @property
     def new_strategy_inj_loader(self) -> loaders.NewStrategyInjLoader:

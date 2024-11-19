@@ -35,14 +35,14 @@ class WellTestReporter:
     }
     numeric_parameters = {
         "permeability": r"Проницаемость\s*$",
-        "skin_factor": r"скин\s*-?\s*фактор(?:,\s*S)?\s*$",
+        "skin_factor": r"^(?:Совокупный\s+)?скин\s*-?\s*фактор(?:,\s*S)?\s*$",
         "resp_owc": r"пластовое давление на ВНК\s*$",
         "prod_index": r"Коэффициент (?:продуктивности|при[её]мистости)\s*$",
         "frac_length": r"Полудлина трещины, Xf\s*$",
     }
     reservoir_numeric_parameters = {
         "permeability": r"Проницаемость.*{}",
-        "skin_factor": r"скин\s*-?\s*фактор.*{}",
+        "skin_factor": r"^(?:Совокупный\s+)?скин\s*-?\s*фактор.*{}",
         "resp_owc": r"пластовое давление на ВНК.*{}",
         "prod_index": r"Коэффициент (?:продуктивности|при[её]мистости).*{}",
         "frac_length": r"Полудлина трещины, Xf.*{}",

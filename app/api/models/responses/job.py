@@ -14,7 +14,7 @@ class JobResponse(BaseResponse[dict[str, Any]]):
         if status is JobStatus.not_found:
             task = {}
             job_stamp = JobStamp(
-                job_id=job.job_id, file_id=None, status=status
+                job_id=job.job_id, status=status, created_at=None
             )
         else:
             info = cast(JobResult, await job.info())

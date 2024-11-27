@@ -1,6 +1,5 @@
 import pytest
 from arq.connections import ArqRedis
-from fastapi_pagination.utils import disable_installed_extensions_check  # noqa
 from httpx import AsyncClient
 
 from app.api.models.auth import User

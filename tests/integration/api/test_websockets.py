@@ -21,7 +21,10 @@ async def test_job_ok(
     response_ok = TaskTestResponse.test(
         status=JobStatus.completed, message="Job is completed"
     )
-    response = TaskTestResponse.test(job_id=response_ok.job.job_id)
+    response = TaskTestResponse.test(
+        job_id=response_ok.job.job_id,
+        created_at=response_ok.job.created_at,
+    )
     job = await arq_redis.enqueue_job(
         work_ok.name, response, _job_id=response.job.job_id
     )
@@ -45,7 +48,10 @@ async def test_job_error(
     response_error = TaskTestResponse.test(
         status=JobStatus.error, message="Error!"
     )
-    response = TaskTestResponse.test(job_id=response_error.job.job_id)
+    response = TaskTestResponse.test(
+        job_id=response_error.job.job_id,
+        created_at=response_error.job.created_at,
+    )
     job = await arq_redis.enqueue_job(
         work_error.name, response, _job_id=response.job.job_id
     )
@@ -95,7 +101,6 @@ def test_job_is_not_found(test_client: TestClient):
                 "job_id": job_id,
                 "message": "Job is not found",
                 "status": JobStatus.not_found.value,
-                "created_at": data["job"]["created_at"],
             },
             "task": {},
         }

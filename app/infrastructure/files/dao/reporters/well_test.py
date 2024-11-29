@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
@@ -15,6 +16,15 @@ from app.infrastructure.db.mappers import (
 )
 
 
+def _date_format(input_: Any) -> date:
+    result = pd.to_datetime(
+        input_, format="%d.%m.%Y %H:%M:%S", errors="coerce"
+    ).date()
+    if result is pd.NaT:
+        result = pd.to_datetime(input_).date()
+    return result
+
+
 class WellTestReporter:
     sheet_name = "Интерпретация"
     columns = ["key", "units", "value", "source"]
@@ -29,9 +39,7 @@ class WellTestReporter:
     common_converters = {
         "field": lambda s: field_mapper[s],
         "well": lambda s: well_mapper[s],
-        "end_date": lambda s: pd.to_datetime(
-            s, format="%d.%m.%Y %H:%M:%S"
-        ).date(),
+        "end_date": _date_format,
     }
     numeric_parameters = {
         "permeability": r"Проницаемость\s*$",
@@ -54,9 +62,15 @@ class WellTestReporter:
         self.delimiter = delimiter
 
     def _read_report(self) -> pd.DataFrame:
-        df = pd.read_excel(self.path, sheet_name=self.sheet_name)
+        # Все столбцы с нужной информацией находятся в начале листа,
+        # их кол-во обычно 4, но иногда может быть 5,
+        # тогда последние 2 столбца обрабатываются отдельно,
+        # все остальные столбцы отбрасываем
+        df = pd.read_excel(self.path, sheet_name=self.sheet_name).iloc[
+            :, : len(self.columns) + 1
+        ]
         if len(df.columns) > len(self.columns):
-            # В ряде случаев кол-во столбцов в отчете на 1 больше, чем нужно
+            # Если кол-во столбцов в отчете на 1 больше, чем нужно
             df.iloc[:, -2] = df.iloc[:, -2].fillna(df.iloc[:, -1])
             df = df.iloc[:, :-1]
         df.columns = self.columns  # type: ignore[assignment]

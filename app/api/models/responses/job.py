@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Self
 
 from arq.jobs import Job
@@ -15,7 +16,7 @@ class JobResponse(BaseResponse[dict[str, Any]]):
         if info is None:
             task = {}
             job_stamp = JobStamp(
-                job_id=job.job_id, status=status, created_at=None
+                job_id=job.job_id, status=status, created_at=datetime.min
             )
         else:
             response: BaseResponse[TaskBase] = info.args[0]

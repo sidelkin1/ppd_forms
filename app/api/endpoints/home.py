@@ -1,4 +1,3 @@
-import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -120,10 +119,7 @@ async def results(
             "responses": paginate(
                 sorted(
                     responses,
-                    key=(
-                        lambda response: response.job.created_at
-                        or datetime.datetime.min
-                    ),
+                    key=lambda response: response.job.created_at,
                     reverse=True,
                 ),
                 params,

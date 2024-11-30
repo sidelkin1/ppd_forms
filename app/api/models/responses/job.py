@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Self
 
-from arq.jobs import Job
+from arq.jobs import Job, JobResult
 
 from app.api.models.responses.base import BaseResponse
 from app.core.models.dto import JobStamp, TaskBase
@@ -12,7 +12,7 @@ class JobResponse(BaseResponse[dict[str, Any]]):
     @classmethod
     async def from_job(cls, job: Job) -> Self:
         status = JobStatus.from_arq(await job.status())
-        info = await job.result_info()
+        info = await job.info()
         if info is None:
             task = {}
             job_stamp = JobStamp(
@@ -22,11 +22,12 @@ class JobResponse(BaseResponse[dict[str, Any]]):
             response: BaseResponse[TaskBase] = info.args[0]
             task = response.task.model_dump()
             job_stamp = response.job
-            if status is JobStatus.in_progress:
-                job_stamp.status = JobStatus.in_progress
-            elif info.success:
-                job_stamp.status = JobStatus.completed
+            if isinstance(info, JobResult):
+                if info.success:
+                    job_stamp.status = JobStatus.completed
+                else:
+                    job_stamp.status = JobStatus.error
+                    job_stamp.message = str(info.result)
             else:
-                job_stamp.status = JobStatus.error
-                job_stamp.message = str(info.result)
+                job_stamp.status = status
         return cls(task=task, job=job_stamp)

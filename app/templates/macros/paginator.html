@@ -1,10 +1,10 @@
 {% macro paginator(page_obj, request, url_name) -%}
   {% if page_obj.pages > 1 %}
     <nav aria-label="Page navigation" class="my-5">
-      <ul class="pagination justify-content-center">
+      <ul class="pagination justify-content-center flex-wrap">
         {% if page_obj.page > 1 %}
           <li class="page-item">
-            <a 
+            <a
               class="page-link"
               href="{{ request.url_for(url_name).include_query_params(page=1) }}"
             >
@@ -12,7 +12,7 @@
             </a>
           </li>
           <li class="page-item">
-            <a 
+            <a
               class="page-link"
               href="{{ request.url_for(url_name).include_query_params(page=page_obj.page - 1) }}"
             >
@@ -28,7 +28,7 @@
             </li>
           {% else %}
             <li class="page-item">
-              <a 
+              <a
                 class="page-link"
                 href="{{ request.url_for(url_name).include_query_params(page=i) }}"
               >
@@ -40,7 +40,7 @@
 
         {% if page_obj.page < page_obj.pages %}
           <li class="page-item">
-            <a 
+            <a
               class="page-link"
               href="{{ request.url_for(url_name).include_query_params(page=page_obj.page + 1) }}"
             >
@@ -48,7 +48,7 @@
             </a>
           </li>
           <li class="page-item">
-            <a 
+            <a
               class="page-link"
               href="{{ request.url_for(url_name).include_query_params(page=page_obj.pages) }}"
             >

@@ -134,7 +134,7 @@ class WellTestReporter:
         return [
             reservoir[BaseMapper.WORD]
             for reservoir in multi_split_reservoir_mapper.split_words(
-                str(df.loc[self.reservoir_cell, "value"])
+                str(df.loc[self.reservoir_cell, "value"]).replace("\n", "")
             )
         ]
 

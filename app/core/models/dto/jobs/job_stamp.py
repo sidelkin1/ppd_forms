@@ -24,7 +24,7 @@ class JobStamp(BaseModel):
 
     @computed_field  # type: ignore[misc]
     @property
-    def file_id(self) -> str | None:
+    def file_id(self) -> str:
         return "result_{}_{}".format(
             self.created_at.strftime("%Y_%m_%dT%H_%M_%S"),
             self.job_id[:RESULT_SUFFIX_LENGTH],

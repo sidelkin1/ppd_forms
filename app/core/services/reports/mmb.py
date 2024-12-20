@@ -102,13 +102,26 @@ def _join_works(df: pd.DataFrame, works: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _join_scal(df: pd.DataFrame, descr: pd.DataFrame) -> pd.DataFrame:
+    cols = ["Field", "Well"]
+    idx = ["muw", "muo", "krw_max", "kro_max"]
+    df = df.merge(descr[cols + idx], on=cols, how="left")
+    return df
+
+
 def _split_bhp(df: pd.DataFrame) -> pd.DataFrame:
-    crit = df[["Qoil", "Qwat"]].sum(axis=1) > 0
+    # Разбиваем замеры Рзаб на добычу и закачку.
+    # Два случая обрабатываются потом отдельно после
+    # группировки блоков:
+    # 1. Одновременная добыча и закачка (см. `_correct_ambiguity`)
+    # 2. Неучтенные замеры Рзаб (см. `_refill_bhp`)
+    crit_prod = df[["Qoil", "Qwat"]].sum(axis=1) > 0
     loc = df.columns.get_loc("Pbhp")
-    df.insert(loc, "Pbhp_prod", df.loc[crit, "Pbhp"])
-    crit = df["Qinj"] > 0
-    df.insert(loc + 1, "Pbhp_inj", df.loc[crit, "Pbhp"])
-    df.drop(columns="Pbhp", inplace=True)
+    df.insert(loc, "Pbhp_prod", df.loc[crit_prod, "Pbhp"])
+    crit_inj = df["Qinj"] > 0
+    df.insert(loc + 1, "Pbhp_inj", df.loc[crit_inj, "Pbhp"])
+    df["Ambiguity"] = crit_prod & crit_inj
+    df.loc[crit_prod | crit_inj, "Pbhp"] = np.nan
     return df
 
 
@@ -138,25 +151,54 @@ def _group_reservoirs(df: pd.DataFrame) -> pd.DataFrame:
         df.groupby(cols, as_index=False)
         .agg(
             {
-                "Reservoir": lambda s: s.sort_values().str.cat(sep=","),
+                "Reservoir": lambda s: (
+                    s.str.split(r"[^\w+\-()]+")
+                    .explode()
+                    .drop_duplicates()
+                    .sort_values()
+                    .str.cat(sep=",")
+                ),
                 "Qoil": "sum",
                 "Qwat": "sum",
                 "Qinj": "sum",
                 "Pres": "mean",
-                "Source_resp": lambda s: s[s != ""]
-                .drop_duplicates()
-                .str.cat(sep=","),
+                "Source_resp": lambda s: (
+                    s[s != ""].drop_duplicates().str.cat(sep=",")
+                ),
                 "Pbhp": "mean",
-                "Source_bhp": lambda s: s[s != ""]
-                .drop_duplicates()
-                .str.cat(sep=","),
-                "Wellwork": lambda s: s[s != ""]
-                .drop_duplicates()
-                .str.cat(sep=","),
+                "Pbhp_prod": "mean",
+                "Pbhp_inj": "mean",
+                "Source_bhp": lambda s: (
+                    s[s != ""].drop_duplicates().str.cat(sep=",")
+                ),
+                "Wellwork": lambda s: (
+                    s[s != ""].drop_duplicates().str.cat(sep=",")
+                ),
+                "Ambiguity": "any",
+                "muw": "mean",
+                "muo": "mean",
+                "krw_max": "mean",
+                "kro_max": "mean",
             }
         )
         .reindex(columns=names)
     )
+    return df
+
+
+def _refill_bhp(df: pd.DataFrame) -> pd.DataFrame:
+    # Повторно заполняем Рзаб для случаев, когда
+    # замер Рзаб был на один объект (например, официальный),
+    # а добыча (закачка) велась с другого объекта (например, НЛД)
+    crit = df[["Qoil", "Qwat"]].sum(axis=1) > 0
+    df.loc[crit, "Pbhp_prod"] = df.loc[crit, "Pbhp_prod"].fillna(
+        df.loc[crit, "Pbhp"]
+    )
+    crit = df["Qinj"] > 0
+    df.loc[crit, "Pbhp_inj"] = df.loc[crit, "Pbhp_inj"].fillna(
+        df.loc[crit, "Pbhp"]
+    )
+    df.drop(columns="Pbhp", inplace=True)
     return df
 
 
@@ -183,15 +225,11 @@ def _calc_watercut(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _calc_total_mobility(
-    df: pd.DataFrame, descr: pd.DataFrame
-) -> pd.DataFrame:
-    cols = ["Field", "Tank", "Reservoir"]
-    idx = ["muw", "muo", "krw_max", "kro_max"]
-    df = df.merge(descr[cols + idx], on=cols, how="left")
+def _calc_total_mobility(df: pd.DataFrame) -> pd.DataFrame:
+    cols = ["muw", "muo", "krw_max", "kro_max"]
     df["Total_mobility"] = df["krw_max"] / df["muw"] * df["Wcut"]
     df["Total_mobility"] += df["kro_max"] / df["muo"] * (1 - df["Wcut"])
-    df.drop(columns=idx, inplace=True)
+    df.drop(columns=cols, inplace=True)
     return df
 
 
@@ -201,6 +239,16 @@ def _add_weights(df: pd.DataFrame, mmb_config: MmbSettings) -> pd.DataFrame:
     df.loc[df["Pbhp_inj"].notna(), "Wbhp_inj"] = 1
     df["Pres_min"] = df["Pbhp_prod"] + mmb_config.press_tol.min_value
     df["Pres_max"] = df["Pbhp_inj"] - mmb_config.press_tol.max_value
+    return df
+
+
+def _correct_ambiguity(df: pd.DataFrame) -> pd.DataFrame:
+    # В случае, если на какой-то месяц есть одновременно и добыча, и закачка,
+    # то исключаем Рзаб (и соответственно ограничения на Рпл)
+    # из расчета на этот месяц
+    cols = ["Wbhp_prod", "Wbhp_inj", "Pres_min", "Pres_max"]
+    df.loc[df["Ambiguity"], cols] = np.nan
+    df.drop(columns="Ambiguity", inplace=True)
     return df
 
 
@@ -234,14 +282,17 @@ def _calc_rates(
     df = _join_resp(df, hist["resp"])
     df = _join_bhp(df, hist["bhp"])
     df = _join_works(df, hist["works"])
+    df = _join_scal(df, descr)
     df = _map_wells(df, to_tank, "Well", "Tank")
-    df = _group_reservoirs(df)
     df = _split_bhp(df)
+    df = _group_reservoirs(df)
+    df = _refill_bhp(df)
     df = _calc_liquid(df)
     df = _calc_daily_rates(df)
     df = _calc_watercut(df)
-    df = _calc_total_mobility(df, descr)
+    df = _calc_total_mobility(df)
     df = _add_weights(df, mmb_config)
+    df = _correct_ambiguity(df)
     df = _finish_rates(df)
     return df
 

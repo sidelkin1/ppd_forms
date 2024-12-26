@@ -187,17 +187,15 @@ def _group_reservoirs(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _refill_bhp(df: pd.DataFrame) -> pd.DataFrame:
-    # Повторно заполняем Рзаб для случаев, когда
+    # Повторно усредняем Рзаб для случаев, когда
     # замер Рзаб был на один объект (например, официальный),
     # а добыча (закачка) велась с другого объекта (например, НЛД)
     crit = df[["Qoil", "Qwat"]].sum(axis=1) > 0
-    df.loc[crit, "Pbhp_prod"] = df.loc[crit, "Pbhp_prod"].fillna(
-        df.loc[crit, "Pbhp"]
+    df.loc[crit, "Pbhp_prod"] = df.loc[crit, ["Pbhp_prod", "Pbhp"]].mean(
+        axis=1
     )
     crit = df["Qinj"] > 0
-    df.loc[crit, "Pbhp_inj"] = df.loc[crit, "Pbhp_inj"].fillna(
-        df.loc[crit, "Pbhp"]
-    )
+    df.loc[crit, "Pbhp_inj"] = df.loc[crit, ["Pbhp_inj", "Pbhp"]].mean(axis=1)
     df.drop(columns="Pbhp", inplace=True)
     return df
 

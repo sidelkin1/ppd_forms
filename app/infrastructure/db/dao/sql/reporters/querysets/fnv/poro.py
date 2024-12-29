@@ -1,9 +1,10 @@
 from sqlalchemy import Select, and_, bindparam, func, select
+from sqlalchemy.orm import MappedColumn
 
 from app.infrastructure.db.models.ofm.reflected import HeaderId, LayersPty
 
 
-def _select_poro(porosity: str) -> Select:
+def _select_poro(porosity: MappedColumn) -> Select:
     return (
         select(
             LayersPty.layer_name,
@@ -13,7 +14,7 @@ def _select_poro(porosity: str) -> Select:
             func.min(LayersPty.top).label("ktop"),
             func.max(LayersPty.botm).label("kbot"),
             (
-                func.sum(LayersPty.h_eff * getattr(LayersPty, porosity))
+                func.sum(LayersPty.h_eff * porosity)
                 / func.sum(LayersPty.h_eff)
             ).label("poro"),
             func.avg(LayersPty.kn).label("knas"),
@@ -27,7 +28,7 @@ def _select_poro(porosity: str) -> Select:
             LayersPty.uwi == bindparam("uwi"),
             LayersPty.h_eff.is_not(None),
             LayersPty.h_eff > 0,
-            getattr(LayersPty, porosity).is_not(None),
+            porosity.is_not(None),
             LayersPty.numv.in_((1, 3)),
         )
         .group_by(
@@ -41,8 +42,8 @@ def _select_poro(porosity: str) -> Select:
 
 
 def select_poro() -> Select:
-    return _select_poro("porosity")
+    return _select_poro(LayersPty.porosity)
 
 
 def select_poro_alt() -> Select:
-    return _select_poro("porosity_alt")
+    return _select_poro(LayersPty.porosity_alt)

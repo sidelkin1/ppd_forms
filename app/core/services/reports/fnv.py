@@ -279,7 +279,7 @@ async def _calc_contours(
             await logger.ainfo(
                 "%s Круг для %s : (%s - %s) R = %s", uwi, index, x, y, r
             )
-        result.loc[index, "contour"] = contour  # type:ignore
+        result.loc[index, "contour"] = contour  # type:ignore[index]
     result.columns = [uwi]  # type:ignore[assignment]
     return result
 

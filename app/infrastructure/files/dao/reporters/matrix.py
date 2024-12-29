@@ -61,13 +61,12 @@ class MatrixReporter:
     ) -> pd.DataFrame | None:
         if self.wells is None:
             return None
-        df = pd.read_excel(  # type: ignore
+        df = pd.read_excel(
             self.wells,
-            engine="openpyxl",
-            converters=self.converters,
+            converters=self.converters,  # type: ignore[arg-type]
             usecols=self.usecols,
         )
-        df.columns = self.columns  # type: ignore
+        df.columns = self.columns  # type: ignore[assignment]
         df = (
             df.dropna(subset=self.dropna_columns)
             .assign(reservoir_neighbs=None)

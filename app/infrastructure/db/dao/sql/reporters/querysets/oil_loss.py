@@ -7,7 +7,7 @@ from app.infrastructure.db.dao.sql.reporters.querysets.inj_loss.monthly_report i
     _select_last_report,
     _select_max_rate_date,
 )
-from app.infrastructure.db.models.local import NewStrategyOil
+from app.infrastructure.db.models.local import MonthlyReport, NewStrategyOil
 
 
 def _select_last_gtm() -> Subquery:
@@ -88,8 +88,8 @@ def _join_periods(base: Subquery, pred: Subquery, ns_oil: Subquery) -> Select:
 
 def select_monthly_report_for_first_rate() -> Select:
     rates = union(
-        _select_first_rate_date("liq_rate"),
-        _select_first_rate_date("inj_rate"),
+        _select_first_rate_date(MonthlyReport.liq_rate),
+        _select_first_rate_date(MonthlyReport.inj_rate),
     ).subquery()
     subq = _select_first_date(rates)
     return _join_periods(
@@ -101,8 +101,8 @@ def select_monthly_report_for_first_rate() -> Select:
 
 def select_monthly_report_for_max_rate() -> Select:
     rates = union(
-        _select_max_rate_date("oil_rate"),
-        _select_max_rate_date("inj_rate"),
+        _select_max_rate_date(MonthlyReport.oil_rate),
+        _select_max_rate_date(MonthlyReport.inj_rate),
     ).subquery()
     subq = _select_first_date(rates)
     return _join_periods(

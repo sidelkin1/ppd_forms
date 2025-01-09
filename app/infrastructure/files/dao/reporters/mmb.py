@@ -69,11 +69,10 @@ class MmbReporter:
 
     async def get_description(self) -> pd.DataFrame:
         df: pd.DataFrame = await run_in_threadpool(
-            pd.read_excel,  # type: ignore
+            pd.read_excel,  # type: ignore[arg-type]
             self.path,
-            engine="openpyxl",
             converters=self.converters,
             usecols=self.usecols,
         )
-        df.columns = self.columns  # type: ignore
+        df.columns = self.columns  # type: ignore[assignment]
         return df

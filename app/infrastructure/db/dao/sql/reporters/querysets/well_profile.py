@@ -1,5 +1,6 @@
 from sqlalchemy import and_, bindparam, func, or_, select
-from sqlalchemy.sql.expression import ScalarSelect, Select, Subquery
+from sqlalchemy.orm import QueryableAttribute
+from sqlalchemy.sql.expression import Label, Select, Subquery
 
 from app.infrastructure.db.models.local import MonthlyReport, WellProfile
 
@@ -86,13 +87,13 @@ def _select_last_report() -> Subquery:
     )
 
 
-def _select_sum_rate(rate: str) -> Subquery:
+def _select_sum_rate(rate: QueryableAttribute) -> Subquery:
     return (
         select(
             MonthlyReport.field,
             MonthlyReport.well_name,
             MonthlyReport.dat_rep,
-            func.sum(getattr(MonthlyReport, rate)).label(f"{rate}_all"),
+            func.sum(rate).label(f"{rate.key}_all"),
         )
         .group_by(
             MonthlyReport.field,
@@ -103,10 +104,10 @@ def _select_sum_rate(rate: str) -> Subquery:
     )
 
 
-def _select_sum_value(rate: str) -> ScalarSelect:
+def _select_sum_value(rate: QueryableAttribute) -> Label:
     stmt = _select_sum_rate(rate)
     return (
-        select(getattr(stmt.c, f"{rate}_all"))
+        select(getattr(stmt.c, f"{rate.key}_all"))
         .where(
             stmt.c.field == MonthlyReport.field,
             stmt.c.well_name == MonthlyReport.well_name,
@@ -114,6 +115,7 @@ def _select_sum_value(rate: str) -> ScalarSelect:
         )
         .scalar_subquery()
         .correlate(MonthlyReport)
+        .label(f"{rate.key}_all")
     )
 
 
@@ -129,8 +131,8 @@ def select_profile_report() -> Select:
             MonthlyReport.dat_rep,
             MonthlyReport.liq_rate,
             MonthlyReport.inj_rate,
-            _select_sum_value("liq_rate").label("liq_rate_all"),
-            _select_sum_value("inj_rate").label("inj_rate_all"),
+            _select_sum_value(MonthlyReport.liq_rate),
+            _select_sum_value(MonthlyReport.inj_rate),
             last_profile.c.well_type,
             last_profile.c.rec_date,
             last_profile.c.layer,

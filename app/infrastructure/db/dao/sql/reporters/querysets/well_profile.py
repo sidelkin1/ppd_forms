@@ -1,6 +1,6 @@
 from sqlalchemy import and_, bindparam, func, or_, select
 from sqlalchemy.orm import QueryableAttribute
-from sqlalchemy.sql.expression import ScalarSelect, Select, Subquery
+from sqlalchemy.sql.expression import Label, Select, Subquery
 
 from app.infrastructure.db.models.local import MonthlyReport, WellProfile
 
@@ -104,7 +104,7 @@ def _select_sum_rate(rate: QueryableAttribute) -> Subquery:
     )
 
 
-def _select_sum_value(rate: QueryableAttribute) -> ScalarSelect:
+def _select_sum_value(rate: QueryableAttribute) -> Label:
     stmt = _select_sum_rate(rate)
     return (
         select(getattr(stmt.c, f"{rate.key}_all"))
@@ -113,9 +113,9 @@ def _select_sum_value(rate: QueryableAttribute) -> ScalarSelect:
             stmt.c.well_name == MonthlyReport.well_name,
             stmt.c.dat_rep == MonthlyReport.dat_rep,
         )
-        .label(f"{rate.key}_all")
         .scalar_subquery()
         .correlate(MonthlyReport)
+        .label(f"{rate.key}_all")
     )
 
 

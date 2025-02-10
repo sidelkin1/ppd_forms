@@ -3,8 +3,10 @@ from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
+import openpyxl
 import pandas as pd
 from fastapi.concurrency import run_in_threadpool
+from openpyxl.drawing.image import Image
 
 from app.core.models.dto import WellTestResult
 from app.infrastructure.db.mappers import (
@@ -154,5 +156,17 @@ class WellTestReporter:
             for reservoir in reservoirs
         ]
 
+    def _get_isobars(self) -> Image | None:
+        try:
+            wb = openpyxl.load_workbook(self.path)
+            ws = wb["Доп.данные"]
+            image = ws._images[0]  # type: ignore[attr-defined]
+        except Exception:
+            image = None
+        return image
+
     async def get_results(self) -> list[WellTestResult]:
         return await run_in_threadpool(self._get_results)
+
+    async def get_isobars(self) -> Image | None:
+        return await run_in_threadpool(self._get_isobars)

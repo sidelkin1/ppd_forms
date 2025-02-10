@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 
 import pandas as pd
+from openpyxl.drawing.image import Image
 
 from app.core.models.dto import WellTestResult
 from app.infrastructure.db.dao.sql import reporters as db
@@ -16,6 +17,9 @@ class WellTestReporter:
 
     async def get_results(self) -> list[WellTestResult]:
         return await self.results.get_results()
+
+    async def get_isobars(self) -> Image | None:
+        return await self.results.get_isobars()
 
     async def get_well_gtms(
         self, field: str, well: str, date_from: date, date_to: date

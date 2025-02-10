@@ -1,11 +1,16 @@
+from io import BytesIO
 from pathlib import Path
 from shutil import make_archive
+from typing import cast
 
 import openpyxl
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from openpyxl.drawing.image import Image
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.writer.excel import save_workbook
+from PIL import Image as PILImage
+from PIL import ImageOps
 
 from app.core.models.dto import WellTestResult
 from app.core.utils.process_pool import ProcessPoolManager
@@ -22,6 +27,13 @@ _EXCEL_GTM_LAST_COLUMN = 20
 _EXCEL_NEIGHBS_START_ROW = 2
 _EXCEL_NEIGHBS_START_COLUMN = 22
 _EXCEL_NEIGHBS_LAST_COLUMN = 29
+
+_IMAGE_ANCHOR = "M15"
+_IMAGE_WIDTH_MM = 145.0
+_IMAGE_HEIGHT_MM = 110.0
+_IMAGE_DPI = 96
+_IMAGE_WIDTH_PX = int(round(_IMAGE_WIDTH_MM * _IMAGE_DPI / 25.4))
+_IMAGE_HEIGHT_PX = int(round(_IMAGE_HEIGHT_MM * _IMAGE_DPI / 25.4))
 
 
 def _get_uids(neighbs: pd.DataFrame) -> list[str]:
@@ -61,12 +73,25 @@ def _add_distance(tests: pd.DataFrame, neighbs: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def resize_isobars(isobars: Image) -> Image:
+    ref = cast(BytesIO, isobars.ref)
+    with PILImage.open(ref) as pil_image:
+        pil_image.load()
+        resized_pil_image = ImageOps.fit(
+            pil_image, (_IMAGE_WIDTH_PX, _IMAGE_HEIGHT_PX)
+        )
+    new_stream = BytesIO()
+    resized_pil_image.save(new_stream, format=isobars.format)
+    return Image(new_stream)
+
+
 def _process_data(
     results: list[WellTestResult],
     gtms: pd.DataFrame,
     tests: pd.DataFrame,
     neighbs: pd.DataFrame,
     neighb_tests: pd.DataFrame,
+    isobars: Image | None,
     path: Path,
     template: Path,
 ) -> None:
@@ -100,6 +125,9 @@ def _process_data(
             _EXCEL_NEIGHBS_START_COLUMN,
             _EXCEL_NEIGHBS_LAST_COLUMN,
         )
+        if isobars is not None:
+            resized_isobars = resize_isobars(isobars)
+            ws.add_image(resized_isobars, _IMAGE_ANCHOR)
         save_workbook(wb, result)
     finally:
         wb.close()
@@ -115,6 +143,7 @@ async def well_test_report(
     pool: ProcessPoolManager,
 ) -> None:
     results = await dao.get_results()
+    isobars = await dao.get_isobars()
     date_from = results[0]["end_date"].replace(day=1) - relativedelta(
         months=gtm_period
     )
@@ -148,6 +177,7 @@ async def well_test_report(
         tests,
         neighbs,
         neighb_tests,
+        isobars,
         path,
         template,
     )

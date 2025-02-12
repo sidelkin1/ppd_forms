@@ -117,3 +117,13 @@ class Pressure(Reflected, Base):
 class Notes(Reflected, Base):
     __tablename__ = "notes"
     __table_args__ = {"schema": "unofm"}
+
+
+class ResPty(Reflected, Base):
+    __tablename__ = "res_pty"
+    __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class Reservoir2(Reflected, Base):
+    __tablename__ = "reservoir2"
+    __table_args__ = {"schema": "udmurtneft_n"}

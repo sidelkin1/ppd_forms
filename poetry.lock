@@ -2710,6 +2710,17 @@ files = [
 ]
 
 [[package]]
+name = "types-pillow"
+version = "10.2.0.20240822"
+description = "Typing stubs for Pillow"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "types-Pillow-10.2.0.20240822.tar.gz", hash = "sha256:559fb52a2ef991c326e4a0d20accb3bb63a7ba8d40eb493e0ecb0310ba52f0d3"},
+    {file = "types_Pillow-10.2.0.20240822-py3-none-any.whl", hash = "sha256:d9dab025aba07aeb12fd50a6799d4eac52a9603488eca09d7662543983f16c5d"},
+]
+
+[[package]]
 name = "types-pyasn1"
 version = "0.5.0.20240106"
 description = "Typing stubs for pyasn1"
@@ -3184,4 +3195,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "ec9e6d7aad192ecec181ce09a19560a3d1b91f25b5cc3bbc619d17d59354c6f3"
+content-hash = "d40f87ed4457a8b18869b0ba6c56f27a95a8a68a063a186b0cd44a4aa4e081a1"

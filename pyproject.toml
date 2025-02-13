@@ -73,6 +73,7 @@ types-ldap3 = "^2.9.13.20240119"
 types-colorama = "^0.4.15.20240311"
 types-openpyxl = "^3.1.0.20240428"
 types-redis = "^4.6.0.20240726"
+types-pillow = "^10.2.0.20240822"
 
 [build-system]
 requires = ["poetry-core"]

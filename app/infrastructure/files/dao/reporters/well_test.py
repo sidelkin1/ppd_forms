@@ -7,6 +7,7 @@ import openpyxl
 import pandas as pd
 from fastapi.concurrency import run_in_threadpool
 from openpyxl.drawing.image import Image
+from python_calamine import CalamineSheet, CalamineWorkbook
 
 from app.core.models.dto import WellTestResult
 from app.infrastructure.db.mappers import (
@@ -28,7 +29,7 @@ def _date_format(input_: Any) -> date:
 
 
 class WellTestReporter:
-    sheet_name = "Интерпретация"
+    interpretation_sheet = "Интерпретация"
     columns = ["key", "units", "value", "source"]
     common_parameters = {
         "well_test": "Вид исследования",
@@ -72,6 +73,10 @@ class WellTestReporter:
     }
     reservoir_cell = 8
 
+    front_sheet = "Титульный"
+    purpose_title = "Цель"
+    interpreter_title = "Интерпретатор"
+
     def __init__(self, path: Path, delimiter: str) -> None:
         self.path = path
         self.delimiter = delimiter
@@ -81,9 +86,11 @@ class WellTestReporter:
         # их кол-во обычно 4, но иногда может быть 5,
         # тогда последние 2 столбца обрабатываются отдельно,
         # все остальные столбцы отбрасываем
-        df = pd.read_excel(self.path, sheet_name=self.sheet_name).iloc[
-            :, : len(self.columns) + 1
-        ]
+        df = pd.read_excel(  # type: ignore[call-overload]
+            self.path,
+            sheet_name=self.interpretation_sheet,
+            engine="calamine",
+        ).iloc[:, : len(self.columns) + 1]
         if len(df.columns) > len(self.columns):
             # Если кол-во столбцов в отчете на 1 больше, чем нужно
             df.iloc[:, -2] = df.iloc[:, -2].fillna(df.iloc[:, -1])
@@ -140,22 +147,6 @@ class WellTestReporter:
             )
         ]
 
-    def _get_results(self) -> list[WellTestResult]:
-        df = self._read_report()
-        common_parameters = self._get_common_parameters(df)
-        numeric_parameters = self._get_numeric_parameters(df)
-        reservoirs = self._get_raw_reservoirs(df)
-        return [
-            cast(
-                WellTestResult,
-                common_parameters
-                | {"reservoir": reservoir_mapper[reservoir]}
-                | numeric_parameters
-                | self._get_reservoir_parameters(df, reservoir),
-            )
-            for reservoir in reservoirs
-        ]
-
     def _get_isobars(self) -> Image | None:
         try:
             wb = openpyxl.load_workbook(self.path)
@@ -165,8 +156,54 @@ class WellTestReporter:
             image = None
         return image
 
+    def _search_purpose(self, ws: CalamineSheet) -> str:
+        rows = ws.iter_rows()
+        # Сначала ищем строку, содержащую ячейку "Цель"
+        for row in rows:
+            iter_row = map(str, row)
+            value = next(filter(bool, iter_row), "")
+            if self.purpose_title in value:
+                break
+        else:
+            return ""
+        # "Типовая" цель исследования
+        purpose = next(filter(bool, iter_row), "")
+        # Пробуем найти "уточненную" цель исследования
+        for row in rows:
+            iter_row = map(str, row)
+            value = next(filter(bool, iter_row), "")
+            if self.interpreter_title in value:
+                return purpose
+            elif value:
+                purpose = value
+        return purpose
+
+    def _get_purpose(self) -> str:
+        with CalamineWorkbook.from_path(self.path) as wb:
+            ws = wb.get_sheet_by_name(self.front_sheet)
+            purpose = self._search_purpose(ws)
+            purpose = purpose.strip().replace("\n", " ")
+        return purpose
+
+    def _get_results(self) -> list[WellTestResult]:
+        df = self._read_report()
+        common_parameters = self._get_common_parameters(df)
+        numeric_parameters = self._get_numeric_parameters(df)
+        reservoirs = self._get_raw_reservoirs(df)
+        isobars = self._get_isobars()
+        purpose = self._get_purpose()
+        return [
+            cast(
+                WellTestResult,
+                common_parameters
+                | {"reservoir": reservoir_mapper[reservoir]}
+                | numeric_parameters
+                | self._get_reservoir_parameters(df, reservoir)
+                | {"isobars": isobars}
+                | {"purpose": purpose},
+            )
+            for reservoir in reservoirs
+        ]
+
     async def get_results(self) -> list[WellTestResult]:
         return await run_in_threadpool(self._get_results)
-
-    async def get_isobars(self) -> Image | None:
-        return await run_in_threadpool(self._get_isobars)

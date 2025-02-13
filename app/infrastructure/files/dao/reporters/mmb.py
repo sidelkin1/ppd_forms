@@ -73,6 +73,7 @@ class MmbReporter:
             self.path,
             converters=self.converters,
             usecols=self.usecols,
+            engine="calamine",
         )
         df.columns = self.columns  # type: ignore[assignment]
         return df

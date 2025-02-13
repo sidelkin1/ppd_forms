@@ -25,6 +25,7 @@ class BaseDAO(Generic[Model]):
         df: pd.DataFrame = await run_in_threadpool(
             pd.read_excel,  # type: ignore[arg-type]
             self.filepath,
+            engine="calamine",
             **self.excel_options,
         )
         if self.column_names:

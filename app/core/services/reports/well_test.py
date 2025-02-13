@@ -1,11 +1,21 @@
+from copy import copy, deepcopy
+from datetime import date
+from io import BytesIO
 from pathlib import Path
 from shutil import make_archive
+from typing import cast
 
 import openpyxl
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from openpyxl.drawing.image import Image
+from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor
+from openpyxl.utils import quote_sheetname
+from openpyxl.utils.datetime import to_excel
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.writer.excel import save_workbook
+from PIL import Image as PILImage
+from PIL import ImageOps
 
 from app.core.models.dto import WellTestResult
 from app.core.utils.process_pool import ProcessPoolManager
@@ -22,6 +32,39 @@ _EXCEL_GTM_LAST_COLUMN = 20
 _EXCEL_NEIGHBS_START_ROW = 2
 _EXCEL_NEIGHBS_START_COLUMN = 22
 _EXCEL_NEIGHBS_LAST_COLUMN = 29
+
+_REPORT_SHEET_NAME = "отчет"
+
+_REPORT_ISOBARS_ANCHOR = "B30"
+_REPORT_ISOBARS_WIDTH_MM = 145.0
+_REPORT_ISOBARS_HEIGHT_MM = 140.0
+_REPORT_ISOBARS_DPI = 96
+_REPORT_ISOBARS_WIDTH_PX = int(
+    round(_REPORT_ISOBARS_WIDTH_MM * _REPORT_ISOBARS_DPI / 25.4)
+)
+_REPORT_ISOBARS_HEIGHT_PX = int(
+    round(_REPORT_ISOBARS_HEIGHT_MM * _REPORT_ISOBARS_DPI / 25.4)
+)
+
+_REPORT_CELL_TITLE = "B3"
+_REPORT_CELL_DATE = "F9"
+_REPORT_CELL_RESERVOIR = "F10"
+_REPORT_CELL_PURPOSE = "F11"
+_REPORT_CELL_CONCLUSION = "B13"
+_REPORT_CELL_TEST_WELL = "B28"
+_REPORT_CELL_TEST_DATE = "E28"
+_REPORT_CELL_TEST_PRESSURE = "F28"
+_REPORT_CELL_TEST_PERMEABILITY = "G28"
+_REPORT_CELL_TEST_SKIN_FACTOR = "H28"
+_REPORT_CELL_TEST_PROD_INDEX = "J28"
+_REPORT_CELL_TEST_RELIABILITY = "M28"
+
+_REPORT_CHART_ANCHOR = "G29"
+_REPORT_CHART_HEIGHT = 22
+_REPORT_CHART_WIDTH = 9
+_REPORT_CHART_INDEX = 0
+_REPORT_FOOTER_ANCHOR = "G52"
+_REPORT_FOOTER_INDEX = 2
 
 
 def _get_uids(neighbs: pd.DataFrame) -> list[str]:
@@ -61,12 +104,195 @@ def _add_distance(tests: pd.DataFrame, neighbs: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def _resize_isobars(isobars: Image) -> Image:
+    image_stream = cast(BytesIO, isobars.ref)
+    image_stream.seek(0)
+    with PILImage.open(image_stream) as pil_image:
+        pil_image.load()
+        resized_image = ImageOps.fit(
+            pil_image,
+            (_REPORT_ISOBARS_WIDTH_PX, _REPORT_ISOBARS_HEIGHT_PX),
+        )
+    output_stream = BytesIO()
+    resized_image.save(output_stream, format=isobars.format)
+    output_stream.seek(0)
+    return Image(output_stream)
+
+
+def _fill_data_sheet(
+    wb: openpyxl.Workbook,
+    gtms: pd.DataFrame,
+    tests: pd.DataFrame,
+    neighb_tests: pd.DataFrame,
+) -> None:
+    ws = wb["Лист1"]
+    start_row = _EXCEL_GDIS_START_ROW
+    for _, df in tests.groupby("reservoir"):
+        _fill_template(
+            ws,
+            df,
+            start_row,
+            _EXCEL_GDIS_START_COLUMN,
+            _EXCEL_GDIS_LAST_COLUMN,
+        )
+        start_row += df.shape[0]
+    _fill_template(
+        ws,
+        gtms,
+        _EXCEL_GTM_START_ROW,
+        _EXCEL_GTM_START_COLUMN,
+        _EXCEL_GTM_LAST_COLUMN,
+    )
+    _fill_template(
+        ws,
+        neighb_tests,
+        _EXCEL_NEIGHBS_START_ROW,
+        _EXCEL_NEIGHBS_START_COLUMN,
+        _EXCEL_NEIGHBS_LAST_COLUMN,
+    )
+
+
+def _copy_sheets(
+    wb: openpyxl.Workbook, reservoirs: list[str]
+) -> list[Worksheet]:
+    ws = wb[_REPORT_SHEET_NAME]
+    if len(reservoirs) == 1:
+        return [ws]
+    sheets = []
+    for reservoir in reservoirs:
+        copy_ws = wb.copy_worksheet(ws)
+        copy_ws.title = f"{_REPORT_SHEET_NAME} ({reservoir})"
+        copy_ws.views = copy(ws.views)
+        copy_ws._images = deepcopy(ws._images)  # type: ignore[attr-defined]
+        copy_ws._charts = deepcopy(ws._charts)  # type: ignore[attr-defined]
+        copy_ws.sheet_view.tabSelected = False
+        sheets.append(copy_ws)
+    wb.remove(ws)
+    return sheets
+
+
+def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
+    for row_num, df_row in enumerate(tests.itertuples(index=False)):
+        ws[_REPORT_CELL_TEST_WELL].offset(row=row_num).value = df_row.well
+        ws[_REPORT_CELL_TEST_DATE].offset(row=row_num).value = df_row.end_date
+        ws[_REPORT_CELL_TEST_PRESSURE].offset(
+            row=row_num
+        ).value = df_row.resp_owc
+        ws[_REPORT_CELL_TEST_PERMEABILITY].offset(
+            row=row_num
+        ).value = df_row.permeability
+        ws[_REPORT_CELL_TEST_SKIN_FACTOR].offset(
+            row=row_num
+        ).value = df_row.skin_factor
+        ws[_REPORT_CELL_TEST_PROD_INDEX].offset(
+            row=row_num
+        ).value = df_row.prod_index
+        ws[_REPORT_CELL_TEST_RELIABILITY].offset(
+            row=row_num
+        ).value = df_row.reliability
+
+
+def _shift_drawings(ws: Worksheet, nrow: int) -> None:
+    chart = ws._charts[_REPORT_CHART_INDEX]  # type: ignore[attr-defined]
+    cell = ws[_REPORT_CHART_ANCHOR].offset(nrow - 1)
+    anchor = TwoCellAnchor()
+    anchor._from.col = cell.column  # type: ignore[union-attr]
+    anchor._from.row = cell.row  # type: ignore[union-attr]
+    anchor.to.col = (  # type: ignore[union-attr]
+        _REPORT_CHART_WIDTH + cell.column
+    )
+    anchor.to.row = (  # type: ignore[union-attr]
+        _REPORT_CHART_HEIGHT + cell.row - 1
+    )
+    chart.anchor = anchor  # type: ignore[assignment]
+    image = ws._images[_REPORT_FOOTER_INDEX]  # type: ignore[attr-defined]
+    cell = ws[_REPORT_FOOTER_ANCHOR].offset(nrow - 1)
+    image.anchor = cell.coordinate
+
+
+def _edit_chart(
+    ws: Worksheet,
+    min_date: date,
+    max_date: date,
+    p_init: float,
+    p_bubble: float,
+) -> None:
+    chart = ws._charts[_REPORT_CHART_INDEX]  # type: ignore[attr-defined]
+    chart.x_axis.scaling.min = to_excel(min_date.replace(day=1))
+    chart.x_axis.scaling.max = to_excel(
+        max_date.replace(day=1) + relativedelta(months=1)
+    )
+    for series in chart.series:
+        if series.title.value == "Рпл нач":
+            series.yVal.numLit.pt[0].v = p_init
+            series.yVal.numLit.pt[1].v = p_init
+        elif series.title.value == "Рнас":
+            series.yVal.numLit.pt[0].v = p_bubble
+            series.yVal.numLit.pt[1].v = p_bubble
+        else:
+            for ref in (series.xVal.numRef, series.yVal.numRef):
+                if ref is not None:
+                    ref.f = ref.f.replace(
+                        _REPORT_SHEET_NAME, quote_sheetname(ws.title)
+                    )
+
+
+def _process_drawings(
+    ws: Worksheet,
+    tests: pd.DataFrame,
+    pvt: pd.DataFrame,
+    isobars: Image | None,
+) -> None:
+    _edit_chart(
+        ws,
+        tests["end_date"].min(),
+        tests["end_date"].max(),
+        pvt["p_init"].iat[0],
+        pvt["p_bubble"].iat[0],
+    )
+    _shift_drawings(ws, tests.shape[0])
+    if isobars is not None:
+        resized_isobars = _resize_isobars(isobars)
+        cell = ws[_REPORT_ISOBARS_ANCHOR].offset(tests.shape[0] - 1)
+        ws.add_image(resized_isobars, cell.coordinate)
+
+
+def _fill_report_sheet(
+    wb: openpyxl.Workbook,
+    tests: pd.DataFrame,
+    pvt: pd.DataFrame,
+    isobars: Image | None,
+    purpose: str,
+) -> None:
+    grouped_tests = tests.groupby("reservoir")
+    reservoirs = list(map(str, grouped_tests.groups.keys()))
+    sheets = _copy_sheets(wb, reservoirs)
+    for ws, (_, test_group), (_, pvt_group) in zip(
+        sheets, grouped_tests, pvt.groupby("reservoir")
+    ):
+        current_test = test_group.iloc[-1].to_dict()
+        test_date = current_test["end_date"].strftime("%d.%m.%Y")
+        ws[_REPORT_CELL_TITLE].value = (
+            f"Результаты"
+            f" {current_test['well_test']}"
+            f" {current_test['well']}"
+            f" {current_test['field']}"
+            f"\n{test_date}"
+        )
+        ws[_REPORT_CELL_DATE].value = test_date
+        ws[_REPORT_CELL_RESERVOIR].value = current_test["reservoir"]
+        ws[_REPORT_CELL_PURPOSE] = purpose
+        _fill_test_history(ws, test_group)
+        _process_drawings(ws, test_group, pvt_group, isobars)
+
+
 def _process_data(
     results: list[WellTestResult],
     gtms: pd.DataFrame,
     tests: pd.DataFrame,
     neighbs: pd.DataFrame,
     neighb_tests: pd.DataFrame,
+    pvt: pd.DataFrame,
     path: Path,
     template: Path,
 ) -> None:
@@ -75,30 +301,9 @@ def _process_data(
     neighb_tests = _add_distance(neighb_tests, neighbs)
     try:
         wb = openpyxl.load_workbook(template)
-        ws = wb["Лист1"]
-        start_row = _EXCEL_GDIS_START_ROW
-        for _, df in tests.groupby("reservoir"):
-            _fill_template(
-                ws,
-                df,
-                start_row,
-                _EXCEL_GDIS_START_COLUMN,
-                _EXCEL_GDIS_LAST_COLUMN,
-            )
-            start_row += df.shape[0]
-        _fill_template(
-            ws,
-            gtms,
-            _EXCEL_GTM_START_ROW,
-            _EXCEL_GTM_START_COLUMN,
-            _EXCEL_GTM_LAST_COLUMN,
-        )
-        _fill_template(
-            ws,
-            neighb_tests,
-            _EXCEL_NEIGHBS_START_ROW,
-            _EXCEL_NEIGHBS_START_COLUMN,
-            _EXCEL_NEIGHBS_LAST_COLUMN,
+        _fill_data_sheet(wb, gtms, tests, neighb_tests)
+        _fill_report_sheet(
+            wb, tests, pvt, results[0]["isobars"], results[0]["purpose"]
         )
         save_workbook(wb, result)
     finally:
@@ -141,6 +346,9 @@ async def well_test_report(
     neighb_tests = await dao.get_neighb_tests(
         uids, date_from, results[0]["end_date"]
     )
+    pvt = await dao.get_pvt(
+        results[0]["field"], results[0]["well"], reservoirs
+    )
     await pool.run(
         _process_data,
         results,
@@ -148,6 +356,7 @@ async def well_test_report(
         tests,
         neighbs,
         neighb_tests,
+        pvt,
         path,
         template,
     )

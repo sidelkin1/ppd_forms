@@ -12,7 +12,7 @@ from app.infrastructure.files.dao import reporters as files
 class WellTestReporter:
     history: db.LocalWellTestReporter
     results: files.WellTestReporter
-    neighbs: db.OfmWellTestReporter
+    ofm: db.OfmWellTestReporter
 
     async def get_results(self) -> list[WellTestResult]:
         return await self.results.get_results()
@@ -42,7 +42,7 @@ class WellTestReporter:
     async def get_neighbs(
         self, field: str, well: str, reservoirs: list[str], radius: float
     ) -> pd.DataFrame:
-        return await self.neighbs.read_one(
+        return await self.ofm.read_one(
             key="neighbs",
             field=field,
             well=well,
@@ -58,4 +58,14 @@ class WellTestReporter:
             uids=uids,
             date_from=date_from,
             report_date=report_date,
+        )
+
+    async def get_pvt(
+        self, field: str, well: str, reservoirs: list[str]
+    ) -> pd.DataFrame:
+        return await self.ofm.read_one(
+            key="pvt",
+            field=field,
+            well=well,
+            reservoirs=reservoirs,
         )

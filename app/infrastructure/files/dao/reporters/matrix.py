@@ -61,10 +61,11 @@ class MatrixReporter:
     ) -> pd.DataFrame | None:
         if self.wells is None:
             return None
-        df = pd.read_excel(
+        df = pd.read_excel(  # type: ignore[call-overload]
             self.wells,
-            converters=self.converters,  # type: ignore[arg-type]
+            converters=self.converters,
             usecols=self.usecols,
+            engine="calamine",
         )
         df.columns = self.columns  # type: ignore[assignment]
         df = (

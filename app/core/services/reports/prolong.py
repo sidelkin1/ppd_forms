@@ -48,7 +48,7 @@ _interpolation_mapper: dict[Interpolation, _PPolyBase] = {
 
 
 def _read_report(path: Path) -> pd.DataFrame:
-    df = pd.read_excel(
+    df = pd.read_excel(  # type: ignore[call-overload]
         path,
         sheet_name="Все(1)",
         header=3,
@@ -59,6 +59,7 @@ def _read_report(path: Path) -> pd.DataFrame:
             "Доп. жидкость, т.",
             "Доп. нефть, т.",
         ],
+        engine="calamine",
     )
     df.columns = [
         "year",

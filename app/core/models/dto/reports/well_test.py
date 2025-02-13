@@ -1,6 +1,8 @@
 from datetime import date
 from typing import TypedDict
 
+from openpyxl.drawing.image import Image
+
 
 class WellTestResult(TypedDict):
     field: str
@@ -15,3 +17,5 @@ class WellTestResult(TypedDict):
     prod_index: float | None
     frac_length: float | None
     reliability: str | None
+    isobars: Image | None
+    purpose: str

@@ -5,6 +5,8 @@ from typing import NamedTuple, cast
 
 import openpyxl
 import pandas as pd
+from openpyxl.cell import Cell
+from openpyxl.chart import LineChart, Reference
 from openpyxl.formula.translate import Translator
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.formula import ArrayFormula
@@ -139,6 +141,16 @@ def _fill_formulas(ws: Worksheet, row_num: int, calc_resp_range: str) -> None:
     ).value = _FORMULA_CALC_INJ_RATE.translate_formula(row_delta=row_num)
 
 
+def _edit_charts(ws: Worksheet, nrow: int) -> None:
+    cell = cast(Cell, ws[_CELL_DATE])
+    dates = Reference(
+        ws, min_col=cell.column, min_row=cell.row, max_row=cell.row + nrow - 1
+    )
+    for chart in ws._charts:  # type: ignore[attr-defined]
+        chart = cast(LineChart, chart)
+        chart.set_categories(dates)
+
+
 def _fill_template(df: pd.DataFrame, path: Path, template: Path) -> None:
     result = path / template.name
     try:
@@ -151,6 +163,7 @@ def _fill_template(df: pd.DataFrame, path: Path, template: Path) -> None:
             )
             _fill_formulas(ws, row_num, calc_range.coord)
             calc_range.shift(row_shift=1)
+        _edit_charts(ws, df.shape[0])
         save_workbook(wb, result)
     finally:
         wb.close()

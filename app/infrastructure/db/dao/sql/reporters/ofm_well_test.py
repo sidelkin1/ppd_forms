@@ -6,4 +6,10 @@ from app.infrastructure.db.dao.sql.reporters.querysets import well_test
 
 class OfmWellTestReporter(OfmBaseDAO):
     def __init__(self, pool: sessionmaker[Session]) -> None:
-        super().__init__({"neighbs": well_test.select_ofm_neighbs()}, pool)
+        super().__init__(
+            {
+                "neighbs": well_test.select_ofm_neighbs(),
+                "pvt": well_test.select_pvt_props(),
+            },
+            pool,
+        )

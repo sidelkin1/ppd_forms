@@ -281,7 +281,7 @@ def _fill_report_sheet(
         )
         ws[_REPORT_CELL_DATE].value = test_date
         ws[_REPORT_CELL_RESERVOIR].value = current_test["reservoir"]
-        ws[_REPORT_CELL_PURPOSE] = purpose
+        ws[_REPORT_CELL_PURPOSE].value = purpose
         _fill_test_history(ws, test_group)
         _process_drawings(ws, test_group, pvt_group, isobars)
 

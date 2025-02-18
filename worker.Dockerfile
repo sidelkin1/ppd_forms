@@ -26,6 +26,7 @@ RUN dnf -y module disable python36 && \
     dnf -y install python3.11-3.11.5 && \
     dnf -y install oracle-release-el8 && \
     dnf -y install oracle-instantclient${release}.${update}-basiclite && \
+    dnf -y install libreoffice-calc && \
     rm -rf /var/cache/dnf && \
     ln -s /usr/bin/python3 /usr/bin/python
 

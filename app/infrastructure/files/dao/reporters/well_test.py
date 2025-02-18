@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import date
 from pathlib import Path
@@ -17,6 +18,9 @@ from app.infrastructure.db.mappers import (
     reservoir_mapper,
     well_mapper,
 )
+from app.infrastructure.utils.convert_to_xlsx import convert_to_xlsx
+
+logger = logging.getLogger(__name__)
 
 
 def _date_format(input_: Any) -> date:
@@ -76,6 +80,8 @@ class WellTestReporter:
     front_sheet = "Титульный"
     purpose_title = "Цель"
     interpreter_title = "Интерпретатор"
+
+    convert_timeout_s = 10.0
 
     def __init__(self, path: Path, delimiter: str) -> None:
         self.path = path
@@ -152,8 +158,13 @@ class WellTestReporter:
             wb = openpyxl.load_workbook(self.path)
             ws = wb["Доп.данные"]
             image = ws._images[0]  # type: ignore[attr-defined]
-        except Exception:
+        except Exception as error:
             image = None
+            logger.error(
+                "Не удалось извлечь изображение с картой изобар",
+                exc_info=error,
+                extra={"path": self.path},
+            )
         return image
 
     def _search_purpose(self, ws: CalamineSheet) -> str:
@@ -206,4 +217,14 @@ class WellTestReporter:
         ]
 
     async def get_results(self) -> list[WellTestResult]:
+        try:
+            self.path = await convert_to_xlsx(
+                self.path, self.convert_timeout_s
+            )
+        except Exception as error:
+            logger.error(
+                "Не удалось преобразовать файл в новый формат `xlsx`",
+                exc_info=error,
+                extra={"path": self.path},
+            )
         return await run_in_threadpool(self._get_results)

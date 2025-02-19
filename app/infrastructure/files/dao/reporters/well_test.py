@@ -8,6 +8,7 @@ import openpyxl
 import pandas as pd
 from fastapi.concurrency import run_in_threadpool
 from openpyxl.drawing.image import Image
+from openpyxl.reader.excel import SUPPORTED_FORMATS
 from python_calamine import CalamineSheet, CalamineWorkbook
 
 from app.core.models.dto import WellTestResult
@@ -217,14 +218,15 @@ class WellTestReporter:
         ]
 
     async def get_results(self) -> list[WellTestResult]:
-        try:
-            self.path = await convert_to_xlsx(
-                self.path, self.convert_timeout_s
-            )
-        except Exception as error:
-            logger.error(
-                "Не удалось преобразовать файл в новый формат `xlsx`",
-                exc_info=error,
-                extra={"path": self.path},
-            )
+        if self.path.suffix not in SUPPORTED_FORMATS:
+            try:
+                self.path = await convert_to_xlsx(
+                    self.path, self.convert_timeout_s
+                )
+            except Exception as error:
+                logger.error(
+                    "Не удалось преобразовать файл в новый формат `xlsx`",
+                    exc_info=error,
+                    extra={"path": self.path},
+                )
         return await run_in_threadpool(self._get_results)

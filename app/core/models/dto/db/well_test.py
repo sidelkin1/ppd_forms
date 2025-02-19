@@ -10,6 +10,7 @@ class WellTestDB(BaseModel):
     well: str
     field: str
     reservoir: str
+    layer: str
     well_type: EmptyStrOrNanToNone[str]
     well_test: str
     start_date: date

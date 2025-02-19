@@ -5,6 +5,7 @@ from .layer import LayerMapper
 from .regex import RegexMapper
 from .simple import SimpleMapper
 from .well import TRANSLATE_TO, WellMapper
+from .well_test_layer import WellTestLayerMapper
 
 settings = get_app_settings()  # FIXME avoid global variable
 
@@ -12,9 +13,7 @@ settings = get_app_settings()  # FIXME avoid global variable
 field_mapper = RegexMapper(split=False, delimiter=settings.delimiter)
 
 # Название объекта
-reservoir_mapper = RegexMapper(
-    split=False, sort=True, unique=True, delimiter=settings.delimiter
-)
+reservoir_mapper = RegexMapper(split=False, delimiter=settings.delimiter)
 
 # Список из нескольких объектов
 multi_reservoir_mapper = RegexMapper(
@@ -36,12 +35,13 @@ well_mapper = WellMapper(split=False, delimiter=settings.delimiter)
 multi_well_mapper = WellMapper(unique=True, delimiter=settings.delimiter)
 
 # Индекс пласта
-layer_mapper = LayerMapper(
-    split=False, sort=True, delimiter=settings.delimiter
-)
+layer_mapper = LayerMapper(split=False, delimiter=settings.delimiter)
 
 # Список индексов пласта
 multi_layer_mapper = LayerMapper(sort=True, delimiter=settings.delimiter)
+well_test_multi_layer_mapper = WellTestLayerMapper(
+    unique=True, delimiter=settings.delimiter, split_mode=SplitMode.split_in
+)
 
 # Название ГТМ
 gtm_mapper = SimpleMapper(split=False, delimiter=settings.delimiter)

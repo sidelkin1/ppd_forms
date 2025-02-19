@@ -8,9 +8,8 @@ from app.infrastructure.db.models.local import WellTest
 class WellTestDAO(MainTableDAO[WellTest, WellTestDB]):
     constraint_name: str = "uq__welltest__field"
     excluded_fields: list[str] = [
-        "reservoir",
+        "layer",
         "well_type",
-        "well_test",
         "start_date",
         "oil_perm",
         "wat_perm",

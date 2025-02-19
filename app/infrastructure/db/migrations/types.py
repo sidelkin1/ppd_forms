@@ -7,5 +7,6 @@ from app.infrastructure.db.types import (  # noqa
     MultiSplitResevoirType,
     MultiWellType,
     ResevoirType,
+    WellTestMultiLayerType,
     WellType,
 )

@@ -5,7 +5,7 @@ from typing_extensions import Annotated
 from .base import BaseType
 from .fields import FieldType
 from .gtms import GtmType
-from .layers import LayerType, MultiLayerType
+from .layers import LayerType, MultiLayerType, WellTestMultiLayerType
 from .reservoirs import MultiResevoirType, MultiSplitResevoirType, ResevoirType
 from .wells import MultiWellType, WellType
 
@@ -20,6 +20,9 @@ multi_split_reservoir_type = Annotated[
 ]
 layer_type = Annotated[str, mapped_column(LayerType(20))]
 multi_layer_type = Annotated[str, mapped_column(MultiLayerType(100))]
+well_test_multi_layer_type = Annotated[
+    str, mapped_column(WellTestMultiLayerType(100))
+]
 gtm_type = Annotated[str, mapped_column(GtmType(20))]
 
 # Типы без mapper

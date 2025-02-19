@@ -97,4 +97,6 @@ class BaseMapper(ABC):
         )
 
     def join_words(self, result: list[WordOrder]) -> str:
-        return self.delimiter.join(pair[self.WORD] for pair in result)
+        return self.delimiter.join(
+            pair[self.WORD] for pair in result if pair[self.WORD]
+        )

@@ -10,6 +10,7 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 from openpyxl.drawing.image import Image
 from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor
+from openpyxl.styles import Border, Side
 from openpyxl.utils import quote_sheetname
 from openpyxl.utils.datetime import to_excel
 from openpyxl.worksheet.worksheet import Worksheet
@@ -35,9 +36,9 @@ _EXCEL_NEIGHBS_LAST_COLUMN = 29
 
 _REPORT_SHEET_NAME = "отчет"
 
-_REPORT_ISOBARS_ANCHOR = "B30"
-_REPORT_ISOBARS_WIDTH_MM = 145.0
-_REPORT_ISOBARS_HEIGHT_MM = 140.0
+_REPORT_ISOBARS_ANCHOR = "B13"
+_REPORT_ISOBARS_WIDTH_MM = 110.0
+_REPORT_ISOBARS_HEIGHT_MM = 110.0
 _REPORT_ISOBARS_DPI = 96
 _REPORT_ISOBARS_WIDTH_PX = int(
     round(_REPORT_ISOBARS_WIDTH_MM * _REPORT_ISOBARS_DPI / 25.4)
@@ -47,24 +48,26 @@ _REPORT_ISOBARS_HEIGHT_PX = int(
 )
 
 _REPORT_CELL_TITLE = "B3"
-_REPORT_CELL_DATE = "F9"
-_REPORT_CELL_RESERVOIR = "F10"
-_REPORT_CELL_PURPOSE = "F11"
-_REPORT_CELL_CONCLUSION = "B13"
-_REPORT_CELL_TEST_WELL = "B28"
-_REPORT_CELL_TEST_DATE = "E28"
-_REPORT_CELL_TEST_PRESSURE = "F28"
-_REPORT_CELL_TEST_PERMEABILITY = "G28"
-_REPORT_CELL_TEST_SKIN_FACTOR = "H28"
-_REPORT_CELL_TEST_PROD_INDEX = "J28"
-_REPORT_CELL_TEST_RELIABILITY = "M28"
+_REPORT_CELL_DATE = "E5"
+_REPORT_CELL_RESERVOIR = "E6"
+_REPORT_CELL_PURPOSE = "E7"
+_REPORT_CELL_CONCLUSION = "B9"
+_REPORT_CELL_TEST_WELL = "B11"
+_REPORT_CELL_TEST_NAME = "C11"
+_REPORT_CELL_TEST_DATE = "D11"
+_REPORT_CELL_TEST_PRESSURE = "E11"
+_REPORT_CELL_TEST_PERMEABILITY = "F11"
+_REPORT_CELL_TEST_SKIN_FACTOR = "G11"
+_REPORT_CELL_TEST_PROD_INDEX = "H11"
+_REPORT_CELL_TEST_FRAC_LENGTH = "I11"
+_REPORT_CELL_TEST_RELIABILITY = "J11"
 
-_REPORT_CHART_ANCHOR = "G29"
+_REPORT_CHART_ANCHOR = "F12"
 _REPORT_CHART_HEIGHT = 22
-_REPORT_CHART_WIDTH = 9
+_REPORT_CHART_WIDTH = 4
 _REPORT_CHART_INDEX = 0
-_REPORT_FOOTER_ANCHOR = "G52"
-_REPORT_FOOTER_INDEX = 2
+_REPORT_FOOTER_ANCHOR = "H35"
+_REPORT_FOOTER_INDEX = 3
 
 
 def _get_uids(neighbs: pd.DataFrame) -> list[str]:
@@ -172,24 +175,28 @@ def _copy_sheets(
 
 
 def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
+    border = Border(
+        left=Side(border_style="thin", color="00000000"),
+        right=Side(border_style="thin", color="00000000"),
+        top=Side(border_style="thin", color="00000000"),
+        bottom=Side(border_style="thin", color="00000000"),
+    )
+    coords = (
+        {"cell": _REPORT_CELL_TEST_WELL, "source": "well"},
+        {"cell": _REPORT_CELL_TEST_NAME, "source": "well_test"},
+        {"cell": _REPORT_CELL_TEST_DATE, "source": "end_date"},
+        {"cell": _REPORT_CELL_TEST_PRESSURE, "source": "resp_owc"},
+        {"cell": _REPORT_CELL_TEST_PERMEABILITY, "source": "permeability"},
+        {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "source": "skin_factor"},
+        {"cell": _REPORT_CELL_TEST_PROD_INDEX, "source": "prod_index"},
+        {"cell": _REPORT_CELL_TEST_FRAC_LENGTH, "source": "frac_length"},
+        {"cell": _REPORT_CELL_TEST_RELIABILITY, "source": "reliability"},
+    )
     for row_num, df_row in enumerate(tests.itertuples(index=False)):
-        ws[_REPORT_CELL_TEST_WELL].offset(row=row_num).value = df_row.well
-        ws[_REPORT_CELL_TEST_DATE].offset(row=row_num).value = df_row.end_date
-        ws[_REPORT_CELL_TEST_PRESSURE].offset(
-            row=row_num
-        ).value = df_row.resp_owc
-        ws[_REPORT_CELL_TEST_PERMEABILITY].offset(
-            row=row_num
-        ).value = df_row.permeability
-        ws[_REPORT_CELL_TEST_SKIN_FACTOR].offset(
-            row=row_num
-        ).value = df_row.skin_factor
-        ws[_REPORT_CELL_TEST_PROD_INDEX].offset(
-            row=row_num
-        ).value = df_row.prod_index
-        ws[_REPORT_CELL_TEST_RELIABILITY].offset(
-            row=row_num
-        ).value = df_row.reliability
+        for coord in coords:
+            cell = ws[coord["cell"]].offset(row=row_num)
+            cell.value = getattr(df_row, coord["source"])
+            cell.border = border
 
 
 def _shift_drawings(ws: Worksheet, nrow: int) -> None:
@@ -223,10 +230,10 @@ def _edit_chart(
         max_date.replace(day=1) + relativedelta(months=1)
     )
     for series in chart.series:
-        if series.title.value == "Рпл нач":
+        if series.title.value == "Pнач":
             series.yVal.numLit.pt[0].v = p_init
             series.yVal.numLit.pt[1].v = p_init
-        elif series.title.value == "Рнас":
+        elif series.title.value == "Pнас":
             series.yVal.numLit.pt[0].v = p_bubble
             series.yVal.numLit.pt[1].v = p_bubble
         else:

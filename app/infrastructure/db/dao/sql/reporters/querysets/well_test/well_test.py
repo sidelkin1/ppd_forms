@@ -1,4 +1,4 @@
-from sqlalchemy import bindparam, func, select
+from sqlalchemy import bindparam, case, func, select
 from sqlalchemy.sql.expression import Select
 
 from app.infrastructure.db.models.local import WellTest
@@ -8,7 +8,18 @@ def select_well_tests() -> Select:
     return (
         select(
             WellTest.field,
-            WellTest.well,
+            case(
+                (
+                    WellTest.layer.is_(None),
+                    WellTest.well,
+                ),
+                else_=func.concat(
+                    WellTest.well,
+                    " (",
+                    WellTest.layer,
+                    ")",
+                ),
+            ).label("well"),
             WellTest.reservoir,
             WellTest.well_type,
             WellTest.well_test,
@@ -20,7 +31,10 @@ def select_well_tests() -> Select:
             WellTest.skin_factor,
             WellTest.prod_index,
             WellTest.frac_length,
-            WellTest.reliability,
+            case(
+                (WellTest.reliability == "НЕИЗВЕСТНО", "-"),
+                else_=WellTest.reliability,
+            ).label("reliability"),
         )
         .where(
             WellTest.field == bindparam("field"),

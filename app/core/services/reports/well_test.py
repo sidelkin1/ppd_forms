@@ -13,6 +13,7 @@ from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor
 from openpyxl.styles import Border, Side
 from openpyxl.utils import quote_sheetname
 from openpyxl.utils.datetime import to_excel
+from openpyxl.utils.inference import cast_numeric
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.writer.excel import save_workbook
 from PIL import Image as PILImage
@@ -36,9 +37,9 @@ _EXCEL_NEIGHBS_LAST_COLUMN = 29
 
 _REPORT_SHEET_NAME = "отчет"
 
-_REPORT_ISOBARS_ANCHOR = "B13"
-_REPORT_ISOBARS_WIDTH_MM = 110.0
-_REPORT_ISOBARS_HEIGHT_MM = 110.0
+_REPORT_ISOBARS_ANCHOR = "B12"
+_REPORT_ISOBARS_WIDTH_MM = 91.0
+_REPORT_ISOBARS_HEIGHT_MM = 75.7
 _REPORT_ISOBARS_DPI = 96
 _REPORT_ISOBARS_WIDTH_PX = int(
     round(_REPORT_ISOBARS_WIDTH_MM * _REPORT_ISOBARS_DPI / 25.4)
@@ -48,26 +49,30 @@ _REPORT_ISOBARS_HEIGHT_PX = int(
 )
 
 _REPORT_CELL_TITLE = "B3"
-_REPORT_CELL_DATE = "E5"
-_REPORT_CELL_RESERVOIR = "E6"
-_REPORT_CELL_PURPOSE = "E7"
-_REPORT_CELL_CONCLUSION = "B9"
-_REPORT_CELL_TEST_WELL = "B11"
-_REPORT_CELL_TEST_NAME = "C11"
-_REPORT_CELL_TEST_DATE = "D11"
-_REPORT_CELL_TEST_PRESSURE = "E11"
-_REPORT_CELL_TEST_PERMEABILITY = "F11"
-_REPORT_CELL_TEST_SKIN_FACTOR = "G11"
-_REPORT_CELL_TEST_PROD_INDEX = "H11"
-_REPORT_CELL_TEST_FRAC_LENGTH = "I11"
-_REPORT_CELL_TEST_RELIABILITY = "J11"
+_REPORT_CELL_DATE = "E4"
+_REPORT_CELL_RESERVOIR = "E5"
+_REPORT_CELL_PURPOSE = "E6"
+_REPORT_CELL_TEXT = "B7"
+_REPORT_CELL_CONCLUSION = "B8"
+_REPORT_CELL_TEST_WELL = "B10"
+_REPORT_CELL_TEST_NAME = "C10"
+_REPORT_CELL_TEST_DATE = "D10"
+_REPORT_CELL_TEST_PRESSURE = "E10"
+_REPORT_CELL_TEST_PERMEABILITY = "F10"
+_REPORT_CELL_TEST_SKIN_FACTOR = "G10"
+_REPORT_CELL_TEST_PROD_INDEX = "H10"
+_REPORT_CELL_TEST_FRAC_LENGTH = "I10"
+_REPORT_CELL_TEST_RELIABILITY = "J10"
 
-_REPORT_CHART_ANCHOR = "F12"
-_REPORT_CHART_HEIGHT = 22
+_REPORT_CHART_ANCHOR = "F11"
+_REPORT_CHART_HEIGHT = 15
 _REPORT_CHART_WIDTH = 4
 _REPORT_CHART_INDEX = 0
-_REPORT_FOOTER_ANCHOR = "H35"
+
+_REPORT_FOOTER_ANCHOR = "G27"
 _REPORT_FOOTER_INDEX = 3
+
+_REPORT_ARROW_ANCHOR = "C16"
 
 
 def _get_uids(neighbs: pd.DataFrame) -> list[str]:
@@ -176,10 +181,10 @@ def _copy_sheets(
 
 def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
     border = Border(
-        left=Side(border_style="thin", color="00000000"),
-        right=Side(border_style="thin", color="00000000"),
-        top=Side(border_style="thin", color="00000000"),
-        bottom=Side(border_style="thin", color="00000000"),
+        left=Side(border_style="thin", color="000066CC"),
+        right=Side(border_style="thin", color="000066CC"),
+        top=Side(border_style="thin", color="000066CC"),
+        bottom=Side(border_style="thin", color="000066CC"),
     )
     coords = (
         {"cell": _REPORT_CELL_TEST_WELL, "source": "well"},
@@ -192,6 +197,10 @@ def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
         {"cell": _REPORT_CELL_TEST_FRAC_LENGTH, "source": "frac_length"},
         {"cell": _REPORT_CELL_TEST_RELIABILITY, "source": "reliability"},
     )
+    # Для ячеек с номером скважины, состоящим из одних цифр,
+    # Excel вставляет сообщение, что "Число сохранено как текст",
+    # поэтому специально преобразуем номер в `int`
+    tests["well"] = tests["well"].map(lambda x: cast_numeric(x) or x)
     for row_num, df_row in enumerate(tests.itertuples(index=False)):
         for coord in coords:
             cell = ws[coord["cell"]].offset(row=row_num)
@@ -249,6 +258,7 @@ def _process_drawings(
     tests: pd.DataFrame,
     pvt: pd.DataFrame,
     isobars: Image | None,
+    arrow: Path,
 ) -> None:
     _edit_chart(
         ws,
@@ -262,6 +272,9 @@ def _process_drawings(
         resized_isobars = _resize_isobars(isobars)
         cell = ws[_REPORT_ISOBARS_ANCHOR].offset(tests.shape[0] - 1)
         ws.add_image(resized_isobars, cell.coordinate)
+        image = Image(arrow)
+        cell = ws[_REPORT_ARROW_ANCHOR].offset(tests.shape[0] - 1)
+        ws.add_image(image, cell.coordinate)
 
 
 def _fill_report_sheet(
@@ -270,6 +283,7 @@ def _fill_report_sheet(
     pvt: pd.DataFrame,
     isobars: Image | None,
     purpose: str,
+    arrow: Path,
 ) -> None:
     grouped_tests = tests.groupby("reservoir")
     reservoirs = list(map(str, grouped_tests.groups.keys()))
@@ -290,7 +304,7 @@ def _fill_report_sheet(
         ws[_REPORT_CELL_RESERVOIR].value = current_test["reservoir"]
         ws[_REPORT_CELL_PURPOSE].value = purpose
         _fill_test_history(ws, test_group)
-        _process_drawings(ws, test_group, pvt_group, isobars)
+        _process_drawings(ws, test_group, pvt_group, isobars, arrow)
 
 
 def _process_data(
@@ -302,6 +316,7 @@ def _process_data(
     pvt: pd.DataFrame,
     path: Path,
     template: Path,
+    arrow: Path,
 ) -> None:
     result = path / template.name
     tests = _concat_tests(tests, results)
@@ -310,7 +325,12 @@ def _process_data(
         wb = openpyxl.load_workbook(template)
         _fill_data_sheet(wb, gtms, tests, neighb_tests)
         _fill_report_sheet(
-            wb, tests, pvt, results[0]["isobars"], results[0]["purpose"]
+            wb,
+            tests,
+            pvt,
+            results[0]["isobars"],
+            results[0]["purpose"],
+            arrow,
         )
         save_workbook(wb, result)
     finally:
@@ -320,6 +340,7 @@ def _process_data(
 async def well_test_report(
     path: Path,
     template: Path,
+    arrow: Path,
     gtm_period: int,
     gdis_period: int,
     radius: float,
@@ -366,5 +387,6 @@ async def well_test_report(
         pvt,
         path,
         template,
+        arrow,
     )
     make_archive(str(path), "zip", root_dir=path)

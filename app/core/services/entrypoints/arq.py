@@ -457,6 +457,7 @@ async def create_well_test_report(
         await well_test_report(
             path_provider.dir_path(user_id, file_id),
             path_provider.data_dir / "well_test_template.xlsx",
+            path_provider.data_dir / "well_test_arrow.png",
             response.task.gtm_period,
             response.task.gdis_period,
             response.task.radius,

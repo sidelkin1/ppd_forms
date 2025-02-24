@@ -279,32 +279,32 @@ def _process_drawings(
 
 def _fill_report_sheet(
     wb: openpyxl.Workbook,
+    results: list[WellTestResult],
     tests: pd.DataFrame,
     pvt: pd.DataFrame,
-    isobars: Image | None,
-    purpose: str,
     arrow: Path,
 ) -> None:
-    grouped_tests = tests.groupby("reservoir")
-    reservoirs = list(map(str, grouped_tests.groups.keys()))
+    reservoirs = [result["reservoir"] for result in results]
     sheets = _copy_sheets(wb, reservoirs)
-    for ws, (_, test_group), (_, pvt_group) in zip(
-        sheets, grouped_tests, pvt.groupby("reservoir")
+    for ws, result, (_, test_group), (_, pvt_group) in zip(
+        sheets,
+        results,
+        tests.groupby("reservoir"),
+        pvt.groupby("reservoir"),
     ):
-        current_test = test_group.iloc[-1].to_dict()
-        test_date = current_test["end_date"].strftime("%d.%m.%Y")
+        test_date = result["end_date"].strftime("%d.%m.%Y")
         ws[_REPORT_CELL_TITLE].value = (
             f"Результаты"
-            f" {current_test['well_test']}"
-            f" {current_test['well']}"
-            f" {current_test['field']}"
+            f" {result['well_test']}"
+            f" {result['well']}"
+            f" {result['field']}"
             f"\n{test_date}"
         )
         ws[_REPORT_CELL_DATE].value = test_date
-        ws[_REPORT_CELL_RESERVOIR].value = current_test["reservoir"]
-        ws[_REPORT_CELL_PURPOSE].value = purpose
+        ws[_REPORT_CELL_RESERVOIR].value = result["report_reservoir"]
+        ws[_REPORT_CELL_PURPOSE].value = result["purpose"]
         _fill_test_history(ws, test_group)
-        _process_drawings(ws, test_group, pvt_group, isobars, arrow)
+        _process_drawings(ws, test_group, pvt_group, result["isobars"], arrow)
 
 
 def _process_data(
@@ -326,10 +326,9 @@ def _process_data(
         _fill_data_sheet(wb, gtms, tests, neighb_tests)
         _fill_report_sheet(
             wb,
+            results,
             tests,
             pvt,
-            results[0]["isobars"],
-            results[0]["purpose"],
             arrow,
         )
         save_workbook(wb, result)

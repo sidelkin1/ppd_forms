@@ -209,6 +209,7 @@ class WellTestReporter:
                 WellTestResult,
                 common_parameters
                 | {"reservoir": reservoir_mapper[reservoir]}
+                | {"report_reservoir": reservoir}
                 | numeric_parameters
                 | self._get_reservoir_parameters(df, reservoir)
                 | {"isobars": isobars}

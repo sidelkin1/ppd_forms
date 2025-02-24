@@ -7,6 +7,7 @@ from openpyxl.drawing.image import Image
 class WellTestResult(TypedDict):
     field: str
     reservoir: str
+    report_reservoir: str
     well: str
     well_type: str
     well_test: str

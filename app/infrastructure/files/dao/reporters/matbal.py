@@ -33,6 +33,7 @@ class MatbalReporter:
         df = await run_in_threadpool(
             pd.read_table,
             self.measurements,
+            sep=r"\s+",
             names=["date", "Pres"],
             converters=self.converters,
         )

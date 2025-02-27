@@ -1,4 +1,4 @@
-from sqlalchemy import bindparam, func, select
+from sqlalchemy import bindparam, case, func, select
 from sqlalchemy.sql.expression import Select, Subquery
 
 from app.infrastructure.db.models.local import WellTest
@@ -34,7 +34,18 @@ def select_neighb_tests() -> Select:
     return (
         select(
             WellTest.field,
-            WellTest.well,
+            case(
+                (
+                    WellTest.layer.is_(None),
+                    WellTest.well,
+                ),
+                else_=func.concat(
+                    WellTest.well,
+                    " (",
+                    WellTest.layer,
+                    ")",
+                ),
+            ).label("well"),
             WellTest.reservoir,
             WellTest.well_type,
             WellTest.well_test,

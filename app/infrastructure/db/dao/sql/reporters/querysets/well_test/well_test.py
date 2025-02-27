@@ -28,7 +28,13 @@ def select_well_tests() -> Select:
             func.coalesce(
                 WellTest.liq_perm, WellTest.oil_perm, WellTest.wat_perm
             ).label("permeability"),
-            WellTest.skin_factor,
+            case(
+                (
+                    WellTest.well_test.in_(("КВУ", "КПД", "КВД", "КСД")),
+                    func.coalesce(WellTest.skin_factor, 0),
+                ),
+                else_=WellTest.skin_factor,
+            ).label("skin_factor"),
             WellTest.prod_index,
             WellTest.frac_length,
             case(

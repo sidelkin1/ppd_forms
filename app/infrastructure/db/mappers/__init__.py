@@ -30,6 +30,9 @@ multi_split_reservoir_mapper = RegexMapper(
 
 # Номер скважины
 well_mapper = WellMapper(split=False, delimiter=settings.delimiter)
+well_no_branch_mapper = WellMapper(
+    del_branch=True, split=False, delimiter=settings.delimiter
+)
 
 # Список скважин
 multi_well_mapper = WellMapper(unique=True, delimiter=settings.delimiter)

@@ -10,7 +10,7 @@ from app.infrastructure.db.models.local.mixins import date_stamp_factory
 
 class WellTest(date_stamp_factory("end_date"), Base):
     field: Mapped[types.field_type]
-    well: Mapped[types.well_type]
+    well: Mapped[types.well_no_branch_type]
     reservoir: Mapped[types.multi_split_reservoir_type]
     layer: Mapped[types.well_test_multi_layer_type | None]
     well_type: Mapped[str | None]

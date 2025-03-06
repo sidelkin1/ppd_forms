@@ -8,7 +8,9 @@ import openpyxl
 import pandas as pd
 from fastapi.concurrency import run_in_threadpool
 from openpyxl.drawing.image import Image
+from openpyxl.drawing.spreadsheet_drawing import OneCellAnchor, TwoCellAnchor
 from openpyxl.reader.excel import SUPPORTED_FORMATS
+from openpyxl.worksheet.worksheet import Worksheet
 from python_calamine import CalamineSheet, CalamineWorkbook
 
 from app.core.models.dto import WellTestResult
@@ -154,11 +156,26 @@ class WellTestReporter:
             )
         ]
 
+    def _search_isobars(self, ws: Worksheet) -> Image | None:
+        # Обычно карта изобар это самая верхняя картинка на листе
+        min_row = None
+        isobars = None
+        for image in ws._images:  # type: ignore[attr-defined]
+            anchor = image.anchor
+            if isinstance(anchor, (OneCellAnchor, TwoCellAnchor)):
+                row = anchor._from.row  # type: ignore
+                if min_row is None or row < min_row:
+                    isobars = image
+                    min_row = row
+        return isobars
+
     def _get_isobars(self) -> Image | None:
         try:
             wb = openpyxl.load_workbook(self.path)
             ws = wb["Доп.данные"]
-            image = ws._images[0]  # type: ignore[attr-defined]
+            image = self._search_isobars(ws)
+            if image is None:
+                raise ValueError("Не найдено изображение на листе")
         except Exception as error:
             image = None
             logger.error(

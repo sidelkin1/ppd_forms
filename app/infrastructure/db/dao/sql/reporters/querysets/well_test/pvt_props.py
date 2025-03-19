@@ -1,4 +1,4 @@
-from sqlalchemy import bindparam, select
+from sqlalchemy import bindparam, func, select
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql.expression import Select
 
@@ -22,7 +22,7 @@ def select_pvt_props() -> Select:
         DictG.id == HeaderId.field,
         dictg_alias.sdes == HeaderId.cid,
         DictG.description == bindparam("field"),
-        WellHdr.well_name == bindparam("well"),
+        func.regexp_substr(WellHdr.well_name, r"^[^B]+") == bindparam("well"),
         dictg_alias.sdes.in_(bindparam("reservoirs")),
         ResPty.reservoir_s == Reservoir2.reservoir_s,
         Reservoir2.field_code == HeaderId.field,

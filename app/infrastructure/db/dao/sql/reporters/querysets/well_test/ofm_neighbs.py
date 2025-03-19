@@ -16,7 +16,10 @@ def _select_well_coords() -> Subquery:
         .join(DictG, DictG.id == HeaderId.field)
         .where(
             DictG.description == bindparam("field"),
-            WellHdr.well_name == bindparam("well"),
+            (
+                func.regexp_substr(WellHdr.well_name, r"^[^B]+")
+                == bindparam("well")
+            ),
             HeaderId.cid.in_(bindparam("reservoirs")),
         )
     ).subquery()
@@ -28,10 +31,11 @@ def select_ofm_neighbs() -> Select:
         func.power(HeaderId.xcoord - subq.c.xcoord, 2)
         + func.power(HeaderId.ycoord - subq.c.ycoord, 2)
     )
+    well_no_branch = func.regexp_substr(WellHdr.well_name, r"^[^B]+")
     return (
         select(
             DictG.description.label("field"),
-            WellHdr.well_name.label("well"),
+            well_no_branch.label("well"),
             HeaderId.cid.label("reservoir"),
             func.round(radius, 1).label("distance"),
         )
@@ -46,7 +50,7 @@ def select_ofm_neighbs() -> Select:
         )
         .where(
             radius <= bindparam("radius"),
-            WellHdr.well_name != bindparam("well"),
+            well_no_branch != bindparam("well"),
         )
         .order_by(HeaderId.cid)
     )

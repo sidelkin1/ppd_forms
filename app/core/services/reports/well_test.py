@@ -58,6 +58,7 @@ _REPORT_CELL_TEST_WELL = "B10"
 _REPORT_CELL_TEST_NAME = "C10"
 _REPORT_CELL_TEST_DATE = "D10"
 _REPORT_CELL_TEST_PRESSURE = "E10"
+_REPORT_CELL_TEST_PRESSURE_PLOT = "M10"
 _REPORT_CELL_TEST_PERMEABILITY = "F10"
 _REPORT_CELL_TEST_SKIN_FACTOR = "G10"
 _REPORT_CELL_TEST_PROD_INDEX = "H10"
@@ -193,6 +194,7 @@ def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
         {"cell": _REPORT_CELL_TEST_NAME, "source": "well_test"},
         {"cell": _REPORT_CELL_TEST_DATE, "source": "end_date"},
         {"cell": _REPORT_CELL_TEST_PRESSURE, "source": "resp_owc"},
+        {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "source": "resp_owc"},
         {"cell": _REPORT_CELL_TEST_PERMEABILITY, "source": "permeability"},
         {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "source": "skin_factor"},
         {"cell": _REPORT_CELL_TEST_PROD_INDEX, "source": "prod_index"},

@@ -34,6 +34,12 @@ def select_neighb_tests() -> Select:
     return (
         select(
             WellTest.field,
+            WellTest.well,
+            WellTest.reservoir,
+            WellTest.well_type,
+            WellTest.well_test,
+            WellTest.end_date,
+            WellTest.resp_owc,
             case(
                 (
                     WellTest.layer.is_(None),
@@ -45,12 +51,7 @@ def select_neighb_tests() -> Select:
                     WellTest.layer,
                     ")",
                 ),
-            ).label("well"),
-            WellTest.reservoir,
-            WellTest.well_type,
-            WellTest.well_test,
-            WellTest.end_date,
-            WellTest.resp_owc,
+            ).label("well_layer"),
         )
         .where(
             WellTest.field == subq.c.field,

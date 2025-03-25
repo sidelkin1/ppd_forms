@@ -107,9 +107,11 @@ def _concat_tests(
 
 def _add_distance(tests: pd.DataFrame, neighbs: pd.DataFrame) -> pd.DataFrame:
     cols = ["field", "well", "reservoir"]
-    return pd.merge(tests, neighbs, on=cols, how="left").sort_values(
+    df = pd.merge(tests, neighbs, on=cols, how="left").sort_values(
         ["reservoir", "distance"]
     )
+    df["well"] = df["well_layer"]
+    return df.drop(columns="well_layer")
 
 
 def _resize_isobars(isobars: Image) -> Image:

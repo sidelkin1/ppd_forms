@@ -164,11 +164,11 @@ def _fill_data_sheet(
 
 def _copy_sheets(
     wb: openpyxl.Workbook, reservoirs: list[str]
-) -> list[Worksheet]:
+) -> dict[str, Worksheet]:
     ws = wb[_REPORT_SHEET_NAME]
     if len(reservoirs) == 1:
-        return [ws]
-    sheets = []
+        return {reservoirs[0]: ws}
+    sheets = {}
     for reservoir in reservoirs:
         copy_ws = wb.copy_worksheet(ws)
         copy_ws.title = f"{_REPORT_SHEET_NAME} ({reservoir})"
@@ -176,7 +176,7 @@ def _copy_sheets(
         copy_ws._images = deepcopy(ws._images)  # type: ignore[attr-defined]
         copy_ws._charts = deepcopy(ws._charts)  # type: ignore[attr-defined]
         copy_ws.sheet_view.tabSelected = False
-        sheets.append(copy_ws)
+        sheets[reservoir] = copy_ws
     wb.remove(ws)
     return sheets
 
@@ -202,7 +202,7 @@ def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
     # Для ячеек с номером скважины, состоящим из одних цифр,
     # Excel вставляет сообщение, что "Число сохранено как текст",
     # поэтому специально преобразуем номер в `int`
-    tests["well"] = tests["well"].map(lambda x: cast_numeric(x) or x)
+    tests.loc[:, "well"] = tests["well"].map(lambda x: cast_numeric(x) or x)
     for row_num, df_row in enumerate(tests.itertuples(index=False)):
         for coord in coords:
             cell = ws[coord["cell"]].offset(row=row_num)
@@ -288,12 +288,11 @@ def _fill_report_sheet(
 ) -> None:
     reservoirs = [result["reservoir"] for result in results]
     sheets = _copy_sheets(wb, reservoirs)
-    for ws, result, (_, test_group), (_, pvt_group) in zip(
-        sheets,
-        results,
-        tests.groupby("reservoir"),
-        pvt.groupby("reservoir"),
-    ):
+    for result in results:
+        reservoir = result["reservoir"]
+        ws = sheets[reservoir]
+        test_group = tests.loc[tests["reservoir"] == reservoir, :]
+        pvt_group = pvt.loc[pvt["reservoir"] == reservoir, :]
         test_date = result["end_date"].strftime("%d.%m.%Y")
         ws[_REPORT_CELL_TITLE].value = (
             f"Результаты"

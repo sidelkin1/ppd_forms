@@ -386,7 +386,10 @@ def _fill_report_sheet(
         ws = sheets[reservoir]
         test_group = tests[tests["reservoir"] == reservoir]
         pvt_group = pvt[pvt["reservoir"] == reservoir]
-        gtm_group = gtms[gtms["reservoir"].str.contains(reservoir)]
+        gtm_group = gtms[
+            gtms["reservoir"].str.contains(reservoir)
+            & (gtms["gtm_date"] > test_group["end_date"].min())
+        ]
         test_date = result["end_date"].strftime("%d.%m.%Y")
         ws[_REPORT_CELL_TITLE].value = (
             f"Результаты"

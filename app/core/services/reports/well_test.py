@@ -3,7 +3,7 @@ from datetime import date
 from io import BytesIO
 from pathlib import Path
 from shutil import make_archive
-from typing import cast
+from typing import Any, NamedTuple, cast
 
 import openpyxl
 import pandas as pd
@@ -11,9 +11,11 @@ from dateutil.relativedelta import relativedelta
 from openpyxl.drawing.image import Image
 from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor
 from openpyxl.styles import Border, Side
+from openpyxl.styles.fills import FILL_SOLID, PatternFill
 from openpyxl.utils import quote_sheetname
 from openpyxl.utils.datetime import to_excel
 from openpyxl.utils.inference import cast_numeric
+from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.writer.excel import save_workbook
 from PIL import Image as PILImage
@@ -54,26 +56,75 @@ _REPORT_CELL_RESERVOIR = "E5"
 _REPORT_CELL_PURPOSE = "E6"
 _REPORT_CELL_TEXT = "B7"
 _REPORT_CELL_CONCLUSION = "B8"
-_REPORT_CELL_TEST_WELL = "B10"
-_REPORT_CELL_TEST_NAME = "C10"
-_REPORT_CELL_TEST_DATE = "D10"
-_REPORT_CELL_TEST_PRESSURE = "E10"
-_REPORT_CELL_TEST_PRESSURE_PLOT = "M10"
-_REPORT_CELL_TEST_PERMEABILITY = "F10"
-_REPORT_CELL_TEST_SKIN_FACTOR = "G10"
-_REPORT_CELL_TEST_PROD_INDEX = "H10"
-_REPORT_CELL_TEST_FRAC_LENGTH = "I10"
-_REPORT_CELL_TEST_RELIABILITY = "J10"
+_REPORT_CELL_TEST_WELL = "B9"
+_REPORT_CELL_TEST_NAME = "C9"
+_REPORT_CELL_TEST_DATE = "D9"
+_REPORT_CELL_TEST_PRESSURE = "E9"
+_REPORT_CELL_TEST_PRESSURE_PLOT = "M9"
+_REPORT_CELL_TEST_PERMEABILITY = "F9"
+_REPORT_CELL_TEST_SKIN_FACTOR = "G9"
+_REPORT_CELL_TEST_PROD_INDEX = "H9"
+_REPORT_CELL_TEST_FRAC_LENGTH = "I9"
+_REPORT_CELL_TEST_RELIABILITY = "J9"
+_REPORT_RANGE_GTM_NAME = (
+    f"{_REPORT_CELL_TEST_PRESSURE}:{_REPORT_CELL_TEST_RELIABILITY}"
+)
 
-_REPORT_CHART_ANCHOR = "F11"
+_REPORT_CHART_SHIFT = 2
 _REPORT_CHART_HEIGHT = 15
 _REPORT_CHART_WIDTH = 4
 _REPORT_CHART_INDEX = 0
 
-_REPORT_FOOTER_ANCHOR = "G27"
+_REPORT_FOOTER_SHIFT = 18
 _REPORT_FOOTER_INDEX = 3
 
-_REPORT_ARROW_ANCHOR = "C16"
+_REPORT_ARROW_SHIFT = 7
+
+_REPORT_ROW_CELL_BORDER = Border(
+    left=Side(border_style="thin", color="000066CC"),
+    right=Side(border_style="thin", color="000066CC"),
+    top=Side(border_style="thin", color="000066CC"),
+    bottom=Side(border_style="thin", color="000066CC"),
+)
+_REPORT_ROW_CELL_FILL = PatternFill(FILL_SOLID, fgColor="F2F2F2")
+
+_REPORT_TABLE_ROW_CELLS = (
+    {"cell": _REPORT_CELL_TEST_WELL, "value": "well"},
+    {"cell": _REPORT_CELL_TEST_NAME, "value": "well_test"},
+    {"cell": _REPORT_CELL_TEST_DATE, "value": "end_date"},
+    {"cell": _REPORT_CELL_TEST_PRESSURE, "value": "resp_owc"},
+    {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "value": "resp_owc"},
+    {"cell": _REPORT_CELL_TEST_PERMEABILITY, "value": "permeability"},
+    {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "value": "skin_factor"},
+    {"cell": _REPORT_CELL_TEST_PROD_INDEX, "value": "prod_index"},
+    {"cell": _REPORT_CELL_TEST_FRAC_LENGTH, "value": "frac_length"},
+    {"cell": _REPORT_CELL_TEST_RELIABILITY, "value": "reliability"},
+)
+_REPORT_TABLE_ROW_CELLS_GTM = (
+    {"cell": _REPORT_CELL_TEST_WELL, "value": "well"},
+    {"cell": _REPORT_CELL_TEST_NAME, "value": "well_test"},
+    {"cell": _REPORT_CELL_TEST_DATE, "value": "end_date"},
+    {"cell": _REPORT_CELL_TEST_PRESSURE, "value": "reliability"},
+    {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "value": None},
+    {"cell": _REPORT_CELL_TEST_PERMEABILITY, "value": None},
+    {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "value": None},
+    {"cell": _REPORT_CELL_TEST_PROD_INDEX, "value": None},
+    {"cell": _REPORT_CELL_TEST_FRAC_LENGTH, "value": None},
+    {"cell": _REPORT_CELL_TEST_RELIABILITY, "value": None},
+)
+
+
+class _ReportTableRow(NamedTuple):
+    well: str
+    well_test: str
+    end_date: date
+    resp_owc: float
+    permeability: float
+    skin_factor: float
+    prod_index: float
+    frac_length: float
+    reliability: str
+    is_gtm: bool
 
 
 def _get_uids(neighbs: pd.DataFrame) -> list[str]:
@@ -182,39 +233,72 @@ def _copy_sheets(
     return sheets
 
 
-def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
-    border = Border(
-        left=Side(border_style="thin", color="000066CC"),
-        right=Side(border_style="thin", color="000066CC"),
-        top=Side(border_style="thin", color="000066CC"),
-        bottom=Side(border_style="thin", color="000066CC"),
-    )
-    coords = (
-        {"cell": _REPORT_CELL_TEST_WELL, "source": "well"},
-        {"cell": _REPORT_CELL_TEST_NAME, "source": "well_test"},
-        {"cell": _REPORT_CELL_TEST_DATE, "source": "end_date"},
-        {"cell": _REPORT_CELL_TEST_PRESSURE, "source": "resp_owc"},
-        {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "source": "resp_owc"},
-        {"cell": _REPORT_CELL_TEST_PERMEABILITY, "source": "permeability"},
-        {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "source": "skin_factor"},
-        {"cell": _REPORT_CELL_TEST_PROD_INDEX, "source": "prod_index"},
-        {"cell": _REPORT_CELL_TEST_FRAC_LENGTH, "source": "frac_length"},
-        {"cell": _REPORT_CELL_TEST_RELIABILITY, "source": "reliability"},
-    )
+def _concat_gtms(tests: pd.DataFrame, gtms: pd.DataFrame) -> pd.DataFrame:
+    tests = tests.assign(is_gtm=False)
+    if not gtms.empty:
+        df = pd.DataFrame(
+            {
+                "field": gtms["field"],
+                "well": gtms["well"],
+                "reservoir": gtms["reservoir"],
+                "well_type": gtms["well_type"],
+                "well_test": "ГТМ",
+                "end_date": gtms["gtm_date"],
+                "reliability": gtms["gtm_description"].fillna(
+                    gtms["gtm_name"]
+                ),
+                "is_gtm": True,
+            }
+        )
+        tests = pd.concat([tests, df]).sort_values("end_date")
     # Для ячеек с номером скважины, состоящим из одних цифр,
     # Excel вставляет сообщение, что "Число сохранено как текст",
     # поэтому специально преобразуем номер в `int`
     tests.loc[:, "well"] = tests["well"].map(lambda x: cast_numeric(x) or x)
-    for row_num, df_row in enumerate(tests.itertuples(index=False)):
-        for coord in coords:
-            cell = ws[coord["cell"]].offset(row=row_num)
-            cell.value = getattr(df_row, coord["source"])
-            cell.border = border
+    return tests
+
+
+def _fill_table_row(
+    ws: Worksheet,
+    df_row: _ReportTableRow,
+    row_num: int,
+    row_cells: tuple[dict[str, Any], ...],
+) -> None:
+    for row_cell in row_cells:
+        cell = ws[row_cell["cell"]].offset(row=row_num)
+        if row_cell["value"] is not None:
+            cell.value = getattr(df_row, row_cell["value"])
+        cell.border = _REPORT_ROW_CELL_BORDER
+        if df_row.is_gtm:
+            cell.fill = _REPORT_ROW_CELL_FILL
+
+
+def _fill_test_history(ws: Worksheet, tests: pd.DataFrame) -> None:
+    cell_range = CellRange(_REPORT_RANGE_GTM_NAME)
+    for row_num, df_row in enumerate(tests.itertuples(index=False), start=1):
+        cell_range.shift(row_shift=1)
+        if df_row.is_gtm:
+            _fill_table_row(
+                ws,
+                cast(_ReportTableRow, df_row),
+                row_num,
+                _REPORT_TABLE_ROW_CELLS_GTM,
+            )
+            ws.merge_cells(range_string=cell_range.coord)
+        else:
+            _fill_table_row(
+                ws,
+                cast(_ReportTableRow, df_row),
+                row_num,
+                _REPORT_TABLE_ROW_CELLS,
+            )
 
 
 def _shift_drawings(ws: Worksheet, nrow: int) -> None:
     chart = ws._charts[_REPORT_CHART_INDEX]  # type: ignore[attr-defined]
-    cell = ws[_REPORT_CHART_ANCHOR].offset(nrow - 1)
+    cell = ws[_REPORT_CELL_TEST_PERMEABILITY].offset(
+        _REPORT_CHART_SHIFT + nrow - 1
+    )
     anchor = TwoCellAnchor()
     anchor._from.col = cell.column  # type: ignore[union-attr]
     anchor._from.row = cell.row  # type: ignore[union-attr]
@@ -226,7 +310,9 @@ def _shift_drawings(ws: Worksheet, nrow: int) -> None:
     )
     chart.anchor = anchor  # type: ignore[assignment]
     image = ws._images[_REPORT_FOOTER_INDEX]  # type: ignore[attr-defined]
-    cell = ws[_REPORT_FOOTER_ANCHOR].offset(nrow - 1)
+    cell = ws[_REPORT_CELL_TEST_SKIN_FACTOR].offset(
+        _REPORT_FOOTER_SHIFT + nrow - 1
+    )
     image.anchor = cell.coordinate
 
 
@@ -266,8 +352,8 @@ def _process_drawings(
 ) -> None:
     _edit_chart(
         ws,
-        tests["end_date"].min(),
-        tests["end_date"].max(),
+        tests.loc[~tests["is_gtm"], "end_date"].min(),
+        tests.loc[~tests["is_gtm"], "end_date"].max(),
         pvt["p_init"].iat[0],
         pvt["p_bubble"].iat[0],
     )
@@ -277,7 +363,9 @@ def _process_drawings(
         cell = ws[_REPORT_ISOBARS_ANCHOR].offset(tests.shape[0] - 1)
         ws.add_image(resized_isobars, cell.coordinate)
         image = Image(arrow)
-        cell = ws[_REPORT_ARROW_ANCHOR].offset(tests.shape[0] - 1)
+        cell = ws[_REPORT_CELL_TEST_NAME].offset(
+            _REPORT_ARROW_SHIFT + tests.shape[0] - 1
+        )
         ws.add_image(image, cell.coordinate)
 
 
@@ -286,6 +374,7 @@ def _fill_report_sheet(
     results: list[WellTestResult],
     tests: pd.DataFrame,
     pvt: pd.DataFrame,
+    gtms: pd.DataFrame,
     arrow: Path,
 ) -> None:
     reservoirs = [result["reservoir"] for result in results]
@@ -293,8 +382,9 @@ def _fill_report_sheet(
     for result in results:
         reservoir = result["reservoir"]
         ws = sheets[reservoir]
-        test_group = tests.loc[tests["reservoir"] == reservoir, :]
-        pvt_group = pvt.loc[pvt["reservoir"] == reservoir, :]
+        test_group = tests[tests["reservoir"] == reservoir]
+        pvt_group = pvt[pvt["reservoir"] == reservoir]
+        gtm_group = gtms[gtms["reservoir"].str.contains(reservoir)]
         test_date = result["end_date"].strftime("%d.%m.%Y")
         ws[_REPORT_CELL_TITLE].value = (
             f"Результаты"
@@ -306,6 +396,7 @@ def _fill_report_sheet(
         ws[_REPORT_CELL_DATE].value = test_date
         ws[_REPORT_CELL_RESERVOIR].value = result["report_reservoir"]
         ws[_REPORT_CELL_PURPOSE].value = result["purpose"]
+        test_group = _concat_gtms(test_group, gtm_group)
         _fill_test_history(ws, test_group)
         _process_drawings(ws, test_group, pvt_group, result["isobars"], arrow)
 
@@ -332,6 +423,7 @@ def _process_data(
             results,
             tests,
             pvt,
+            gtms,
             arrow,
         )
         save_workbook(wb, result)

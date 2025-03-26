@@ -387,7 +387,7 @@ def _fill_report_sheet(
         test_group = tests[tests["reservoir"] == reservoir]
         pvt_group = pvt[pvt["reservoir"] == reservoir]
         gtm_group = gtms[
-            gtms["reservoir"].str.contains(reservoir)
+            gtms["reservoir"].str.contains(reservoir, regex=False)
             & (gtms["gtm_date"] > test_group["end_date"].min())
         ]
         test_date = result["end_date"].strftime("%d.%m.%Y")

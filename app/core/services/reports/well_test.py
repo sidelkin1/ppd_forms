@@ -39,7 +39,7 @@ _EXCEL_NEIGHBS_LAST_COLUMN = 29
 
 _REPORT_SHEET_NAME = "отчет"
 
-_REPORT_ISOBARS_ANCHOR = "B12"
+_REPORT_ISOBARS_SHIFT = 3
 _REPORT_ISOBARS_WIDTH_MM = 91.0
 _REPORT_ISOBARS_HEIGHT_MM = 75.7
 _REPORT_ISOBARS_DPI = 96
@@ -360,7 +360,9 @@ def _process_drawings(
     _shift_drawings(ws, tests.shape[0])
     if isobars is not None:
         resized_isobars = _resize_isobars(isobars)
-        cell = ws[_REPORT_ISOBARS_ANCHOR].offset(tests.shape[0] - 1)
+        cell = ws[_REPORT_CELL_TEST_WELL].offset(
+            _REPORT_ISOBARS_SHIFT + tests.shape[0] - 1
+        )
         ws.add_image(resized_isobars, cell.coordinate)
         image = Image(arrow)
         cell = ws[_REPORT_CELL_TEST_NAME].offset(

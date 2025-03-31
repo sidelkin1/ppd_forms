@@ -20,7 +20,7 @@ def _select_well_coords() -> Subquery:
                 func.regexp_replace(WellHdr.well_name, r"B\d+$")
                 == bindparam("well")
             ),
-            HeaderId.cid.in_(bindparam("reservoirs")),
+            func.replace(HeaderId.cid, "(Руд)").in_(bindparam("reservoirs")),
         )
     ).subquery()
     return (
@@ -70,7 +70,7 @@ def select_ofm_neighbs() -> Select:
     return select(
         subq.c.field,
         subq.c.well,
-        subq.c.reservoir,
+        func.replace(subq.c.reservoir, "(Руд)").label("reservoir"),
         func.avg(subq.c.distance).label("distance"),
     ).group_by(
         subq.c.field,

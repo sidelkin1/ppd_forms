@@ -13,9 +13,10 @@ from app.infrastructure.db.models.ofm.reflected import (
 
 def select_pvt_props() -> Select:
     dictg_alias = aliased(DictG)
+    reservoir = func.replace(dictg_alias.sdes, "(Руд)")
     return (
         select(
-            HeaderId.cid.label("reservoir"),
+            reservoir.label("reservoir"),
             ResPty.initial_layer_pressure.label("p_init"),
             ResPty.bubble_point_pressure.label("p_bubble"),
         )
@@ -28,7 +29,7 @@ def select_pvt_props() -> Select:
                 func.regexp_replace(WellHdr.well_name, r"B\d+$")
                 == bindparam("well")
             ),
-            dictg_alias.sdes.in_(bindparam("reservoirs")),
+            reservoir.in_(bindparam("reservoirs")),
             ResPty.reservoir_s == Reservoir2.reservoir_s,
             Reservoir2.field_code == HeaderId.field,
             Reservoir2.district == HeaderId.district_id,

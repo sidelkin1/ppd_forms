@@ -17,7 +17,7 @@ def _select_well_coords() -> Subquery:
         .where(
             DictG.description == bindparam("field"),
             (
-                func.regexp_replace(WellHdr.well_name, r"B\d+$", "")
+                func.regexp_replace(WellHdr.well_name, r"B\d+$")
                 == bindparam("well")
             ),
             HeaderId.cid.in_(bindparam("reservoirs")),
@@ -41,7 +41,7 @@ def _select_well_neighbs() -> Subquery:
         func.power(HeaderId.xcoord - subq.c.xcoord, 2)
         + func.power(HeaderId.ycoord - subq.c.ycoord, 2)
     )
-    well_no_branch = func.regexp_replace(WellHdr.well_name, r"B\d+$", "")
+    well_no_branch = func.regexp_replace(WellHdr.well_name, r"B\d+$")
     return (
         select(
             DictG.description.label("field"),

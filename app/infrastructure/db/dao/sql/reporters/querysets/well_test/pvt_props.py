@@ -25,7 +25,7 @@ def select_pvt_props() -> Select:
             dictg_alias.sdes == HeaderId.cid,
             DictG.description == bindparam("field"),
             (
-                func.regexp_replace(WellHdr.well_name, r"B\d+$", "")
+                func.regexp_replace(WellHdr.well_name, r"B\d+$")
                 == bindparam("well")
             ),
             dictg_alias.sdes.in_(bindparam("reservoirs")),

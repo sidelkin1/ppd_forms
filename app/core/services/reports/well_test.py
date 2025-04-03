@@ -408,29 +408,18 @@ def _fill_report_sheet(
 
 def _process_data(
     results: list[WellTestResult],
-    gtms: pd.DataFrame,
-    tests: pd.DataFrame,
-    neighbs: pd.DataFrame,
-    neighb_tests: pd.DataFrame,
-    pvt: pd.DataFrame,
+    dfs: dict[str, pd.DataFrame],
     path: Path,
     template: Path,
     arrow: Path,
 ) -> None:
     result = path / template.name
-    tests = _concat_tests(tests, results)
-    neighb_tests = _add_distance(neighb_tests, neighbs)
+    tests = _concat_tests(dfs["tests"], results)
+    neighb_tests = _add_distance(dfs["neighb_tests"], dfs["neighbs"])
     try:
         wb = openpyxl.load_workbook(template)
-        _fill_data_sheet(wb, gtms, tests, neighb_tests)
-        _fill_report_sheet(
-            wb,
-            results,
-            tests,
-            pvt,
-            gtms,
-            arrow,
-        )
+        _fill_data_sheet(wb, dfs["gtms"], tests, neighb_tests)
+        _fill_report_sheet(wb, results, tests, dfs["pvt"], dfs["gtms"], arrow)
         save_workbook(wb, result)
     finally:
         wb.close()
@@ -447,45 +436,11 @@ async def well_test_report(
     pool: ProcessPoolManager,
 ) -> None:
     results = await dao.get_results()
-    date_from = results[0]["end_date"].replace(day=1) - relativedelta(
-        months=gtm_period
+    dfs = await dao.read_all(
+        results=results,
+        gtm_period=gtm_period,
+        gdis_period=gdis_period,
+        radius=radius,
     )
-    reservoirs = [result["reservoir"] for result in results]
-    gtms = await dao.get_well_gtms(
-        results[0]["field"],
-        results[0]["well"],
-        date_from,
-        results[0]["end_date"],
-    )
-    tests = await dao.get_well_tests(
-        results[0]["field"],
-        results[0]["well"],
-        reservoirs,
-        results[0]["end_date"],
-    )
-    neighbs = await dao.get_neighbs(
-        results[0]["field"], results[0]["well"], reservoirs, radius
-    )
-    uids = _get_uids(neighbs)
-    date_from = results[0]["end_date"].replace(day=1) - relativedelta(
-        years=gdis_period
-    )
-    neighb_tests = await dao.get_neighb_tests(
-        uids, date_from, results[0]["end_date"]
-    )
-    pvt = await dao.get_pvt(
-        results[0]["field"], results[0]["well"], reservoirs
-    )
-    await pool.run(
-        _process_data,
-        results,
-        gtms,
-        tests,
-        neighbs,
-        neighb_tests,
-        pvt,
-        path,
-        template,
-        arrow,
-    )
+    await pool.run(_process_data, results, dfs, path, template, arrow)
     make_archive(str(path), "zip", root_dir=path)

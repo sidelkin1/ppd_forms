@@ -127,13 +127,6 @@ class _ReportTableRow(NamedTuple):
     is_gtm: bool
 
 
-def _get_uids(neighbs: pd.DataFrame) -> list[str]:
-    if neighbs.empty:
-        return []
-    cols = ["field", "well", "reservoir"]
-    return neighbs[cols].agg("".join, axis=1).to_list()
-
-
 def _fill_template(
     ws: Worksheet, df: pd.DataFrame, min_row: int, min_col: int, max_col: int
 ) -> None:

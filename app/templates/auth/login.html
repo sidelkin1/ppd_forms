@@ -40,11 +40,14 @@
                             Отправить
                         </button>
                     </form>
-                    {% if error %}
-                        <div class="alert alert-danger" role="alert">
-                            Неправильное имя пользователя или пароль!
-                        </div>
-                    {% endif %}
+                    <div 
+                        class="alert alert-danger 
+                        {% if not error %}d-none{% endif %}"
+                        id="errorMessage"
+                        role="alert"
+                    >
+                        Неправильное имя пользователя или пароль!
+                    </div>
                 </div>
             </div>
         </div>
@@ -58,6 +61,7 @@
         function showSpinner() {
             document.getElementById('submitStatus').classList.remove("d-none");
             document.getElementById('submitButton').disabled = true;
+            document.getElementById('errorMessage').classList.add("d-none");
         }
     </script>
 

@@ -9,7 +9,9 @@ async function fetchReservoirs(report, path) {
   loader.classList.remove("d-none");
 
   try {
-    const response = await fetch(buildUrl(`/uneft/fields/${fieldID}/${path}`));
+    const response = await fetchWithAuth(
+      buildUrl(`/uneft/fields/${fieldID}/${path}`)
+    );
     if (!response.ok || currentRequestId !== getRequestId(uniqueKey)) {
       return;
     }

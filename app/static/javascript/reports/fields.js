@@ -12,7 +12,7 @@ async function fetchFields(report, path) {
   loader.classList.remove("d-none");
 
   try {
-    const response = await fetch(buildUrl(`/uneft/${path}`));
+    const response = await fetchWithAuth(buildUrl(`/uneft/${path}`));
     if (!response.ok) {
       return;
     }

@@ -38,3 +38,13 @@ function setRequestId(uniqueKey) {
 function getRequestId(uniqueKey) {
   return requestIds[uniqueKey];
 }
+
+async function fetchWithAuth(url, options = {}) {
+  const response = await fetch(url, options);
+  if (response.status === 401) {
+    window.location.href = `${LOGIN_URL}?next=${encodeURIComponent(
+      window.location.pathname + window.location.search
+    )}`;
+  }
+  return response;
+}

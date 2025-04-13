@@ -9,7 +9,7 @@ async function fetchDates(path, source) {
   loader.classList.remove("d-none");
 
   try {
-    const response = await fetch(buildUrl(`/${source}/${path}`));
+    const response = await fetchWithAuth(buildUrl(`/${source}/${path}`));
     if (!response.ok) {
       return;
     }

@@ -6,7 +6,7 @@ async function sendFile(file, url) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(buildUrl(url), {
+  const response = await fetchWithAuth(buildUrl(url), {
     method: "post",
     body: formData,
   });

@@ -24,6 +24,7 @@
 
         <script type="text/javascript">
             const ROOT_PATH = "{{ request.scope.get('root_path', '') }}";
+            const LOGIN_URL = "{{ url_for('login_page') }}";
         </script>
         <script src="{{ url_for('static', path='/javascript/bootstrap/bootstrap.bundle.min.js') }}" type="text/javascript"></script>
         <script src="{{ url_for('static', path='/javascript/websocket/websocket-async.umd.js') }}" type="text/javascript"></script>

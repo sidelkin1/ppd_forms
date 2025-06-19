@@ -347,8 +347,8 @@ def _process_drawings(
         ws,
         tests.loc[~tests["is_gtm"], "end_date"].min(),
         tests.loc[~tests["is_gtm"], "end_date"].max(),
-        pvt["p_init"].iat[0],
-        pvt["p_bubble"].iat[0],
+        pvt["p_init"].iat[0] if not pvt.empty else 0,
+        pvt["p_bubble"].iat[0] if not pvt.empty else 0,
     )
     _shift_drawings(ws, tests.shape[0])
     if isobars is not None:

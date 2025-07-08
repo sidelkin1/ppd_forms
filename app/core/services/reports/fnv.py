@@ -250,7 +250,7 @@ async def _calc_radius(
     layers_radius = layers_radius.infer_objects().fillna(0)
     await logger.ainfo("-" * 160)
     await logger.ainfo("%s Радиусы ФНВ по пластам:", uwi)
-    await logger.ainfo("\n%s", layers_radius)
+    await logger.ainfo("\n%s", layers_radius.to_string())
     return layers_radius
 
 
@@ -312,7 +312,7 @@ async def _process_well(
     await logger.ainfo("Пористость: %s", uwi)
     if not poro.size:
         raise FnvException("нет пористости")
-    await logger.ainfo("\n%s", poro)
+    await logger.ainfo("\n%s", poro.to_string())
     events = await dao.events(alternative, uwi)
     await logger.ainfo("События: %s", uwi)
     contours = await _calc_profile(uwi, poro, events, min_radius, dao, logger)

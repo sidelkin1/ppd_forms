@@ -13,3 +13,11 @@ class ProlongExpectedDAO(BaseDAO[ProlongExpected]):
         super().__init__(
             ProlongExpected, filepath, excel_options, column_names
         )
+
+    async def get_all(self) -> list[ProlongExpected]:
+        df = await self._get_all()
+        df = df.dropna(subset=df.columns.drop(["oil_total_1", "liq_total_1"]))
+        return [
+            self.model.model_validate(row)
+            for row in df.itertuples(index=False)
+        ]

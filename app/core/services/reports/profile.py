@@ -43,6 +43,8 @@ def _calc_layer_rates(df: pd.DataFrame) -> pd.DataFrame:
 def _process_data(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
     df["layer"] = df["layer"].str.split(delimiter)
     df = df.explode("layer")
+    df["rec_date"] = df["rec_date"].fillna("")
+    df["well_type"] = df["well_type"].fillna("")
     df["layer"] = df["layer"].fillna("")
     df = _group_diff_absorb(df)
     df = _calc_layer_rates(df)

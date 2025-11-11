@@ -23,10 +23,15 @@ def _add_months(s: pd.Series, n: int) -> pd.Series:
 def _expand_date_range(
     df: pd.DataFrame, left: str, right: str, result: str
 ) -> pd.DataFrame:
-    df[result] = df[[left, right]].agg(
-        lambda s: pd.date_range(start=s[left], end=s[right], freq="MS").date,
-        axis=1,
-    )
+    if df.empty:
+        df = df.assign(**{result: None})
+    else:
+        df[result] = df[[left, right]].agg(
+            lambda s: pd.date_range(
+                start=s[left], end=s[right], freq="MS"
+            ).date,
+            axis=1,
+        )
     df = df.explode(result)
     return df
 

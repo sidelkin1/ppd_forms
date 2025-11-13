@@ -15,7 +15,6 @@ from app.api.config.models.auth import AuthSettings
         "/excel/ns_oil",
         "/database/report",
         "/database/profile",
-        "/logout",
     ],
 )
 @pytest.mark.asyncio(scope="session")
@@ -34,7 +33,7 @@ async def test_websocket_not_authenticated(anon_test_client: TestClient):
     assert exc_info.value.reason == "Not authenticated"
 
 
-@pytest.mark.parametrize("url", ["/reports", "/tables"])
+@pytest.mark.parametrize("url", ["/reports", "/tables", "/logout"])
 @pytest.mark.asyncio(scope="session")
 async def test_home_not_authenticated(anon_client: AsyncClient, url: str):
     resp = await anon_client.get(url)

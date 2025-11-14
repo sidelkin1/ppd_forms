@@ -1,7 +1,3 @@
-from datetime import date
-
-import pandas as pd
-from dateutil.relativedelta import relativedelta
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters.local import LocalBaseDAO
@@ -17,21 +13,4 @@ class MatrixReporter(LocalBaseDAO):
                 "mer": matrix.select_monthly_report(),
             },
             pool,
-        )
-
-    async def read_all(  # type: ignore[override]
-        self,
-        *,
-        date_from: date,
-        date_to: date,
-        base_period: int,
-        pred_period: int,
-    ) -> dict[str, pd.DataFrame]:
-        mer_date_from = date_from - relativedelta(months=base_period)
-        mer_date_to = date_to + relativedelta(months=pred_period - 1)
-        return await super().read_all(
-            date_from=date_from,
-            date_to=date_to,
-            mer_date_from=mer_date_from,
-            mer_date_to=mer_date_to,
         )

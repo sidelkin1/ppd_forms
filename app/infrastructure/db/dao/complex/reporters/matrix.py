@@ -17,14 +17,14 @@ class MatrixReporter:
         *,
         date_from: date,
         date_to: date,
-        base_period: int,
-        pred_period: int,
+        mer_date_from: date,
+        mer_date_to: date,
     ) -> dict[str, pd.DataFrame]:
         dfs = await self.db_dao.read_all(
             date_from=date_from,
             date_to=date_to,
-            base_period=base_period,
-            pred_period=pred_period,
+            mer_date_from=mer_date_from,
+            mer_date_to=mer_date_to,
         )
         wells = await self.file_dao.get_wells(
             date_from=date_from, date_to=date_to

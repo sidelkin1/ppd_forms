@@ -130,9 +130,9 @@ async function loadMatrix(reportName) {
       date_to: dateTo,
       excludes: excludes,
       base_period: basePeriod,
-      pred_period: predPeriod,
-      on_date: onDate,
-      wells: files[0] ? files[0].filename : null,
+      ...(predPeriod && { pred_period: predPeriod }),
+      ...(onDate && { on_date: onDate }),
+      ...(files[0] && { wells: files[0].filename }),
     };
     const result = await assignWork(reportName, url, data);
     if (result) {
@@ -223,8 +223,8 @@ async function loadMatbal(reportName) {
     const data = {
       field: { id: fieldID, name: fieldName },
       reservoirs: reservoirs,
-      wells: files[0] ? files[0].filename : null,
-      measurements: files[1] ? files[1].filename : null,
+      ...(files[0] && { wells: files[0].filename }),
+      ...(files[1] && { measurements: files[1].filename }),
       alternative: alternative,
     };
     const result = await assignWork(reportName, url, data);

@@ -23,6 +23,8 @@ def _get_mer_bounds(
     mer_date_from = date_from - relativedelta(months=base_period)
     if pred_period is not None:
         pred_date = date_to + relativedelta(months=pred_period - 1)
+    else:
+        pred_date = None
     mer_date_to = min(filter(None, (pred_date, on_date)))
     return mer_date_from, mer_date_to
 
@@ -90,7 +92,7 @@ def _prepare_ns_ppd(
     pred_period: int | None,
     on_date: date | None,
 ) -> pd.DataFrame:
-    df = df.sort_values(["field", "well", "gtm_date"])
+    df = df.sort_values("gtm_date")
     df["reservoir_neighbs"] = df["reservoir_neighbs"].fillna(df["reservoir"])
     df = df.assign(reservoir_all=df["reservoir_neighbs"])
     df["date_base"] = _add_months(df["gtm_date"], -base_period)

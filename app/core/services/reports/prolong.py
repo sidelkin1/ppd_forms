@@ -26,6 +26,7 @@ class ProlongResult:
     field: str
     well: str
     date: date
+    method: Interpolation
     oil: np.ndarray
     liq: np.ndarray
 
@@ -35,6 +36,7 @@ class ProlongError:
     field: str
     well: str
     date: date
+    method: Interpolation
     error: Exception
 
 
@@ -139,13 +141,20 @@ async def _process_well(
                 expected.field,
                 expected.well,
                 expected.date,
+                interpolation,
                 df["oil_garip"].to_numpy(),
                 df["liq_garip"].to_numpy(),
             )
         )
     except Exception as error:
         await failures.put(
-            ProlongError(expected.field, expected.well, expected.date, error)
+            ProlongError(
+                expected.field,
+                expected.well,
+                expected.date,
+                interpolation,
+                error,
+            )
         )
 
 
@@ -160,17 +169,33 @@ async def _handle_results(
         path / "garip.csv", mode="w", encoding=encoding, newline=""
     ) as afp:
         writer = AsyncWriter(afp, delimiter=delimiter)
-        await writer.writerow(["field", "well", "date", "fluid", *range(61)])
+        await writer.writerow(
+            ["field", "well", "date", "fluid", "method", *range(61)]
+        )
         while not (all(task.done() for task in tasks) and results.empty()):
             if results.empty():
                 await asyncio.sleep(0)
                 continue
             garip = await results.get()
             await writer.writerow(
-                [garip.field, garip.well, garip.date, "oil", *garip.oil]
+                [
+                    garip.field,
+                    garip.well,
+                    garip.date,
+                    "oil",
+                    garip.method,
+                    *garip.oil,
+                ]
             )
             await writer.writerow(
-                [garip.field, garip.well, garip.date, "liq", *garip.liq]
+                [
+                    garip.field,
+                    garip.well,
+                    garip.date,
+                    "liq",
+                    garip.method,
+                    *garip.liq,
+                ]
             )
 
 
@@ -190,6 +215,7 @@ async def _handle_failures(
                 gtm.field,
                 gtm.well,
                 gtm.date,
+                gtm.method,
                 exc_info=gtm.error,
             )
 
@@ -198,7 +224,7 @@ async def prolong_report(
     path: Path,
     expected: ProlongExpectedDAO,
     actual: Path,
-    interpolation: Interpolation,
+    interpolations: list[Interpolation],
     pool: ProcessPoolManager,
     csv_config: CsvSettings,
 ) -> None:
@@ -220,6 +246,7 @@ async def prolong_report(
                     )
                 )
                 for expected in expected_values
+                for interpolation in interpolations
             ]
             tg.create_task(
                 _handle_results(

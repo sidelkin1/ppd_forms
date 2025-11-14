@@ -393,7 +393,7 @@ async def create_prolong_report(
         path_provider.dir_path(user_id, file_id),
         holder.excel_prolong_expected,
         path / response.task.actual,
-        response.task.interpolation,
+        response.task.interpolations,
         ctx["pool"],
         csv_config,
     )

@@ -8,4 +8,4 @@ class TaskProlong(
     name: ReportName
     expected: str
     actual: str
-    interpolation: Interpolation
+    interpolations: list[Interpolation]

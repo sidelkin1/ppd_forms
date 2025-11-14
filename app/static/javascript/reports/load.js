@@ -248,6 +248,9 @@ async function loadProlong(reportName) {
   const success = document.getElementById(`${reportName}Success`);
   const expected = document.getElementById(`${reportName}Expected`).files[0];
   const actual = document.getElementById(`${reportName}Actual`).files[0];
+  const allMethods = [...document.getElementById(`${reportName}Interpolation`)]
+    .filter((opt) => opt.value !== "all")
+    .map((opt) => opt.value);
   const interpolation = document.getElementById(`${reportName}Interpolation`)
     .selectedOptions[0].value;
 
@@ -266,7 +269,7 @@ async function loadProlong(reportName) {
     const data = {
       expected: files[0] ? files[0].filename : null,
       actual: files[1] ? files[1].filename : null,
-      interpolation: interpolation,
+      interpolations: interpolation === "all" ? allMethods : [interpolation],
     };
     const result = await assignWork(reportName, url, data);
     if (result) {

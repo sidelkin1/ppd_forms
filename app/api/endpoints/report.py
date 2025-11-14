@@ -185,7 +185,7 @@ async def generate_prolong_report(
         name=ReportName.prolong,
         expected=params.expected,
         actual=params.actual,
-        interpolation=params.interpolation,
+        interpolations=params.interpolations,
     )
     response = ProlongResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)

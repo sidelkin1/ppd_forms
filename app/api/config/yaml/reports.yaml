@@ -108,9 +108,12 @@
   expected: ДД план
   actual: ДД факт
   interpolation:
+  - text: --Все методы--
+    value: all
+    selected: true
   - text: Метод PCHIP
     value: pchip
-    selected: true
+    selected: false
   - text: Алгоритм Акима
     value: akima
     selected: false

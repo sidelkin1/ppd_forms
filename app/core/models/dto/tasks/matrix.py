@@ -10,7 +10,7 @@ class TaskMatrix(
     TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]
 ):
     base_period: PositiveInt
-    pred_period: PositiveInt
+    pred_period: PositiveInt | None
     excludes: list[ExcludeGTM]
-    on_date: date
-    wells: str | None = None
+    on_date: date | None
+    wells: str | None

@@ -85,4 +85,5 @@ def task_matrix(matrix_effect: MatrixEffect) -> TaskMatrix:
         pred_period=matrix_effect.pred_period,
         excludes=matrix_effect.excludes,
         on_date=matrix_effect.on_date,
+        wells=None,
     )

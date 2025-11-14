@@ -12,4 +12,4 @@ class TaskFNV(
     fields: list[UneftFieldDB]
     min_radius: NonNegativeFloat
     alternative: bool
-    max_fields: int = 5
+    max_fields: int

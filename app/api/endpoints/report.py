@@ -137,6 +137,7 @@ async def generate_fnv_report(
         fields=params.fields,
         min_radius=params.min_radius,
         alternative=params.alternative,
+        max_fields=params.max_fields,
     )
     response = FnvResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)

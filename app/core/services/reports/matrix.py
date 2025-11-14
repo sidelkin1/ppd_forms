@@ -4,12 +4,27 @@ from shutil import make_archive
 from typing import Any
 
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 from app.core.models.enums import ExcludeGTM
 from app.core.utils.process_pool import ProcessPoolManager
 from app.core.utils.save_dataframe import save_to_csv
-from app.infrastructure.db.dao.sql.reporters import MatrixReporter
+from app.infrastructure.db.dao.complex.reporters import MatrixReporter
 from app.infrastructure.files.config.models.csv import CsvSettings
+
+
+def _get_mer_bounds(
+    date_from: date,
+    date_to: date,
+    base_period: int,
+    pred_period: int | None,
+    on_date: date | None,
+) -> tuple[date, date]:
+    mer_date_from = date_from - relativedelta(months=base_period)
+    if pred_period is not None:
+        pred_date = date_to + relativedelta(months=pred_period - 1)
+    mer_date_to = min(filter(None, (pred_date, on_date)))
+    return mer_date_from, mer_date_to
 
 
 def _add_months(s: pd.Series, n: int) -> pd.Series:
@@ -36,9 +51,54 @@ def _expand_date_range(
     return df
 
 
-def _expand_reservoir(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
+def _find_next_gtm(df: pd.DataFrame) -> pd.Series:
+    s = df.groupby(["field", "well"])["gtm_date"].shift(periods=-1)
+    s = _add_months(s, 0)
+    return s
+
+
+def _calc_pred_date(
+    df: pd.DataFrame, pred_period: int | None
+) -> pd.Series | None:
+    if pred_period is None:
+        return None
+    return _add_months(df["gtm_date"], pred_period - 1)
+
+
+def _infer_end_date(
+    df: pd.DataFrame, pred_period: int | None, on_date: date | None
+) -> pd.Series:
+    temp_df = pd.DataFrame(
+        {
+            "on_date": on_date,  # дата МЭР
+            "next_gtm": _find_next_gtm(df),  # дата следующего ГТМ
+            "pred_date": _calc_pred_date(df, pred_period),  # конец прогноза
+        }
+    )
+    # вместо temp_df.min(axis=1), т.к. это не работает
+    # для datetime.date и None (NaT)
+    s = temp_df.agg(
+        lambda s: pd.to_datetime(s).min().date(),  # type: ignore
+        axis=1,
+    )
+    return s
+
+
+def _prepare_ns_ppd(
+    df: pd.DataFrame,
+    base_period: int,
+    pred_period: int | None,
+    on_date: date | None,
+) -> pd.DataFrame:
+    df = df.sort_values(["field", "well", "gtm_date"])
     df["reservoir_neighbs"] = df["reservoir_neighbs"].fillna(df["reservoir"])
     df = df.assign(reservoir_all=df["reservoir_neighbs"])
+    df["date_base"] = _add_months(df["gtm_date"], -base_period)
+    df["date_to"] = _infer_end_date(df, pred_period, on_date)
+    return df
+
+
+def _expand_reservoir(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
     df["reservoir"] = df["reservoir_neighbs"].str.split(delimiter)
     df.drop(columns=["reservoir_neighbs"], inplace=True)
     df = df.explode("reservoir")
@@ -52,24 +112,19 @@ def _expand_neighbs(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
     return df
 
 
-def _expand_date_pred(
-    df: pd.DataFrame, base_period: int, pred_period: int
-) -> pd.DataFrame:
-    num_pred = df.shape[0] * list(range(-base_period, pred_period))
-    df["date_base"] = _add_months(df["gtm_date"], -base_period)
-    df["date_to"] = _add_months(df["gtm_date"], pred_period - 1)
+def _expand_date_pred(df: pd.DataFrame, base_period: int) -> pd.DataFrame:
     df = _expand_date_range(df, "date_base", "date_to", "date_pred")
-    df.drop(columns=["date_to"], inplace=True)
-    df = df.assign(num_pred=num_pred)
+    cols = ["field", "well", "reservoir", "gtm_date", "neighbs"]
+    df["num_pred"] = df.groupby(cols).cumcount() - base_period
     return df
 
 
-def _prepare_ns_ppd(
-    df: pd.DataFrame, delimiter: str, base_period: int, pred_period: int
+def _expand_ns_ppd(
+    df: pd.DataFrame, delimiter: str, base_period: int
 ) -> pd.DataFrame:
     df = _expand_reservoir(df, delimiter)
     df = _expand_neighbs(df, delimiter)
-    df = _expand_date_pred(df, base_period, pred_period)
+    df = _expand_date_pred(df, base_period)
     return df
 
 
@@ -261,35 +316,23 @@ def _join_pivot(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _find_effect_end(df: pd.DataFrame, on_date: date) -> pd.DataFrame:
-    cols = ["field", "well", "gtm_date"]
-    df_end = df[cols].drop_duplicates().sort_values(cols)
-    df_end["effect_end"] = _add_months(df_end["gtm_date"], 0)
-    df_end["effect_end"] = df_end.groupby(["field", "well"])[
-        "effect_end"
-    ].shift(periods=-1, fill_value=on_date)
-    return df_end
-
-
-def _join_effect_end(df: pd.DataFrame, on_date: date) -> pd.DataFrame:
-    df_end = _find_effect_end(df, on_date)
-    left_on = ["field", "well", "gtm_date", "date_pred"]
-    right_on = ["field", "well", "gtm_date", "effect_end"]
-    df = pd.merge(df, df_end, left_on=left_on, right_on=right_on, how="left")
-    df["effect_end"] = df["effect_end"].notna()
+def _find_effect_end(df: pd.DataFrame) -> pd.DataFrame:
+    df["effect_end"] = df["date_pred"] == df["date_to"]
+    df.drop(columns=["date_to"], inplace=True)
     return df
 
 
 def _process_data(
     dfs: dict[str, pd.DataFrame],
     base_period: int,
-    pred_period: int,
+    pred_period: int | None,
     excludes: list[ExcludeGTM],
-    on_date: date,
+    on_date: date | None,
     delimiter: str,
 ) -> pd.DataFrame:
     delete_gtm = "|".join(excludes)
-    df = _prepare_ns_ppd(dfs["ns_ppd"], delimiter, base_period, pred_period)
+    df = _prepare_ns_ppd(dfs["ns_ppd"], base_period, pred_period, on_date)
+    df = _expand_ns_ppd(df, delimiter, base_period)
     df = _join_ns_oil(df, _prepare_ns_oil(dfs["ns_oil"]))
     df = _get_base_neighbs(df, delete_gtm)
     df = _join_inj_mer(df, dfs["mer"], "base")
@@ -298,7 +341,7 @@ def _process_data(
     df = _join_prod_mer(df, dfs["mer"], "pred")
     df = _calc_loss(df)
     df = _join_pivot(df)
-    df = _join_effect_end(df, on_date)
+    df = _find_effect_end(df)
     return df
 
 
@@ -307,19 +350,22 @@ async def matrix_report(
     date_from: date,
     date_to: date,
     base_period: int,
-    pred_period: int,
+    pred_period: int | None,
     excludes: list[ExcludeGTM],
-    on_date: date,
+    on_date: date | None,
     dao: MatrixReporter,
     pool: ProcessPoolManager,
     delimiter: str,
     csv_config: CsvSettings,
 ) -> None:
+    mer_date_from, mer_date_to = _get_mer_bounds(
+        date_from, date_to, base_period, pred_period, on_date
+    )
     dfs = await dao.read_all(
         date_from=date_from,
         date_to=date_to,
-        base_period=base_period,
-        pred_period=pred_period,
+        mer_date_from=mer_date_from,
+        mer_date_to=mer_date_to,
     )
     df = await pool.run(
         _process_data,

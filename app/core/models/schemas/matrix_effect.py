@@ -11,7 +11,7 @@ ON_DATE = date.today().replace(day=1) - relativedelta(months=1)
 
 
 class MatrixEffect(DateRange):
-    base_period: PositiveInt = Field(..., examples=[1])
+    base_period: PositiveInt = Field(1, examples=[1])
     pred_period: PositiveInt | None = Field(None, examples=[12])
     excludes: list[ExcludeGTM] = Field(..., examples=[[ExcludeGTM.perf]])
     on_date: date | None = Field(None, examples=[ON_DATE])

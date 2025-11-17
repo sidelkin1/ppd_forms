@@ -129,7 +129,7 @@ async function loadMatrix(reportName) {
       date_from: dateFrom,
       date_to: dateTo,
       excludes: excludes,
-      base_period: basePeriod,
+      ...(basePeriod && { base_period: basePeriod }),
       ...(predPeriod && { pred_period: predPeriod }),
       ...(onDate && { on_date: onDate }),
       ...(files[0] && { wells: files[0].filename }),

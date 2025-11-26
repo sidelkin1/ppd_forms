@@ -54,8 +54,17 @@ def _expand_date_range(
 
 
 def _find_next_gtm(df: pd.DataFrame) -> pd.Series:
-    s = df.groupby(["field", "well"])["gtm_date"].shift(periods=-1)
-    s = _add_months(s, 0)
+    cols = ["field", "well", "gtm_date"]
+    unique_dates = df[cols].drop_duplicates().copy()
+    unique_dates["next_gtm"] = unique_dates.groupby(["field", "well"])[
+        "gtm_date"
+    ].shift(-1)
+    next_gtm = (
+        df[cols]
+        .merge(unique_dates, on=cols, how="left")
+        .set_index(df.index)["next_gtm"]
+    )
+    s = _add_months(next_gtm, 0)
     return s
 
 

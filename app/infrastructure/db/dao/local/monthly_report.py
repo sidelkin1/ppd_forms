@@ -9,6 +9,7 @@ class MonthlyReportDAO(MainTableDAO[MonthlyReport, MonthlyReportDB]):
     constraint_name: str = "uq__monthlyreport__field"
     excluded_fields: list[str] = [
         "cid_all",
+        "oil",
         "oil_v",
         "water_v",
         "water",

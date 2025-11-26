@@ -10,6 +10,7 @@ class NewStrategyInjDAO(MainTableDAO[NewStrategyInj, NewStrategyInjDB]):
     excluded_fields: list[str] = [
         "gtm_description",
         "oil_recovery",
+        "effect_end",
         "gtm_group",
         "oil_rate",
         "gtm_problem",

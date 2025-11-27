@@ -60,11 +60,11 @@ class NewStrategyInjDAO(AbstractBaseDAO[NewStrategyInjDB]):
 
     @property
     def width(self) -> int:
-        workbook = CalamineWorkbook.from_path(self.narrow_dao.filepath)
-        sheet = workbook.get_sheet_by_name(
-            self.narrow_dao.excel_options["sheet_name"]
-        )
-        return sheet.width
+        with CalamineWorkbook.from_path(self.narrow_dao.filepath) as workbook:
+            sheet = workbook.get_sheet_by_name(
+                self.narrow_dao.excel_options["sheet_name"]
+            )
+            return sheet.width
 
     async def get_all(self) -> list[NewStrategyInjDB]:
         if self.width == SHORT_EXCEL_WIDTH:

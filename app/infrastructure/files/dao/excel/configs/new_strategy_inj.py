@@ -4,7 +4,7 @@ from typing import Any, Callable
 import pandas as pd
 
 RESERVOIRS_WELLS_SEPARATOR = ":"
-SHORT_EXCEL_WIDTH = 71
+NARROW_EXCEL_WIDTH = 71
 
 _pattern = re.compile(
     r"(?P<reservoir>[\w\-+()]*)\s*:(?P<neighbs>.*?)(?=[\w\-+()]*\s*:|$)",

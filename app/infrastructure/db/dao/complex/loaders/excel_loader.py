@@ -5,10 +5,10 @@ from app.infrastructure.db.dao.complex.loaders.base import (
     BaseLoader,
     DestinationDAO,
 )
-from app.infrastructure.files.dao.excel.base import BaseDAO
+from app.infrastructure.files.dao.excel.base import AbstractBaseDAO
 
 SourceDAO = TypeVar(
-    "SourceDAO", bound=BaseDAO, covariant=True, contravariant=False
+    "SourceDAO", bound=AbstractBaseDAO, covariant=True, contravariant=False
 )
 
 

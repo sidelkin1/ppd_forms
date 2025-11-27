@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, TypeVar
 
@@ -8,7 +9,13 @@ from pydantic import BaseModel
 Model = TypeVar("Model", bound=BaseModel, covariant=True, contravariant=False)
 
 
-class BaseDAO(Generic[Model]):
+class AbstractBaseDAO(ABC, Generic[Model]):
+    @abstractmethod
+    async def get_all(self) -> list[Model]:
+        raise NotImplementedError
+
+
+class BaseDAO(AbstractBaseDAO[Model]):
     def __init__(
         self,
         model: type[Model],

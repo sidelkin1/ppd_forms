@@ -4,6 +4,7 @@ from typing import Any, Callable
 import pandas as pd
 
 RESERVOIRS_WELLS_SEPARATOR = ":"
+SHORT_EXCEL_WIDTH = 71
 
 _pattern = re.compile(
     r"(?P<reservoir>[\w\-+()]*)\s*:(?P<neighbs>.*?)(?=[\w\-+()]*\s*:|$)",
@@ -27,7 +28,7 @@ def convert_neighbs_factory(delimiter: str) -> Callable[[Any], str]:
     return convert_neighbs
 
 
-def excel_options(delimiter: str) -> dict[str, Any]:
+def wide_excel_options(delimiter: str) -> dict[str, Any]:
     return {
         "converters": {
             1: str,
@@ -44,7 +45,16 @@ def excel_options(delimiter: str) -> dict[str, Any]:
     }
 
 
-column_names = [
+narrow_excel_options = {
+    "converters": {1: str},
+    "parse_dates": [4],
+    "sheet_name": "Лист1",
+    "header": 4,
+    "usecols": [2, 4, 9, 17, 52],
+    "na_values": "#Н/Д",
+}
+
+wide_column_names = [
     "field",
     "well",
     "reservoir",
@@ -57,3 +67,21 @@ column_names = [
     "gtm_problem",
     "neighbs",
 ]
+
+narrow_column_names = [
+    "field",
+    "well",
+    "reservoir",
+    "gtm_description",
+    "gtm_date",
+]
+
+extra_columns = {
+    "oil_recovery": None,
+    "effect_end": None,
+    "gtm_group": "",
+    "oil_rate": None,
+    "gtm_problem": "",
+    "neighbs": "",
+    "reservoir_neighbs": "",
+}

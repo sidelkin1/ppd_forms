@@ -6,18 +6,18 @@ from fastapi.concurrency import run_in_threadpool
 
 from app.infrastructure.db.mappers import (
     field_mapper,
-    multi_well_mapper,
+    multi_well_no_branch_mapper,
     reservoir_mapper,
-    well_mapper,
+    well_no_branch_mapper,
 )
 
 
 class MatrixReporter:
     converters = {
         "М-е": lambda s: field_mapper[str(s)],
-        "№ скв.": lambda s: well_mapper[str(s)],
+        "№ скв.": lambda s: well_no_branch_mapper[str(s)],
         "Объект": lambda s: reservoir_mapper[str(s)],
-        "Округа": lambda s: multi_well_mapper[str(s)],
+        "Округа": lambda s: multi_well_no_branch_mapper[str(s)],
         "Дата": lambda s: pd.to_datetime(s, format="%d.%m.%Y").date(),
     }
     usecols = [

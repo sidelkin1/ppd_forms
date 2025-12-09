@@ -3,6 +3,7 @@
 {% from '/macros/forms.html' import form_date_range, form_on_date %}
 {% from 'reports/macros/forms.html' import
     form_inj_loss,
+    form_oil_loss,
     form_matrix,
     form_fnv,
     form_matbal,
@@ -47,7 +48,7 @@
                             {% if report.path == "inj_loss" %}
                                 {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
                             {% elif report.path == "oil_loss" %}
-                                {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
+                                {{ form_oil_loss(report, "Выгрузить", "loadOilLoss") }}
                             {% elif report.path == "matrix" %}
                                 {{ form_matrix(report, "Выгрузить", "loadMatrix") }}
                             {% elif report.path == "fnv" %}

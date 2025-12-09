@@ -12,6 +12,31 @@
             </option>
         {% endfor %}
     </select>
+    <div class="form-check form-check-inline mb-3">
+        <input
+            class="form-check-input"
+            type="checkbox"
+            id="{{ report.path }}Neighbs"
+            value="neighbs_from_ns_ppd"
+            {% if report.neighbs_from_ns_ppd %}checked{% endif %}
+        >
+        <label class="form-check-label" for="{{ report.path }}Neighbs">Округа из НС ППД</label>
+    </div>
+    {{ spinner_button(report.path, button_text, button_func) }}
+{%- endmacro %}
+
+{% macro form_oil_loss(report, button_text, button_func) -%}
+    {{ date_range(report.path) }}
+    <select class="form-select mb-3" id="{{ report.path }}Select">
+        {% for option in report.loss_mode %}
+            <option
+                value="{{ option.value }}"
+                {% if option.selected %}selected{% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
 

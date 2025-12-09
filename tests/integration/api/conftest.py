@@ -24,6 +24,7 @@ from app.infrastructure.redis.config.models.redis import RedisSettings
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from tests.fixtures.task_fixtures import (  # noqa
     date_range,
+    inj_loss,
     matrix_effect,
     task_database,
     task_excel,

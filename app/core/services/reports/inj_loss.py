@@ -40,6 +40,7 @@ def _gather_neighbs(
     df_inj_db: pd.DataFrame,
     df_ns_ppd: pd.DataFrame,
     df_neighbs: pd.DataFrame,
+    neighbs_from_ns_ppd: bool,
     delimiter: str,
 ) -> pd.DataFrame:
     df = pd.merge(
@@ -55,7 +56,10 @@ def _gather_neighbs(
         how="left",
         suffixes=("", "_gid"),
     )
-    df["neighbs"] = df["neighbs"].fillna(df["neighbs_gid"])
+    if neighbs_from_ns_ppd:
+        df["neighbs"] = df["neighbs"].fillna(df["neighbs_gid"])
+    else:
+        df["neighbs"] = df["neighbs_gid"]
     df.drop(columns=["neighbs_gid"], inplace=True)
     df["gtm_date"] = df["gtm_date"].fillna("")
     df["gtm_group"] = df["gtm_group"].fillna("")
@@ -212,10 +216,14 @@ def _join_pivot(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _process_data(
-    dfs: dict[str, pd.DataFrame], delimiter: str
+    dfs: dict[str, pd.DataFrame], neighbs_from_ns_ppd: bool, delimiter: str
 ) -> pd.DataFrame:
     df = _gather_neighbs(
-        dfs["inj_db"], dfs["ns_ppd"], dfs["neighbs"], delimiter
+        dfs["inj_db"],
+        dfs["ns_ppd"],
+        dfs["neighbs"],
+        neighbs_from_ns_ppd,
+        delimiter,
     )
     df = _join_ns_oil(df, dfs["ns_oil"])
     df = _join_mer(df, dfs["mer"])
@@ -228,13 +236,14 @@ async def inj_loss_report(
     path: Path,
     date_from: date,
     date_to: date,
+    neighbs_from_ns_ppd: bool,
     dao: FirstRateInjLossReporter | MaxRateInjLossReporter,
     pool: ProcessPoolManager,
     delimiter: str,
     csv_config: CsvSettings,
 ) -> None:
     dfs = await dao.read_all(date_from=date_from, date_to=date_to)
-    df = await pool.run(_process_data, dfs, delimiter)
+    df = await pool.run(_process_data, dfs, neighbs_from_ns_ppd, delimiter)
     await save_to_csv(
         df, path / "inj_loss.csv", csv_config.encoding, csv_config.delimiter
     )

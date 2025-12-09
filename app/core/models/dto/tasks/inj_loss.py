@@ -6,3 +6,4 @@ class TaskInjLoss(
     TaskReport, task_id=TaskId.report, route_fields=["task_id", "name", "mode"]
 ):
     mode: LossMode
+    neighbs_from_ns_ppd: bool

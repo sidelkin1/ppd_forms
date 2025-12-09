@@ -26,7 +26,7 @@ def get_unknown_name_url(task: TaskReport) -> str:
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_inj_loss", "date_range"),
+        ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],
 )
@@ -53,7 +53,7 @@ async def test_generate_report_success(
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_inj_loss", "date_range"),
+        ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],
 )
@@ -88,7 +88,7 @@ async def test_generate_report_no_dates(
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_inj_loss", "date_range"),
+        ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],
 )
@@ -116,7 +116,7 @@ async def test_generate_report_dates_not_ordered(
     "task,schema",
     [
         ("task_report", "date_range"),
-        ("task_inj_loss", "date_range"),
+        ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],
 )

@@ -76,6 +76,40 @@ async function loadInjLoss(reportName) {
   const dateFrom = document.getElementById(`${reportName}Start`).value;
   const dateTo = document.getElementById(`${reportName}End`).value;
   const lossMode = document.getElementById(`${reportName}Select`).value;
+  const neighbs = document.getElementById(`${reportName}Neighbs`).checked;
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const url = `/reports/${reportName}/${lossMode}`;
+  const data = {
+    date_from: dateFrom,
+    date_to: dateTo,
+    neighbs_from_ns_ppd: neighbs,
+  };
+  const result = await assignWork(reportName, url, data);
+  if (result) {
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/zip`
+    );
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}
+
+async function loadOilLoss(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const dateFrom = document.getElementById(`${reportName}Start`).value;
+  const dateTo = document.getElementById(`${reportName}End`).value;
+  const lossMode = document.getElementById(`${reportName}Select`).value;
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");

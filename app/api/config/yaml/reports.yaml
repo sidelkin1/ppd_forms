@@ -16,6 +16,7 @@
   - text: Максимальный Qн
     value: max_rate
     selected: false
+  neighbs_from_ns_ppd: false
   description: Потери Qн по округе нагнетательных скважин
 - title: Эффект ГТМ ППД по матрице
   path: matrix

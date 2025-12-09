@@ -107,6 +107,20 @@ async def test_reports(
         await service(
             tmp_path, date_from, date_to, dao_, process_pool, csv_config
         )
+    elif dao in (
+        "first_rate_inj_loss_reporter",
+        "max_rate_inj_loss_reporter",
+    ):
+        await service(
+            tmp_path,
+            date_from,
+            date_to,
+            True,
+            dao_,
+            process_pool,
+            ",",
+            csv_config,
+        )
     else:
         await service(
             tmp_path, date_from, date_to, dao_, process_pool, ",", csv_config

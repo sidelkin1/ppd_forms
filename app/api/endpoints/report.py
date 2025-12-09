@@ -34,6 +34,7 @@ from app.core.models.enums import FileExtension, LossMode, ReportName
 from app.core.models.schemas import (
     DateRange,
     FnvParams,
+    InjLoss,
     MatbalParams,
     MatrixEffect,
     MmbParams,
@@ -53,7 +54,7 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 )
 async def generate_inj_loss_report(
     mode: LossMode,
-    date_range: DateRange,
+    inj_loss: InjLoss,
     user: UserDep,
     redis: RedisDep,
     job: NewJobDep,
@@ -61,8 +62,9 @@ async def generate_inj_loss_report(
     task = TaskInjLoss(
         name=ReportName.inj_loss,
         mode=mode,
-        date_from=date_range.date_from,
-        date_to=date_range.date_to,
+        date_from=inj_loss.date_from,
+        date_to=inj_loss.date_to,
+        neighbs_from_ns_ppd=inj_loss.neighbs_from_ns_ppd,
     )
     response = InjLossResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)
@@ -72,7 +74,7 @@ async def generate_inj_loss_report(
 @router.post(
     "/oil_loss/{mode}",
     status_code=status.HTTP_201_CREATED,
-    response_model=InjLossResponse,
+    response_model=OilLossResponse,
     response_model_exclude_none=True,
 )
 async def generate_oil_loss_report(

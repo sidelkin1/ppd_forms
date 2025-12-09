@@ -14,7 +14,7 @@ from app.core.models.enums import (
     OfmTableName,
     ReportName,
 )
-from app.core.models.schemas import DateRange, MatrixEffect
+from app.core.models.schemas import DateRange, InjLoss, MatrixEffect
 
 
 @pytest.fixture
@@ -22,6 +22,15 @@ def date_range() -> DateRange:
     return DateRange(
         date_from="2020-01-01",
         date_to="2020-12-31",
+    )
+
+
+@pytest.fixture
+def inj_loss() -> InjLoss:
+    return InjLoss(
+        date_from="2020-01-01",
+        date_to="2020-12-31",
+        neighbs_from_ns_ppd=True,
     )
 
 
@@ -72,6 +81,7 @@ def task_inj_loss(date_range: DateRange) -> TaskInjLoss:
         mode=LossMode.first_rate,
         date_from=date_range.date_from,
         date_to=date_range.date_to,
+        neighbs_from_ns_ppd=True,
     )
 
 

@@ -5,6 +5,7 @@ from app.infrastructure.db.types import (  # noqa
     MultiLayerType,
     MultiResevoirType,
     MultiSplitResevoirType,
+    MultiWellNoBranchType,
     MultiWellType,
     ResevoirType,
     WellNoBranchType,

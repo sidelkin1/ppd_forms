@@ -7,13 +7,21 @@ from .fields import FieldType
 from .gtms import GtmType
 from .layers import LayerType, MultiLayerType, WellTestMultiLayerType
 from .reservoirs import MultiResevoirType, MultiSplitResevoirType, ResevoirType
-from .wells import MultiWellType, WellNoBranchType, WellType
+from .wells import (
+    MultiWellNoBranchType,
+    MultiWellType,
+    WellNoBranchType,
+    WellType,
+)
 
 # Типы с mapper
 field_type = Annotated[str, mapped_column(FieldType(50))]
 well_type = Annotated[str, mapped_column(WellType(10))]
 well_no_branch_type = Annotated[str, mapped_column(WellNoBranchType(10))]
 multi_well_type = Annotated[str, mapped_column(MultiWellType(100))]
+multi_well_no_branch_type = Annotated[
+    str, mapped_column(MultiWellNoBranchType(100))
+]
 reservoir_type = Annotated[str, mapped_column(ResevoirType(100))]
 multi_reservoir_type = Annotated[str, mapped_column(MultiResevoirType(200))]
 multi_split_reservoir_type = Annotated[

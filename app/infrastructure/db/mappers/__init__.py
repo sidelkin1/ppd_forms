@@ -36,6 +36,9 @@ well_no_branch_mapper = WellMapper(
 
 # Список скважин
 multi_well_mapper = WellMapper(unique=True, delimiter=settings.delimiter)
+multi_well_no_branch_mapper = WellMapper(
+    unique=True, del_branch=True, delimiter=settings.delimiter
+)
 
 # Индекс пласта
 layer_mapper = LayerMapper(split=False, delimiter=settings.delimiter)

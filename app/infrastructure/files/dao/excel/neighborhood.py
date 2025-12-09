@@ -14,7 +14,8 @@ class NeighborhoodDAO(BaseDAO[NeighborhoodDB]):
 
     async def get_all(self) -> list[NeighborhoodDB]:
         df = await self._get_all()
-        df = df.dropna()
+        cols = ["field", "reservoir", "well"]
+        df = df.dropna().groupby(cols, as_index=False).agg(",".join)
         return [
             self.model.model_validate(row)
             for row in df.itertuples(index=False)

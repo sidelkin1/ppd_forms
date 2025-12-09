@@ -11,8 +11,8 @@ from app.infrastructure.db.models.local.mixins import date_stamp_factory
 class Neighborhood(date_stamp_factory("created_at"), Base):
     field: Mapped[types.field_type]
     reservoir: Mapped[types.reservoir_type]
-    well: Mapped[types.well_type]
-    neighbs: Mapped[types.multi_well_type]
+    well: Mapped[types.well_no_branch_type]
+    neighbs: Mapped[types.multi_well_no_branch_type]
     created_at: Mapped[date] = mapped_column(
         server_default=text("current_date")
     )

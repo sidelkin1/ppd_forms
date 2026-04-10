@@ -8,6 +8,7 @@ from app.infrastructure.db.models.local import NewStrategyInj
 class NewStrategyInjDAO(MainTableDAO[NewStrategyInj, NewStrategyInjDB]):
     constraint_name: str = "uq__newstrategyinj__field"
     excluded_fields: list[str] = [
+        "reservoir",
         "gtm_description",
         "oil_recovery",
         "effect_end",

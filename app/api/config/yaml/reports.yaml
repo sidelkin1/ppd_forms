@@ -137,3 +137,16 @@
   gdis_period: Период ГДИС (лет)
   radius: Радиус
   description: Выгрузка для отчета по ГДИС (аналитика, ГТМ и т.д.)
+- title: Пересчет давления на ВНК
+  path: owc_resp
+  fields:
+  - text: --Выберите месторождение--
+    value: --
+    selected: true
+  reservoirs:
+  - text: --Выберите объект--
+    value: --
+    selected: true
+  well: Номер скважин
+  description: Пересчет давления на глубину с учетом инклинометрии скважины
+

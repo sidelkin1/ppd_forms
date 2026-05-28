@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadReportFields([
     ["fnv", "fields?stock=injection"],
     ["matbal", "fields?stock=production"],
+    ["owc_resp", "fields"],
   ]);
 });
 
@@ -33,7 +34,7 @@ async function fetchFields(report, path) {
 async function loadReportFields(reportFields) {
   try {
     await Promise.all(
-      reportFields.map(([report, path]) => fetchFields(report, path))
+      reportFields.map(([report, path]) => fetchFields(report, path)),
     );
   } catch (error) {
     console.error("Error:", error);

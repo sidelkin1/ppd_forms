@@ -213,3 +213,35 @@
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
+
+{% macro form_owc_resp(report, button_text, button_func) -%}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Fields"
+        onchange="fetchReservoirs('{{ report.path }}', 'reservoirs')"
+    >
+        {% for option in report.fields %}
+            <option
+                value="{{ option.value }}"
+                {% if option.selected %}selected{% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+    <select class="form-select mb-3" id="{{ report.path }}Reservoirs">
+        {% for option in report.reservoirs %}
+            <option
+                value="{{ option.value }}"
+                {% if option.selected %}selected{% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="{{ report.path }}Well" name="well" placeholder>
+        <label for="{{ report.path }}Well">Номер скважины</label>
+    </div>    
+    {{ spinner_button(report.path, button_text, button_func) }}
+{%- endmacro %}

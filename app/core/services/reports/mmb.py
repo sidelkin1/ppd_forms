@@ -2,6 +2,7 @@ import asyncio
 from datetime import date
 from pathlib import Path
 from shutil import make_archive
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -116,7 +117,7 @@ def _split_bhp(df: pd.DataFrame) -> pd.DataFrame:
     # 1. Одновременная добыча и закачка (см. `_correct_ambiguity`)
     # 2. Неучтенные замеры Рзаб (см. `_refill_bhp`)
     crit_prod = df[["Qoil", "Qwat"]].sum(axis=1) > 0
-    loc = df.columns.get_loc("Pbhp")
+    loc = cast(int, df.columns.get_loc("Pbhp"))
     df.insert(loc, "Pbhp_prod", df.loc[crit_prod, "Pbhp"])
     crit_inj = df["Qinj"] > 0
     df.insert(loc + 1, "Pbhp_inj", df.loc[crit_inj, "Pbhp"])
@@ -201,7 +202,7 @@ def _refill_bhp(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _calc_liquid(df: pd.DataFrame) -> pd.DataFrame:
-    loc = df.columns.get_loc("Qwat")
+    loc = cast(int, df.columns.get_loc("Qwat"))
     Qliq = df["Qoil"] + df["Qwat"]
     df.insert(loc=loc + 1, column="Qliq", value=Qliq)
     return df
@@ -316,7 +317,7 @@ def _filter_connections(
 
 
 def _insert_columns(df: pd.DataFrame, zero_time: date) -> pd.DataFrame:
-    loc = df.columns.get_loc("Neighb")
+    loc = cast(int, df.columns.get_loc("Neighb"))
     df.insert(loc=loc + 1, column="Parameter", value="Tconn")
     df.insert(loc=loc + 2, column="Date", value=zero_time)
     df.rename(columns={"T": "Init_value"}, inplace=True)

@@ -6,5 +6,6 @@ from .matbal_params import MatbalParams
 from .matrix_effect import MatrixEffect
 from .mmb_params import MmbParams
 from .on_date import OnDate
+from .owc_resp_params import OwcRespParams
 from .prolong_params import ProlongParams
 from .well_test_params import WellTestParams

@@ -1,4 +1,10 @@
-from pydantic import BaseModel, Field, NonNegativeFloat, PositiveInt
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    NonNegativeFloat,
+    PositiveInt,
+)
 
 
 class WellTestParams(BaseModel):
@@ -6,3 +12,5 @@ class WellTestParams(BaseModel):
     gtm_period: PositiveInt = Field(..., examples=[6])
     gdis_period: PositiveInt = Field(..., examples=[3])
     radius: NonNegativeFloat = Field(..., examples=[300])
+
+    model_config = ConfigDict(extra="forbid")

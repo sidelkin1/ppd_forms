@@ -127,3 +127,8 @@ class ResPty(Reflected, Base):
 class Reservoir2(Reflected, Base):
     __tablename__ = "reservoir2"
     __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class WellMonthHist(Reflected, Base):
+    __tablename__ = "well_month_hist"
+    __table_args__ = {"schema": "udmurtneft_n"}

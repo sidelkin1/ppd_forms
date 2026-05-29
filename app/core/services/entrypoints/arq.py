@@ -12,6 +12,7 @@ from app.api.models.responses import (
     MatrixResponse,
     MmbResponse,
     OilLossResponse,
+    OwcRespResponse,
     ProlongResponse,
     ReportResponse,
     ReservoirsResponse,
@@ -31,6 +32,7 @@ from app.core.services.reports import (
     mmb_report,
     oil_loss_report,
     opp_per_year_report,
+    owc_resp_report,
     profile_report,
     prolong_report,
     well_test_report,
@@ -465,6 +467,24 @@ async def create_well_test_report(
             response.task.radius,
             holder.well_test_reporter,
             ctx["pool"],
+        )
+
+
+@registry.add("report:owc_resp")
+async def create_owc_resp_report(
+    response: OwcRespResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    async with ctx["ofm_dao"]() as holder:
+        holder = cast(HolderDAO, holder)
+        await owc_resp_report(
+            path_provider.dir_path(user_id, file_id),
+            response.task.field.id,
+            response.task.reservoir.id,
+            response.task.well,
+            holder.owc_resp_reporter,
         )
 
 

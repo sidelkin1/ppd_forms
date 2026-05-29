@@ -304,6 +304,10 @@ class HolderDAO:
         return db_reporters.OfmWellTestReporter(self.kwargs["ofm_pool"])
 
     @property
+    def owc_resp_reporter(self) -> db_reporters.OwcRespReporter:
+        return db_reporters.OwcRespReporter(self.kwargs["ofm_pool"])
+
+    @property
     def file_matbal_reporter(self) -> file_reporters.MatbalReporter:
         return file_reporters.MatbalReporter(
             self.kwargs["path"],

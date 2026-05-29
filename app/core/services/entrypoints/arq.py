@@ -481,10 +481,12 @@ async def create_owc_resp_report(
         holder = cast(HolderDAO, holder)
         await owc_resp_report(
             path_provider.dir_path(user_id, file_id),
-            response.task.field.id,
-            response.task.reservoir.id,
+            path_provider.data_dir / "owc_resp_template.xlsx",
+            response.task.field,
+            response.task.reservoir,
             response.task.well,
             holder.owc_resp_reporter,
+            ctx["pool"],
         )
 
 

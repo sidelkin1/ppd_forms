@@ -485,6 +485,8 @@ async def create_owc_resp_report(
             response.task.field,
             response.task.reservoir,
             response.task.well,
+            response.task.pressure,
+            response.task.depth,
             holder.owc_resp_reporter,
             ctx["pool"],
         )

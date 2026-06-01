@@ -11,3 +11,5 @@ class TaskOwcResp(
     field: UneftFieldDB
     reservoir: UneftReservoirDB
     well: str
+    pressure: float
+    depth: float

@@ -9,6 +9,7 @@ class OwcRespReporter(OfmBaseDAO):
         super().__init__(
             {
                 "props": owc_resp.select_properties(),
+                "depths": owc_resp.select_depths(),
             },
             pool,
         )

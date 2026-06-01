@@ -135,3 +135,8 @@ class Reservoir2(Reflected, Base):
 class WellMonthHist(Reflected, Base):
     __tablename__ = "well_month_hist"
     __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class WellDirSrvyPts(Reflected, Base):
+    __tablename__ = "well_dir_srvy_pts"
+    __table_args__ = {"schema": "udmurtneft_n"}

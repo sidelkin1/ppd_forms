@@ -1,8 +1,10 @@
+from datetime import date
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, PositiveFloat, StringConstraints
 
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB
+from app.core.models.enums import WellTest
 
 
 class OwcRespParams(BaseModel):
@@ -13,5 +15,7 @@ class OwcRespParams(BaseModel):
     ]
     pressure: PositiveFloat
     depth: PositiveFloat
+    well_test: WellTest
+    on_date: date
 
     model_config = ConfigDict(extra="forbid")

@@ -1,7 +1,9 @@
+from datetime import date
+
 from app.core.models.dto.db.field_list import UneftFieldDB
 from app.core.models.dto.db.reservoir_list import UneftReservoirDB
 from app.core.models.dto.tasks.base import TaskBase
-from app.core.models.enums import ReportName, TaskId
+from app.core.models.enums import ReportName, TaskId, WellTest
 
 
 class TaskOwcResp(
@@ -13,3 +15,5 @@ class TaskOwcResp(
     well: str
     pressure: float
     depth: float
+    well_test: WellTest
+    on_date: date

@@ -9,3 +9,4 @@ from .table_name import ExcelTableName, OfmTableName
 from .task_id import TaskId
 from .uneft_assets import UneftAssets
 from .well_stock import WellStock
+from .well_test import WellTest

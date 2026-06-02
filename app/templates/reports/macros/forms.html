@@ -251,5 +251,19 @@
         <input type="number" class="form-control" id="{{ report.path }}Depth" name="depth" placeholder>
         <label for="{{ report.path }}Depth">Глубина (м)</label>
     </div>
+    <select class="form-select mb-3" id="{{ report.path }}WellTest">
+        {% for option in report.well_test %}
+            <option
+                value="{{ option.value }}"
+                {% if option.selected %}selected{% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+    <div class="form-floating mb-3">
+        <input type="date" class="form-control" id="{{ report.path }}OnDate" name="on_date" placeholder>
+        <label for="{{ report.path }}OnDate">На дату</label>
+    </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}

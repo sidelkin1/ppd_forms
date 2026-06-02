@@ -407,6 +407,8 @@ async function loadOwcResp(reportName) {
   const well = document.getElementById(`${reportName}Well`).value;
   const pressure = document.getElementById(`${reportName}Pressure`).value;
   const depth = document.getElementById(`${reportName}Depth`).value;
+  const wellTest = document.getElementById(`${reportName}WellTest`).value;
+  const onDate = document.getElementById(`${reportName}OnDate`).value;
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
@@ -420,6 +422,8 @@ async function loadOwcResp(reportName) {
     well: well,
     pressure: pressure,
     depth: depth,
+    well_test: wellTest,
+    on_date: onDate,
   };
   const result = await assignWork(reportName, url, data);
   if (result) {

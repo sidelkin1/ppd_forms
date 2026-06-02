@@ -283,6 +283,8 @@ async def generate_owc_resp_report(
         well=params.well,
         pressure=params.pressure,
         depth=params.depth,
+        well_test=params.well_test,
+        on_date=params.on_date,
     )
     response = OwcRespResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)

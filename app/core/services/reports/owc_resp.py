@@ -28,16 +28,13 @@ _CELL_WATERCUT = "B14"
 
 def _fill_properties(
     ws: Worksheet,
-    field: UneftFieldDB,
-    reservoir: UneftReservoirDB,
-    well: str,
+    props: pd.DataFrame,
     pressure: float,
     depth: float,
-    props: pd.DataFrame,
 ) -> None:
-    ws[_CELL_FIELD_NAME].value = field.name
-    ws[_CELL_RESERVOIT_NAME].value = reservoir.name
-    ws[_CELL_WELL_NAME].value = well
+    ws[_CELL_FIELD_NAME].value = props["field"].item()
+    ws[_CELL_RESERVOIT_NAME].value = props["reservoir"].item()
+    ws[_CELL_WELL_NAME].value = props["well"].item()
     ws[_CELL_WELL_MODE].value = props["well_mode"].item()
     ws[_CELL_ELEVATION].value = props["elevation"].item()
     ws[_CELL_OWC_ABS_DEPTH].value = props["abs_depth_owc"].item()
@@ -55,27 +52,16 @@ def _fill_depth(ws: Worksheet, depths: pd.DataFrame) -> None:
 
 
 def _process_data(
-    field: UneftFieldDB,
-    reservoir: UneftReservoirDB,
-    well: str,
+    dfs: dict[str, pd.DataFrame],
     pressure: float,
     depth: float,
-    dfs: dict[str, pd.DataFrame],
     path: Path,
     template: Path,
 ):
     result = path / template.name
     try:
         wb = openpyxl.load_workbook(template)
-        _fill_properties(
-            wb["Пересчет"],
-            field,
-            reservoir,
-            well,
-            pressure,
-            depth,
-            dfs["props"],
-        )
+        _fill_properties(wb["Пересчет"], dfs["props"], pressure, depth)
         _fill_depth(wb["Глубины"], dfs["depths"])
         save_workbook(wb, result)
     finally:
@@ -98,12 +84,9 @@ async def owc_resp_report(
     )
     await pool.run(
         _process_data,
-        field,
-        reservoir,
-        well,
+        dfs,
         pressure,
         depth,
-        dfs,
         path,
         template,
     )

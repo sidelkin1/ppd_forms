@@ -105,6 +105,11 @@ def _select_top_perf() -> ScalarSelect:
 
 def select_properties() -> Select:
     return select(
+        func.udmurtneft_n.dg_des(bindparam("field_id")).label("field"),
+        bindparam("well").label("well"),
+        func.udmurtneft_n.dg_sdes(bindparam("reservoir_id")).label(
+            "reservoir"
+        ),
         func.udmurtneft_n.dg_sdes(WellHdr.class_).label("well_mode"),
         WellHdr.elevation,
         -ResPty.abs_depth_owc,

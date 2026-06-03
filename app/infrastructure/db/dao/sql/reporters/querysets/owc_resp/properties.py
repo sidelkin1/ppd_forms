@@ -1,7 +1,10 @@
-from enum import Enum
-
-from sqlalchemy import bindparam, func, select, table, union
-from sqlalchemy.sql.expression import CompoundSelect, ScalarSelect, Select
+from sqlalchemy import between, bindparam, func, select, table, union
+from sqlalchemy.sql.expression import (
+    CompoundSelect,
+    ScalarSelect,
+    Select,
+    Subquery,
+)
 
 from app.infrastructure.db.models.ofm.reflected import (
     DictG,
@@ -10,14 +13,8 @@ from app.infrastructure.db.models.ofm.reflected import (
     WellHdr,
     WellMonthHist,
     WellPerforations,
+    WellStockHist,
 )
-
-
-class _ProdClass(Enum):
-    absorb = 7810
-    prod = 26690
-    inj = 42770
-    water = 80070
 
 
 def _select_reservoir_ids() -> CompoundSelect:
@@ -38,47 +35,58 @@ def _select_max_mer_date() -> ScalarSelect:
             WellMonthHist.uwi
             == func.coalesce(WellHdr.parent_uwi, WellHdr.uwi),
             WellMonthHist.layer_id.in_(_select_reservoir_ids()),
+            WellMonthHist.start_date <= bindparam("on_date"),
         )
         .scalar_subquery()
         .correlate(WellHdr)
     )
 
 
-def _select_max_prod_date() -> ScalarSelect:
+def _select_max_stock_date() -> Subquery:
     return (
-        select(func.max(WellMonthHist.start_date).label("max_date"))
-        .where(
-            WellMonthHist.uwi
-            == func.coalesce(WellHdr.parent_uwi, WellHdr.uwi),
-            WellMonthHist.layer_id.in_(_select_reservoir_ids()),
-            WellMonthHist.prod_class == _ProdClass.prod.value,
+        select(
+            WellStockHist.uwi,
+            func.max(WellStockHist.status_date).label("max_date"),
         )
-        .scalar_subquery()
-        .correlate(WellHdr)
+        .where(
+            WellStockHist.status_date <= bindparam("on_date"),
+        )
+        .group_by(WellStockHist.uwi)
+        .subquery()
+    )
+
+
+def _select_well_stock_hist() -> Subquery:
+    subq = _select_max_stock_date()
+    return (
+        select(
+            WellStockHist.uwi,
+            WellStockHist.prod_class,
+            WellStockHist.prod_method,
+            WellStockHist.status,
+        )
+        .where(
+            WellStockHist.uwi == subq.c.uwi,
+            WellStockHist.status_date == subq.c.max_date,
+        )
+        .subquery()
     )
 
 
 def _select_watercut() -> ScalarSelect:
     return (
         select(
-            func.sum(WellMonthHist.water_v)
-            / func.sum(WellMonthHist.water_v + WellMonthHist.oil_v)
-            * 100
+            func.decode(
+                func.sum(WellMonthHist.water_v + WellMonthHist.oil_v),
+                None,
+                100,
+                0,
+                100,
+                func.sum(WellMonthHist.water_v)
+                / func.sum(WellMonthHist.water_v + WellMonthHist.oil_v)
+                * 100,
+            )
         )
-        .where(
-            WellMonthHist.uwi
-            == func.coalesce(WellHdr.parent_uwi, WellHdr.uwi),
-            WellMonthHist.layer_id.in_(_select_reservoir_ids()),
-            WellMonthHist.start_date == _select_max_prod_date(),
-        )
-        .scalar_subquery()
-        .correlate(WellHdr)
-    )
-
-
-def _select_well_mode() -> ScalarSelect:
-    return (
-        select(func.min(WellMonthHist.prod_class))
         .where(
             WellMonthHist.uwi
             == func.coalesce(WellHdr.parent_uwi, WellHdr.uwi),
@@ -96,7 +104,11 @@ def _select_top_perf() -> ScalarSelect:
         .where(
             WellPerforations.uwi == WellHdr.uwi,
             WellPerforations.layer_id.in_(_select_reservoir_ids()),
-            WellPerforations.close_date == func.to_date("01.01.3000"),
+            between(
+                bindparam("on_date"),
+                WellPerforations.comp_date,
+                WellPerforations.close_date,
+            ),
         )
         .scalar_subquery()
         .correlate(WellHdr)
@@ -104,28 +116,25 @@ def _select_top_perf() -> ScalarSelect:
 
 
 def select_properties() -> Select:
+    stock = _select_well_stock_hist()
     return select(
         func.udmurtneft_n.dg_des(bindparam("field_id")).label("field"),
         bindparam("well").label("well"),
-        func.udmurtneft_n.dg_sdes(bindparam("reservoir_id")).label(
-            "reservoir"
-        ),
-        func.udmurtneft_n.dg_sdes(WellHdr.class_).label("well_mode"),
+        func.udmurtneft_n.dg_des(bindparam("reservoir_id")).label("reservoir"),
+        bindparam("on_date").label("on_date"),
         WellHdr.elevation,
-        -ResPty.abs_depth_owc,
+        func.abs(ResPty.abs_depth_owc).label("abs_depth_owc"),
         ResPty.layer_oil_density,
         ResPty.water_density,
-        func.decode(
-            _select_well_mode(),
-            _ProdClass.absorb.value,
-            100,
-            _ProdClass.inj.value,
-            100,
-            _ProdClass.water.value,
-            100,
-            _select_watercut(),
-        ).label("watercut"),
+        _select_watercut().label("watercut"),
         _select_top_perf().label("top_perf"),
+        func.udmurtneft_n.dg_des(WellHdr.operator).label("region"),
+        func.udmurtneft_n.dg_des(WellHdr.agent).label("workshop"),
+        WellHdr.rig_no.label("pad"),
+        func.udmurtneft_n.dg_des(WellHdr.hole_direction).label("wellbore"),
+        func.udmurtneft_n.dg_des(stock.c.prod_class).label("well_mode"),
+        func.udmurtneft_n.dg_sdes(stock.c.prod_method).label("well_lift"),
+        func.udmurtneft_n.dg_sdes(stock.c.status).label("well_status"),
     ).where(
         WellHdr.well_name == bindparam("well"),
         WellHdr.field == bindparam("field_id"),
@@ -134,4 +143,5 @@ def select_properties() -> Select:
         Reservoir2.district == WellHdr.district,
         Reservoir2.existence_type == "ACTUAL",
         ResPty.reservoir_s == Reservoir2.reservoir_s,
+        stock.c.uwi == func.coalesce(WellHdr.parent_uwi, WellHdr.uwi),
     )

@@ -482,11 +482,14 @@ async def create_owc_resp_report(
         await owc_resp_report(
             path_provider.dir_path(user_id, file_id),
             path_provider.data_dir / "owc_resp_template.xlsx",
+            path_provider.data_dir / "analytics_template.xlsx",
             response.task.field,
             response.task.reservoir,
             response.task.well,
             response.task.pressure,
             response.task.depth,
+            response.task.well_test,
+            response.task.on_date,
             holder.owc_resp_reporter,
             ctx["pool"],
         )

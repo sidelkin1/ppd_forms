@@ -1,3 +1,5 @@
+import asyncio
+from datetime import date
 from pathlib import Path
 from shutil import make_archive
 
@@ -9,41 +11,68 @@ from openpyxl.writer.excel import save_workbook
 
 from app.core.models.dto.db.field_list import UneftFieldDB
 from app.core.models.dto.db.reservoir_list import UneftReservoirDB
+from app.core.models.enums import WellTest
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.sql.reporters import OwcRespReporter
 
-_CELL_FIELD_NAME = "B1"
-_CELL_RESERVOIT_NAME = "B2"
-_CELL_WELL_NAME = "B3"
-_CELL_WELL_MODE = "B4"
-_CELL_ELEVATION = "B5"
-_CELL_OWC_ABS_DEPTH = "B6"
-_CELL_TOP_PERF_DEPTH = "B7"
-_CELL_MEASURED_PRESSURE = "B8"
-_CELL_MEASURED_DEPTH = "B9"
-_CELL_OIL_DENSITY = "B12"
-_CELL_WATER_DENSITY = "B13"
-_CELL_WATERCUT = "B14"
+_CALCULATOR_FIELD = "B1"
+_CALCULATOR_RESERVOIR = "B2"
+_CALCULATOR_WELL_NAME = "B3"
+_CALCULATOR_WELL_MODE = "B4"
+_CALCULATOR_ELEVATION = "B5"
+_CALCULATOR_OWC_ABS_DEPTH = "B6"
+_CALCULATOR_TOP_PERF_DEPTH = "B7"
+_CALCULATOR_MEASURED_PRESSURE = "B8"
+_CALCULATOR_MEASURED_DEPTH = "B9"
+_CALCULATOR_OIL_DENSITY = "B12"
+_CALCULATOR_WATER_DENSITY = "B13"
+_CALCULATOR_WATERCUT = "B14"
+
+_ANALYTICS_REGION = "B5"
+_ANALYTICS_WORKSHOP = "C5"
+_ANALYTICS_FIELD = "E5"
+_ANALYTICS_WELL_NAME = "F5"
+_ANALYTICS_WELL_PAD = "G5"
+_ANALYTICS_RESERVOIR = "I5"
+_ANALYTICS_WELL_MODE = "J5"
+_ANALYTICS_WELLBORE = "K5"
+_ANALYTICS_WELL_LIFT = "L5"
+_ANALYTICS_TOP_PERF_DEPTH = "M5"
+_ANALYTICS_TOP_PERF_OFFSET = "N5"
+_ANALYTICS_WATERCUT = "U5"
+_ANALYTICS_WELL_STATUS = "V5"
+_ANALYTICS_OIL_DENSITY = "AL5"
+_ANALYTICS_WATER_DENSITY = "AM5"
+_ANALYTICS_WELL_TEST_PLAN = "AW5"
+_ANALYTICS_WELL_TEST_ACTUAL = "AW5"
+_ANALYTICS_WELL_TEST_START_DATE = "BE5"
+_ANALYTICS_WELL_TEST_END_DATE = "BF5"
+_ANALYTICS_STATIC_LEVEL_DEPTH = "BL5"
+_ANALYTICS_ANNULAR_PRESSURE = "BM5"
+_ANALYTICS_MEASURED_DEPTH = "BN5"
+_ANALYTICS_MEASURED_PRESSURE = "BO5"
+_ANALYTICS_TOP_PERF_PRESSURE = "BY5"
+_ANALYTICS_OWC_PRESSURE = "BZ5"
 
 
-def _fill_properties(
+def _fill_calculator(
     ws: Worksheet,
     props: pd.DataFrame,
     pressure: float,
     depth: float,
 ) -> None:
-    ws[_CELL_FIELD_NAME].value = props["field"].item()
-    ws[_CELL_RESERVOIT_NAME].value = props["reservoir"].item()
-    ws[_CELL_WELL_NAME].value = props["well"].item()
-    ws[_CELL_WELL_MODE].value = props["well_mode"].item()
-    ws[_CELL_ELEVATION].value = props["elevation"].item()
-    ws[_CELL_OWC_ABS_DEPTH].value = props["abs_depth_owc"].item()
-    ws[_CELL_TOP_PERF_DEPTH].value = props["top_perf"].item()
-    ws[_CELL_MEASURED_PRESSURE].value = pressure
-    ws[_CELL_MEASURED_DEPTH].value = depth
-    ws[_CELL_OIL_DENSITY].value = props["layer_oil_density"].item()
-    ws[_CELL_WATER_DENSITY].value = props["water_density"].item()
-    ws[_CELL_WATERCUT].value = props["watercut"].item()
+    ws[_CALCULATOR_FIELD].value = props["field"].item()
+    ws[_CALCULATOR_RESERVOIR].value = props["reservoir"].item()
+    ws[_CALCULATOR_WELL_NAME].value = props["well"].item()
+    ws[_CALCULATOR_WELL_MODE].value = props["well_mode"].item()
+    ws[_CALCULATOR_ELEVATION].value = props["elevation"].item()
+    ws[_CALCULATOR_OWC_ABS_DEPTH].value = props["abs_depth_owc"].item()
+    ws[_CALCULATOR_TOP_PERF_DEPTH].value = props["top_perf"].item()
+    ws[_CALCULATOR_MEASURED_PRESSURE].value = pressure
+    ws[_CALCULATOR_MEASURED_DEPTH].value = depth
+    ws[_CALCULATOR_OIL_DENSITY].value = props["layer_oil_density"].item()
+    ws[_CALCULATOR_WATER_DENSITY].value = props["water_density"].item()
+    ws[_CALCULATOR_WATERCUT].value = props["watercut"].item()
 
 
 def _fill_depth(ws: Worksheet, depths: pd.DataFrame) -> None:
@@ -51,7 +80,45 @@ def _fill_depth(ws: Worksheet, depths: pd.DataFrame) -> None:
         ws.append(row)
 
 
-def _process_data(
+def _fill_analytics(
+    ws: Worksheet,
+    props: pd.DataFrame,
+    pressure: float,
+    depth: float,
+    well_test: WellTest,
+) -> None:
+    ws[_ANALYTICS_REGION].value = props["region"].item()
+    ws[_ANALYTICS_WORKSHOP].value = props["workshop"].item()
+    ws[_ANALYTICS_FIELD].value = props["field"].item()
+    ws[_ANALYTICS_WELL_NAME].value = props["well"].item()
+    ws[_ANALYTICS_WELL_PAD].value = props["pad"].item()
+    ws[_ANALYTICS_RESERVOIR].value = props["reservoir"].item()
+    ws[_ANALYTICS_WELL_MODE].value = props["well_mode"].item()
+    ws[_ANALYTICS_WELLBORE].value = props["wellbore"].item()
+    ws[_ANALYTICS_WELL_LIFT].value = props["well_lift"].item()
+    ws[_ANALYTICS_TOP_PERF_DEPTH].value = props["top_perf"].item()
+    ws[_ANALYTICS_WATERCUT].value = props["watercut"].item()
+    ws[_ANALYTICS_WELL_STATUS].value = props["well_status"].item()
+    ws[_ANALYTICS_OIL_DENSITY].value = props["layer_oil_density"].item()
+    ws[_ANALYTICS_WATER_DENSITY].value = props["water_density"].item()
+    ws[_ANALYTICS_WELL_TEST_ACTUAL].value = well_test.value
+    ws[_ANALYTICS_WELL_TEST_START_DATE].value = (
+        props["on_date"].dt.strftime("%d.%m.%Y").item()
+    )
+    ws[_ANALYTICS_WELL_TEST_END_DATE].value = (
+        props["on_date"].dt.strftime("%d.%m.%Y").item()
+    )
+    if well_test is WellTest.static_level:
+        ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл по Hст"
+        ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = depth
+        ws[_ANALYTICS_ANNULAR_PRESSURE].value = pressure
+    elif well_test is WellTest.pressure:
+        ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл"
+        ws[_ANALYTICS_MEASURED_DEPTH].value = depth
+        ws[_ANALYTICS_MEASURED_PRESSURE].value = pressure
+
+
+def _process_calculator(
     dfs: dict[str, pd.DataFrame],
     pressure: float,
     depth: float,
@@ -61,8 +128,25 @@ def _process_data(
     result = path / template.name
     try:
         wb = openpyxl.load_workbook(template)
-        _fill_properties(wb["Пересчет"], dfs["props"], pressure, depth)
+        _fill_calculator(wb["Пересчет"], dfs["props"], pressure, depth)
         _fill_depth(wb["Глубины"], dfs["depths"])
+        save_workbook(wb, result)
+    finally:
+        wb.close()
+
+
+def _process_analytics(
+    dfs: dict[str, pd.DataFrame],
+    pressure: float,
+    depth: float,
+    well_test: WellTest,
+    path: Path,
+    template: Path,
+):
+    result = path / template.name
+    try:
+        wb = openpyxl.load_workbook(template)
+        _fill_analytics(wb["Лист1"], dfs["props"], pressure, depth, well_test)
         save_workbook(wb, result)
     finally:
         wb.close()
@@ -70,24 +154,44 @@ def _process_data(
 
 async def owc_resp_report(
     path: Path,
-    template: Path,
+    calculator_template: Path,
+    analytics_template: Path,
     field: UneftFieldDB,
     reservoir: UneftReservoirDB,
     well: str,
     pressure: float,
     depth: float,
+    well_test: WellTest,
+    on_date: date,
     dao: OwcRespReporter,
     pool: ProcessPoolManager,
 ) -> None:
     dfs = await dao.read_all(
-        field_id=field.id, reservoir_id=reservoir.id, well=well
+        field_id=field.id,
+        reservoir_id=reservoir.id,
+        well=well,
+        on_date=on_date,
     )
-    await pool.run(
-        _process_data,
-        dfs,
-        pressure,
-        depth,
-        path,
-        template,
-    )
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(
+            pool.run(
+                _process_calculator,
+                dfs,
+                pressure,
+                depth,
+                path,
+                calculator_template,
+            )
+        )
+        tg.create_task(
+            pool.run(
+                _process_analytics,
+                dfs,
+                pressure,
+                depth,
+                well_test,
+                path,
+                analytics_template,
+            )
+        )
     make_archive(str(path), "zip", root_dir=path)

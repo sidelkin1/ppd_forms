@@ -1,7 +1,9 @@
-from sqlalchemy import bindparam, select
+from sqlalchemy import select
 from sqlalchemy.sql.expression import Select
 
 from app.infrastructure.db.models.ofm.reflected import WellDirSrvyPts, WellHdr
+
+from .branches import select_well_branch
 
 
 def select_depths() -> Select:
@@ -12,9 +14,8 @@ def select_depths() -> Select:
             (WellDirSrvyPts.md - WellDirSrvyPts.tvd).label("offset"),
         )
         .where(
-            WellHdr.uwi == WellDirSrvyPts.uwi,
-            WellHdr.well_name == bindparam("well"),
-            WellHdr.field == bindparam("field_id"),
+            WellHdr.uwi.in_(select_well_branch()),
+            WellDirSrvyPts.uwi == WellHdr.uwi,
             WellDirSrvyPts.dir_srvy_id == "SRVY_1",
         )
         .order_by(WellDirSrvyPts.md)

@@ -1,13 +1,11 @@
-from sqlalchemy import between, bindparam, func, select, table, union
+from sqlalchemy import between, bindparam, func, select
 from sqlalchemy.sql.expression import (
-    CompoundSelect,
     ScalarSelect,
     Select,
     Subquery,
 )
 
 from app.infrastructure.db.models.ofm.reflected import (
-    DictG,
     Reservoir2,
     ResPty,
     WellHdr,
@@ -16,16 +14,8 @@ from app.infrastructure.db.models.ofm.reflected import (
     WellStockHist,
 )
 
-
-def _select_reservoir_ids() -> CompoundSelect:
-    return union(
-        select(bindparam("reservoir_id").label("reservoir")).select_from(
-            table("dual")
-        ),
-        select(DictG.id.label("reservoir")).where(
-            DictG.mr == func.to_char(bindparam("reservoir_id"))
-        ),
-    )
+from .branches import select_well_branch
+from .reservoirs import select_reservoir_ids
 
 
 def _select_max_mer_date() -> ScalarSelect:
@@ -34,7 +24,7 @@ def _select_max_mer_date() -> ScalarSelect:
         .where(
             WellMonthHist.uwi
             == func.coalesce(WellHdr.parent_uwi, WellHdr.uwi),
-            WellMonthHist.layer_id.in_(_select_reservoir_ids()),
+            WellMonthHist.layer_id.in_(select_reservoir_ids()),
             WellMonthHist.start_date <= bindparam("on_date"),
         )
         .scalar_subquery()
@@ -90,7 +80,7 @@ def _select_watercut() -> ScalarSelect:
         .where(
             WellMonthHist.uwi
             == func.coalesce(WellHdr.parent_uwi, WellHdr.uwi),
-            WellMonthHist.layer_id.in_(_select_reservoir_ids()),
+            WellMonthHist.layer_id.in_(select_reservoir_ids()),
             WellMonthHist.start_date == _select_max_mer_date(),
         )
         .scalar_subquery()
@@ -103,7 +93,7 @@ def _select_top_perf() -> ScalarSelect:
         select(func.min(WellPerforations.top))
         .where(
             WellPerforations.uwi == WellHdr.uwi,
-            WellPerforations.layer_id.in_(_select_reservoir_ids()),
+            WellPerforations.layer_id.in_(select_reservoir_ids()),
             between(
                 bindparam("on_date"),
                 WellPerforations.comp_date,
@@ -136,8 +126,7 @@ def select_properties() -> Select:
         func.udmurtneft_n.dg_sdes(stock.c.prod_method).label("well_lift"),
         func.udmurtneft_n.dg_sdes(stock.c.status).label("well_status"),
     ).where(
-        WellHdr.well_name == bindparam("well"),
-        WellHdr.field == bindparam("field_id"),
+        WellHdr.uwi.in_(select_well_branch()),
         Reservoir2.reservoir_id == bindparam("reservoir_id"),
         Reservoir2.field_code == WellHdr.field,
         Reservoir2.district == WellHdr.district,

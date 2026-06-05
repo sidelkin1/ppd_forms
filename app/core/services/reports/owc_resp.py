@@ -3,6 +3,7 @@ from datetime import date
 from pathlib import Path
 from shutil import make_archive
 
+import numpy as np
 import openpyxl
 import pandas as pd
 from openpyxl.utils.dataframe import dataframe_to_rows
@@ -55,12 +56,7 @@ _ANALYTICS_TOP_PERF_PRESSURE = "BY5"
 _ANALYTICS_OWC_PRESSURE = "BZ5"
 
 
-def _fill_calculator(
-    ws: Worksheet,
-    props: pd.DataFrame,
-    pressure: float,
-    depth: float,
-) -> None:
+def _fill_calculator(ws: Worksheet, props: pd.DataFrame) -> None:
     ws[_CALCULATOR_FIELD].value = props["field"].item()
     ws[_CALCULATOR_RESERVOIR].value = props["reservoir"].item()
     ws[_CALCULATOR_WELL_NAME].value = props["well"].item()
@@ -68,8 +64,8 @@ def _fill_calculator(
     ws[_CALCULATOR_ELEVATION].value = props["elevation"].item()
     ws[_CALCULATOR_OWC_ABS_DEPTH].value = props["abs_depth_owc"].item()
     ws[_CALCULATOR_TOP_PERF_DEPTH].value = props["top_perf"].item()
-    ws[_CALCULATOR_MEASURED_PRESSURE].value = pressure
-    ws[_CALCULATOR_MEASURED_DEPTH].value = depth
+    ws[_CALCULATOR_MEASURED_PRESSURE].value = props["pressure"].item()
+    ws[_CALCULATOR_MEASURED_DEPTH].value = props["depth"].item()
     ws[_CALCULATOR_OIL_DENSITY].value = props["layer_oil_density"].item()
     ws[_CALCULATOR_WATER_DENSITY].value = props["water_density"].item()
     ws[_CALCULATOR_WATERCUT].value = props["watercut"].item()
@@ -81,11 +77,7 @@ def _fill_depth(ws: Worksheet, depths: pd.DataFrame) -> None:
 
 
 def _fill_analytics(
-    ws: Worksheet,
-    props: pd.DataFrame,
-    pressure: float,
-    depth: float,
-    well_test: WellTest,
+    ws: Worksheet, props: pd.DataFrame, well_test: WellTest
 ) -> None:
     ws[_ANALYTICS_REGION].value = props["region"].item()
     ws[_ANALYTICS_WORKSHOP].value = props["workshop"].item()
@@ -97,6 +89,7 @@ def _fill_analytics(
     ws[_ANALYTICS_WELLBORE].value = props["wellbore"].item()
     ws[_ANALYTICS_WELL_LIFT].value = props["well_lift"].item()
     ws[_ANALYTICS_TOP_PERF_DEPTH].value = props["top_perf"].item()
+    ws[_ANALYTICS_TOP_PERF_OFFSET].value = props["top_perf_offset"].item()
     ws[_ANALYTICS_WATERCUT].value = props["watercut"].item()
     ws[_ANALYTICS_WELL_STATUS].value = props["well_status"].item()
     ws[_ANALYTICS_OIL_DENSITY].value = props["layer_oil_density"].item()
@@ -108,27 +101,25 @@ def _fill_analytics(
     ws[_ANALYTICS_WELL_TEST_END_DATE].value = (
         props["on_date"].dt.strftime("%d.%m.%Y").item()
     )
+    ws[_ANALYTICS_TOP_PERF_PRESSURE].value = props["top_perf_pressure"].item()
+    ws[_ANALYTICS_OWC_PRESSURE].value = props["owc_pressure"].item()
     if well_test is WellTest.static_level:
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл по Hст"
-        ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = depth
-        ws[_ANALYTICS_ANNULAR_PRESSURE].value = pressure
+        ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = props["pressure"].item()
+        ws[_ANALYTICS_ANNULAR_PRESSURE].value = props["depth"].item()
     elif well_test is WellTest.pressure:
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл"
-        ws[_ANALYTICS_MEASURED_DEPTH].value = depth
-        ws[_ANALYTICS_MEASURED_PRESSURE].value = pressure
+        ws[_ANALYTICS_MEASURED_DEPTH].value = props["pressure"].item()
+        ws[_ANALYTICS_MEASURED_PRESSURE].value = props["depth"].item()
 
 
 def _process_calculator(
-    dfs: dict[str, pd.DataFrame],
-    pressure: float,
-    depth: float,
-    path: Path,
-    template: Path,
+    dfs: dict[str, pd.DataFrame], path: Path, template: Path
 ):
     result = path / template.name
     try:
         wb = openpyxl.load_workbook(template)
-        _fill_calculator(wb["Пересчет"], dfs["props"], pressure, depth)
+        _fill_calculator(wb["Пересчет"], dfs["props"])
         _fill_depth(wb["Глубины"], dfs["depths"])
         save_workbook(wb, result)
     finally:
@@ -137,8 +128,6 @@ def _process_calculator(
 
 def _process_analytics(
     dfs: dict[str, pd.DataFrame],
-    pressure: float,
-    depth: float,
     well_test: WellTest,
     path: Path,
     template: Path,
@@ -146,10 +135,41 @@ def _process_analytics(
     result = path / template.name
     try:
         wb = openpyxl.load_workbook(template)
-        _fill_analytics(wb["Лист1"], dfs["props"], pressure, depth, well_test)
+        _fill_analytics(wb["Лист1"], dfs["props"], well_test)
         save_workbook(wb, result)
     finally:
         wb.close()
+
+
+def _calc_pressures(
+    props: pd.DataFrame, depths: pd.DataFrame, pressure: float, depth: float
+) -> None:
+    props[["pressure", "depth"]] = pressure, depth
+    props[["depth_offset", "top_perf_offset"]] = np.interp(
+        (depth, props["top_perf"].item()), depths["md"], depths["offset"]
+    )
+    props["liquid_density"] = (
+        props["layer_oil_density"] * (1 - props["watercut"] / 100)
+        + props["water_density"] * props["watercut"] / 100
+    )
+    props["top_perf_pressure"] = (
+        props["pressure"]
+        + (
+            (props["top_perf"] - props["top_perf_offset"])
+            - (props["depth"] - props["depth_offset"])
+        )
+        * props["liquid_density"]
+        / 10
+    )
+    props["owc_pressure"] = (
+        props["pressure"]
+        + (
+            props["abs_depth_owc"]
+            - (props["depth"] - props["depth_offset"] - props["elevation"])
+        )
+        * props["liquid_density"]
+        / 10
+    )
 
 
 async def owc_resp_report(
@@ -172,26 +192,14 @@ async def owc_resp_report(
         well=well,
         on_date=on_date,
     )
+    _calc_pressures(dfs["props"], dfs["depths"], pressure, depth)
     async with asyncio.TaskGroup() as tg:
         tg.create_task(
-            pool.run(
-                _process_calculator,
-                dfs,
-                pressure,
-                depth,
-                path,
-                calculator_template,
-            )
+            pool.run(_process_calculator, dfs, path, calculator_template)
         )
         tg.create_task(
             pool.run(
-                _process_analytics,
-                dfs,
-                pressure,
-                depth,
-                well_test,
-                path,
-                analytics_template,
+                _process_analytics, dfs, well_test, path, analytics_template
             )
         )
     make_archive(str(path), "zip", root_dir=path)

@@ -372,7 +372,7 @@ async def _save_countours(
     for layer_index, *layer_row in contours.itertuples():
         if any(layer_row):
             fname = (path / "_".join(layer_index)).with_suffix(".txt")
-            async with aiofiles.open(fname, "w") as file:
+            async with aiofiles.open(fname, "w", newline="\r\n") as file:
                 await file.write("/\n")  # цикл по контурам
                 for contour in filter(None, layer_row):  # type: ignore
                     # цикл по точкам внутри контура

@@ -11,7 +11,8 @@ from .reservoirs import select_reservoir_ids
 
 def _select_well_uwi() -> Select:
     return select(WellHdr.uwi).where(
-        WellHdr.well_name == bindparam("well"),
+        func.regexp_replace(WellHdr.well_name, r"B\d+$")
+        == bindparam("well"),
         WellHdr.field == bindparam("field_id"),
     )
 

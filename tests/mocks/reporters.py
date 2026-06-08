@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters import (
     FnvReporter,
+    OwcRespReporter,
     OppPerYearReporter,
 )
 
@@ -167,3 +168,39 @@ class FnvMock(FnvReporter):
     async def totwat(self, uwi: str, date_from: str, date_to: str) -> float:
         totwat = self.fake_totwat[uwi].get("..".join((date_from, date_to)))
         return totwat or 0
+
+
+class OwcRespMock(OwcRespReporter):
+    def __init__(self, pool: sessionmaker[Session]) -> None:
+        pass
+
+    async def read_all(self, **params) -> dict[str, pd.DataFrame]:
+        props = pd.DataFrame(
+            {
+                "field": [f"F{params['field_id']}"],
+                "well": [params["well"]],
+                "reservoir": [f"R{params['reservoir_id']}"],
+                "on_date": [pd.to_datetime(params["on_date"])],
+                "elevation": [10.0],
+                "abs_depth_owc": [100.0],
+                "layer_oil_density": [1.0],
+                "water_density": [1.0],
+                "watercut": [0.0],
+                "top_perf": [100.0],
+                "region": ["Region"],
+                "workshop": ["Workshop"],
+                "pad": ["Pad 1"],
+                "wellbore": ["Vertical"],
+                "well_mode": ["Production"],
+                "well_lift": ["ESP"],
+                "well_status": ["Working"],
+            }
+        )
+        depths = pd.DataFrame(
+            {
+                "md": [0.0, 50.0, 100.0, 150.0],
+                "tvd": [0.0, 50.0, 100.0, 150.0],
+                "offset": [0.0, 0.0, 0.0, 0.0],
+            }
+        )
+        return {"props": props, "depths": depths}

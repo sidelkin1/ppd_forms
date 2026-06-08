@@ -28,6 +28,7 @@ _CALCULATOR_MEASURED_DEPTH = "B9"
 _CALCULATOR_OIL_DENSITY = "B12"
 _CALCULATOR_WATER_DENSITY = "B13"
 _CALCULATOR_WATERCUT = "B14"
+_CALCULATOR_LIQUID_DENSITY = "B15"
 
 _ANALYTICS_REGION = "B5"
 _ANALYTICS_WORKSHOP = "C5"
@@ -45,7 +46,7 @@ _ANALYTICS_WELL_STATUS = "V5"
 _ANALYTICS_OIL_DENSITY = "AL5"
 _ANALYTICS_WATER_DENSITY = "AM5"
 _ANALYTICS_WELL_TEST_PLAN = "AW5"
-_ANALYTICS_WELL_TEST_ACTUAL = "AW5"
+_ANALYTICS_WELL_TEST_GOAL = "AX5"
 _ANALYTICS_WELL_TEST_START_DATE = "BE5"
 _ANALYTICS_WELL_TEST_END_DATE = "BF5"
 _ANALYTICS_STATIC_LEVEL_DEPTH = "BL5"
@@ -69,6 +70,7 @@ def _fill_calculator(ws: Worksheet, props: pd.DataFrame) -> None:
     ws[_CALCULATOR_OIL_DENSITY].value = props["layer_oil_density"].item()
     ws[_CALCULATOR_WATER_DENSITY].value = props["water_density"].item()
     ws[_CALCULATOR_WATERCUT].value = props["watercut"].item()
+    ws[_CALCULATOR_LIQUID_DENSITY].value = props["liquid_density"].item()
 
 
 def _fill_depth(ws: Worksheet, depths: pd.DataFrame) -> None:
@@ -79,6 +81,7 @@ def _fill_depth(ws: Worksheet, depths: pd.DataFrame) -> None:
 def _fill_analytics(
     ws: Worksheet, props: pd.DataFrame, well_test: WellTest
 ) -> None:
+    on_date = pd.to_datetime(props["on_date"]).dt.strftime("%d.%m.%Y").item()
     ws[_ANALYTICS_REGION].value = props["region"].item()
     ws[_ANALYTICS_WORKSHOP].value = props["workshop"].item()
     ws[_ANALYTICS_FIELD].value = props["field"].item()
@@ -94,13 +97,9 @@ def _fill_analytics(
     ws[_ANALYTICS_WELL_STATUS].value = props["well_status"].item()
     ws[_ANALYTICS_OIL_DENSITY].value = props["layer_oil_density"].item()
     ws[_ANALYTICS_WATER_DENSITY].value = props["water_density"].item()
-    ws[_ANALYTICS_WELL_TEST_ACTUAL].value = well_test.value
-    ws[_ANALYTICS_WELL_TEST_START_DATE].value = (
-        props["on_date"].dt.strftime("%d.%m.%Y").item()
-    )
-    ws[_ANALYTICS_WELL_TEST_END_DATE].value = (
-        props["on_date"].dt.strftime("%d.%m.%Y").item()
-    )
+    ws[_ANALYTICS_WELL_TEST_GOAL].value = "Рпл"
+    ws[_ANALYTICS_WELL_TEST_START_DATE].value = on_date
+    ws[_ANALYTICS_WELL_TEST_END_DATE].value = on_date
     ws[_ANALYTICS_TOP_PERF_PRESSURE].value = props["top_perf_pressure"].item()
     ws[_ANALYTICS_OWC_PRESSURE].value = props["owc_pressure"].item()
     if well_test is WellTest.static_level:
@@ -172,6 +171,17 @@ def _calc_pressures(
     )
 
 
+def _validate_inputs(dfs: dict[str, pd.DataFrame], well: str) -> None:
+    if len(dfs["props"]) != 1:
+        raise ValueError(
+            f"Отчет по ВНК не нашел параметры по скважине {well}"
+        )
+    if dfs["depths"].empty:
+        raise ValueError(
+            f"Отчет по ВНК не нашел инклинометрию по скважине {well}"
+        )
+
+
 async def owc_resp_report(
     path: Path,
     calculator_template: Path,
@@ -192,6 +202,7 @@ async def owc_resp_report(
         well=well,
         on_date=on_date,
     )
+    _validate_inputs(dfs, well)
     _calc_pressures(dfs["props"], dfs["depths"], pressure, depth)
     async with asyncio.TaskGroup() as tg:
         tg.create_task(

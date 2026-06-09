@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import synonym
 
 from app.infrastructure.db.models.ofm.base import Base, Reflected
 
@@ -41,6 +42,8 @@ class GeophysSt(Reflected, Base):
 class WellHdr(Reflected, Base):
     __tablename__ = "well_hdr"
     __table_args__ = {"schema": "udmurtneft_n"}
+
+    class_ = synonym("class")
 
 
 class WellStockHistExt(Reflected, Base):
@@ -126,4 +129,19 @@ class ResPty(Reflected, Base):
 
 class Reservoir2(Reflected, Base):
     __tablename__ = "reservoir2"
+    __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class WellMonthHist(Reflected, Base):
+    __tablename__ = "well_month_hist"
+    __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class WellDirSrvyPts(Reflected, Base):
+    __tablename__ = "well_dir_srvy_pts"
+    __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class WellStockHist(Reflected, Base):
+    __tablename__ = "well_stock_hist"
     __table_args__ = {"schema": "udmurtneft_n"}

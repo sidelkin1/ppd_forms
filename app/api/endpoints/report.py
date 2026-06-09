@@ -13,6 +13,7 @@ from app.api.models.responses import (
     MatrixResponse,
     MmbResponse,
     OilLossResponse,
+    OwcRespResponse,
     ProlongResponse,
     ReportResponse,
     WellTestResponse,
@@ -26,6 +27,7 @@ from app.core.models.dto import (
     TaskMatrix,
     TaskMmb,
     TaskOilLoss,
+    TaskOwcResp,
     TaskProlong,
     TaskReport,
     TaskWellTest,
@@ -39,6 +41,7 @@ from app.core.models.schemas import (
     MatrixEffect,
     MmbParams,
     OnDate,
+    OwcRespParams,
     ProlongParams,
     WellTestParams,
 )
@@ -257,6 +260,33 @@ async def generate_well_test_report(
         radius=params.radius,
     )
     response = WellTestResponse(task=task, job=job)
+    await redis.enqueue_task(response, user.username)
+    return response
+
+
+@router.post(
+    "/owc_resp",
+    status_code=status.HTTP_201_CREATED,
+    response_model=OwcRespResponse,
+    response_model_exclude_none=True,
+)
+async def generate_owc_resp_report(
+    params: OwcRespParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskOwcResp(
+        name=ReportName.owc_resp,
+        field=params.field,
+        reservoir=params.reservoir,
+        well=params.well,
+        pressure=params.pressure,
+        depth=params.depth,
+        well_test=params.well_test,
+        on_date=params.on_date,
+    )
+    response = OwcRespResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)
     return response
 

@@ -33,7 +33,7 @@ async function loadReport(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/zip`
+      `/reports/${result.job.file_id}/zip`,
     );
   }
 
@@ -60,7 +60,7 @@ async function loadOnDate(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/zip`
+      `/reports/${result.job.file_id}/zip`,
     );
   }
 
@@ -94,7 +94,7 @@ async function loadInjLoss(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/zip`
+      `/reports/${result.job.file_id}/zip`,
     );
   }
 
@@ -126,7 +126,7 @@ async function loadOilLoss(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/zip`
+      `/reports/${result.job.file_id}/zip`,
     );
   }
 
@@ -173,7 +173,7 @@ async function loadMatrix(reportName) {
       await checkStatus(
         reportName,
         result.job.job_id,
-        `/reports/${result.job.file_id}/zip`
+        `/reports/${result.job.file_id}/zip`,
       );
     }
   }
@@ -192,10 +192,10 @@ async function loadFNV(reportName) {
     .filter((opt) => !["--", "0"].includes(opt.value))
     .map((opt) => ({ id: opt.value, name: opt.text }));
   const { value: fieldID, text: fieldName } = document.getElementById(
-    `${reportName}Fields`
+    `${reportName}Fields`,
   ).selectedOptions[0];
   const alternative = document.getElementById(
-    `${reportName}Alternative`
+    `${reportName}Alternative`,
   ).checked;
 
   loader.classList.remove("d-none");
@@ -214,7 +214,7 @@ async function loadFNV(reportName) {
     await checkStatus(
       reportName,
       result.job.job_id,
-      `/reports/${result.job.file_id}/zip`
+      `/reports/${result.job.file_id}/zip`,
     );
   }
 
@@ -228,7 +228,7 @@ async function loadMatbal(reportName) {
   const alert = document.getElementById(`${reportName}Danger`);
   const success = document.getElementById(`${reportName}Success`);
   const { value: fieldID, text: fieldName } = document.getElementById(
-    `${reportName}Fields`
+    `${reportName}Fields`,
   ).selectedOptions[0];
   const reservoirs = [
     ...document.getElementById(`${reportName}Reservoirs`).selectedOptions,
@@ -239,7 +239,7 @@ async function loadMatbal(reportName) {
   const measurements = document.getElementById(`${reportName}Measurements`)
     .files[0];
   const alternative = document.getElementById(
-    `${reportName}Alternative`
+    `${reportName}Alternative`,
   ).checked;
 
   loader.classList.remove("d-none");
@@ -250,7 +250,7 @@ async function loadMatbal(reportName) {
   const files = await sendReportFiles(
     reportName,
     [wells, measurements],
-    "/excel/"
+    "/excel/",
   );
   if (files) {
     const url = `/reports/${reportName}`;
@@ -266,7 +266,7 @@ async function loadMatbal(reportName) {
       await checkStatus(
         reportName,
         result.job.job_id,
-        `/reports/${result.job.file_id}/zip`
+        `/reports/${result.job.file_id}/zip`,
       );
     }
   }
@@ -296,7 +296,7 @@ async function loadProlong(reportName) {
   const files = await sendReportFiles(
     reportName,
     [expected, actual],
-    "/excel/"
+    "/excel/",
   );
   if (files) {
     const url = `/reports/${reportName}`;
@@ -310,7 +310,7 @@ async function loadProlong(reportName) {
       await checkStatus(
         reportName,
         result.job.job_id,
-        `/reports/${result.job.file_id}/zip`
+        `/reports/${result.job.file_id}/zip`,
       );
     }
   }
@@ -326,7 +326,7 @@ async function loadMMB(reportName) {
   const success = document.getElementById(`${reportName}Success`);
   const tanks = document.getElementById(`${reportName}Tank`).files[0];
   const alternative = document.getElementById(
-    `${reportName}Alternative`
+    `${reportName}Alternative`,
   ).checked;
 
   loader.classList.remove("d-none");
@@ -346,7 +346,7 @@ async function loadMMB(reportName) {
       await checkStatus(
         reportName,
         result.job.job_id,
-        `/reports/${result.job.file_id}/zip`
+        `/reports/${result.job.file_id}/zip`,
       );
     }
   }
@@ -384,9 +384,54 @@ async function loadWellTest(reportName) {
       await checkStatus(
         reportName,
         result.job.job_id,
-        `/reports/${result.job.file_id}/zip`
+        `/reports/${result.job.file_id}/zip`,
       );
     }
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}
+
+async function loadOwcResp(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const alert = document.getElementById(`${reportName}Danger`);
+  const success = document.getElementById(`${reportName}Success`);
+  const { value: fieldID, text: fieldName } = document.getElementById(
+    `${reportName}Fields`,
+  ).selectedOptions[0];
+  const { value: reservoirID, text: reservoirName } = document.getElementById(
+    `${reportName}Reservoirs`,
+  ).selectedOptions[0];
+  const well = document.getElementById(`${reportName}Well`).value;
+  const pressure = document.getElementById(`${reportName}Pressure`).value;
+  const depth = document.getElementById(`${reportName}Depth`).value;
+  const wellTest = document.getElementById(`${reportName}WellTest`).value;
+  const onDate = document.getElementById(`${reportName}OnDate`).value;
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  alert.classList.add("d-none");
+  success.classList.add("d-none");
+
+  const url = `/reports/${reportName}`;
+  const data = {
+    field: { id: fieldID, name: fieldName },
+    reservoir: { id: reservoirID, name: reservoirName },
+    well: well,
+    pressure: pressure,
+    depth: depth,
+    well_test: wellTest,
+    on_date: onDate,
+  };
+  const result = await assignWork(reportName, url, data);
+  if (result) {
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/zip`,
+    );
   }
 
   loader.classList.add("d-none");

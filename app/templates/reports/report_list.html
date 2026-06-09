@@ -9,7 +9,8 @@
     form_matbal,
     form_prolong,
     form_mmb,
-    form_well_test
+    form_well_test,
+    form_owc_resp
 %}
 {% from '/macros/accordion.html' import accordion_form %}
 
@@ -63,6 +64,8 @@
                                 {{ form_on_date(report.path, "Выгрузить", "loadOnDate") }}
                             {% elif report.path == "well_test" %}
                                 {{ form_well_test(report, "Выгрузить", "loadWellTest") }}
+                            {% elif report.path == "owc_resp" %}
+                                {{ form_owc_resp(report, "Выгрузить", "loadOwcResp") }}
                             {% else %}
                                 {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
                             {% endif %}

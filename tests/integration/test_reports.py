@@ -7,7 +7,9 @@ from pathlib import Path
 import pytest
 import structlog
 from csv_diff import compare, load_csv
+from openpyxl import load_workbook
 
+from app.common.config.models.paths import Paths
 from app.core.models.dto import UneftFieldDB
 from app.core.services.reports import (
     fnv_report,
@@ -15,12 +17,17 @@ from app.core.services.reports import (
     matrix_report,
     oil_loss_report,
     opp_per_year_report,
+    owc_resp_report,
     profile_report,
 )
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.sql.reporters import LocalBaseDAO
 from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
+from tests.fixtures.task_fixtures import (  # noqa
+    task_owc_resp_pressure,
+    task_owc_resp_static,
+)
 
 
 @pytest.mark.parametrize(
@@ -162,3 +169,83 @@ async def test_fnv_report(
     _, mismatch, errors = cmpfiles(tmp_path, fnv_dir, parts)
     assert not mismatch
     assert not errors
+
+
+@pytest.mark.asyncio(scope="session")
+@pytest.mark.parametrize(
+    (
+        "task_fixture,expected_plan,expected_bl,expected_bm,"
+        "expected_bn,expected_bo"
+    ),
+    [
+        (
+            "task_owc_resp_static",
+            "Pпл по Hст",
+            100,
+            75,
+            None,
+            None,
+        ),
+        (
+            "task_owc_resp_pressure",
+            "Pпл",
+            None,
+            None,
+            100,
+            75,
+        ),
+    ],
+)
+async def test_owc_resp_report(
+    pool_holder: HolderDAO,
+    process_pool: ProcessPoolManager,
+    paths: Paths,
+    tmp_path: Path,
+    request,
+    task_fixture: str,
+    expected_plan: str,
+    expected_bl: float | None,
+    expected_bm: float | None,
+    expected_bn: float | None,
+    expected_bo: float | None,
+):
+    task = request.getfixturevalue(task_fixture)
+    path = tmp_path / "owc_resp"
+    path.mkdir()
+    data_dir = paths.base_dir / "data"
+    calculator_template = data_dir / "owc_resp_template.xlsx"
+    analytics_template = data_dir / "analytics_template.xlsx"
+
+    await owc_resp_report(
+        path,
+        calculator_template,
+        analytics_template,
+        task.field,
+        task.reservoir,
+        task.well,
+        task.pressure,
+        task.depth,
+        task.well_test,
+        task.on_date,
+        pool_holder.owc_resp_reporter,
+        process_pool,
+    )
+
+    analytics = load_workbook(
+        path / "analytics_template.xlsx", data_only=False
+    )
+    calc = load_workbook(path / "owc_resp_template.xlsx", data_only=False)
+
+    analytics_ws = analytics["Лист1"]
+    calc_ws = calc["Пересчет"]
+
+    assert analytics_ws["AW5"].value == expected_plan
+    assert analytics_ws["BE5"].value == "20.10.2025"
+    assert analytics_ws["BF5"].value == "20.10.2025"
+    assert analytics_ws["BL5"].value == expected_bl
+    assert analytics_ws["BM5"].value == expected_bm
+    assert analytics_ws["BN5"].value == expected_bn
+    assert analytics_ws["BO5"].value == expected_bo
+    assert analytics_ws["BY5"].value == pytest.approx(102.5)
+    assert analytics_ws["BZ5"].value == pytest.approx(103.5)
+    assert calc_ws["B15"].value == pytest.approx(1.0)

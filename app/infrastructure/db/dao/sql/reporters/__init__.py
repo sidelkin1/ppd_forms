@@ -11,4 +11,5 @@ from .ofm import OfmBaseDAO
 from .ofm_well_test import OfmWellTestReporter
 from .oil_loss import FirstRateOilLossReporter, MaxRateOilLossReporter
 from .opp_per_year import OppPerYearReporter
+from .owc_resp import OwcRespReporter
 from .well_profile import WellProfileReporter

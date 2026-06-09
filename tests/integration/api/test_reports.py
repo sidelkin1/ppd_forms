@@ -52,6 +52,33 @@ async def test_generate_report_success(
 @pytest.mark.parametrize(
     "task,schema",
     [
+        ("task_owc_resp_static", "owc_resp_static"),
+        ("task_owc_resp_pressure", "owc_resp_pressure"),
+    ],
+)
+@pytest.mark.asyncio(scope="session")
+async def test_generate_owc_resp_report_success(
+    client: AsyncClient, arq_redis: ArqRedis, task: str, schema: str, request
+):
+    task_report = request.getfixturevalue(task)
+    task_schema = request.getfixturevalue(schema)
+    resp = await client.post(
+        get_correct_url(task_report),
+        json=task_schema.model_dump(mode="json"),
+    )
+    assert resp.is_success
+    data = resp.json()
+    assert data["task"] == task_report.model_dump(
+        mode="json", exclude_none=True
+    )
+    assert data["task"]["well"] == task_report.well
+    job = Job(job_id=data["job"]["job_id"], redis=arq_redis)
+    assert JobStatus.queued is await job.status()
+
+
+@pytest.mark.parametrize(
+    "task,schema",
+    [
         ("task_report", "date_range"),
         ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
@@ -145,5 +172,16 @@ async def test_generate_inj_loss_report_unknown_mode(
         f"/reports/{task_inj_loss.name.value}/unknown",
         json=date_range.model_dump(mode="json"),
     )
+    assert not resp.is_success
+    assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_generate_owc_resp_report_extra_fields(
+    client: AsyncClient, owc_resp_static
+):
+    payload = owc_resp_static.model_dump(mode="json")
+    payload["unexpected"] = True
+    resp = await client.post("/reports/owc_resp", json=payload)
     assert not resp.is_success
     assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

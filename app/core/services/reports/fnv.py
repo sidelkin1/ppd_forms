@@ -2,6 +2,7 @@ import asyncio
 from datetime import date
 from pathlib import Path
 from shutil import make_archive
+from typing import cast
 
 import aiofiles
 import numpy as np
@@ -143,7 +144,7 @@ async def _fill_events(
 
 
 def _normalize_profile(profile: pd.DataFrame) -> pd.DataFrame:
-    i_col_start = profile.columns.get_loc("h_eff")
+    i_col_start = cast(int, profile.columns.get_loc("h_eff"))
     for name, values in profile.iloc[:, i_col_start + 1 :].items():
         total = np.sum(values)
         if total == 0:
@@ -183,7 +184,7 @@ async def _calc_injection(
         profile["MD"].max() / 100,
     )
     await logger.ainfo("-" * 160)
-    i_start_col = profile.columns.get_loc("last_perf") + 1
+    i_start_col = cast(int, profile.columns.get_loc("last_perf")) + 1
     # получаем профиль закачки - проходим все столбцы
     # с датами (начинаются с i_start_col)
     for index in range(i_start_col, len(profile.columns) - 1):
@@ -371,7 +372,7 @@ async def _save_countours(
     for layer_index, *layer_row in contours.itertuples():
         if any(layer_row):
             fname = (path / "_".join(layer_index)).with_suffix(".txt")
-            async with aiofiles.open(fname, "w") as file:
+            async with aiofiles.open(fname, "w", newline="\r\n") as file:
                 await file.write("/\n")  # цикл по контурам
                 for contour in filter(None, layer_row):  # type: ignore
                     # цикл по точкам внутри контура

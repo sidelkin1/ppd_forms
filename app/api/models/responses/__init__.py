@@ -11,6 +11,7 @@ from .task import (
     MatrixResponse,
     MmbResponse,
     OilLossResponse,
+    OwcRespResponse,
     ProlongResponse,
     ReportResponse,
     ReservoirsResponse,

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 
@@ -23,3 +23,5 @@ class MatbalParams(BaseModel):
     injection_factor: float = 1
     thickness: float = 10
     wat_viscosity: float = 1.32
+
+    model_config = ConfigDict(extra="forbid")

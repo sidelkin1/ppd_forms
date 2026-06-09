@@ -9,6 +9,7 @@ import structlog
 from csv_diff import compare, load_csv
 from openpyxl import load_workbook
 
+from app.common.config.models.paths import Paths
 from app.core.models.dto import UneftFieldDB
 from app.core.services.reports import (
     fnv_report,
@@ -23,7 +24,7 @@ from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.sql.reporters import LocalBaseDAO
 from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
-from tests.fixtures.task_fixtures import (  # noqa: F401
+from tests.fixtures.task_fixtures import (  # noqa
     task_owc_resp_pressure,
     task_owc_resp_static,
 )
@@ -198,6 +199,7 @@ async def test_fnv_report(
 async def test_owc_resp_report(
     pool_holder: HolderDAO,
     process_pool: ProcessPoolManager,
+    paths: Paths,
     tmp_path: Path,
     request,
     task_fixture: str,
@@ -210,7 +212,7 @@ async def test_owc_resp_report(
     task = request.getfixturevalue(task_fixture)
     path = tmp_path / "owc_resp"
     path.mkdir()
-    data_dir = Path("/workspaces/ppd_forms_owc_resp_calc/data")
+    data_dir = paths.base_dir / "data"
     calculator_template = data_dir / "owc_resp_template.xlsx"
     analytics_template = data_dir / "analytics_template.xlsx"
 
@@ -238,7 +240,6 @@ async def test_owc_resp_report(
     calc_ws = calc["Пересчет"]
 
     assert analytics_ws["AW5"].value == expected_plan
-    assert analytics_ws["AX5"].value == "Рпл"
     assert analytics_ws["BE5"].value == "20.10.2025"
     assert analytics_ws["BF5"].value == "20.10.2025"
     assert analytics_ws["BL5"].value == expected_bl

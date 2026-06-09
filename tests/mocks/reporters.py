@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters import (
     FnvReporter,
-    OwcRespReporter,
     OppPerYearReporter,
+    OwcRespReporter,
 )
 
 
@@ -179,6 +179,7 @@ class OwcRespMock(OwcRespReporter):
             {
                 "field": [f"F{params['field_id']}"],
                 "well": [params["well"]],
+                "branch": [f"{params['well']}B1"],
                 "reservoir": [f"R{params['reservoir_id']}"],
                 "on_date": [pd.to_datetime(params["on_date"])],
                 "elevation": [10.0],

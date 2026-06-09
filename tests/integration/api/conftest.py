@@ -23,8 +23,8 @@ from app.infrastructure.db.factories.local import (
 from app.infrastructure.redis.config.models.redis import RedisSettings
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from tests.fixtures.task_fixtures import (  # noqa
-    fnv,
     date_range,
+    fnv,
     inj_loss,
     matbal,
     matrix_effect,
@@ -33,9 +33,9 @@ from tests.fixtures.task_fixtures import (  # noqa
     owc_resp_pressure,
     owc_resp_static,
     prolong,
+    task_compensation,
     task_database,
     task_excel,
-    task_compensation,
     task_fnv,
     task_inj_loss,
     task_matbal,

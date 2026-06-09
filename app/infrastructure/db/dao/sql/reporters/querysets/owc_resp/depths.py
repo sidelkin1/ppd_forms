@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.sql.expression import Select
 
 from app.infrastructure.db.models.ofm.reflected import WellDirSrvyPts, WellHdr
@@ -7,7 +7,6 @@ from .branches import select_well_branch
 
 
 def select_depths() -> Select:
-    branch_uwi = func.coalesce(WellHdr.parent_uwi, WellHdr.uwi)
     return (
         select(
             WellDirSrvyPts.md,
@@ -16,7 +15,7 @@ def select_depths() -> Select:
         )
         .where(
             WellHdr.uwi.in_(select_well_branch()),
-            WellDirSrvyPts.uwi == branch_uwi,
+            WellDirSrvyPts.uwi == WellHdr.uwi,
             WellDirSrvyPts.dir_srvy_id == "SRVY_1",
         )
         .order_by(WellDirSrvyPts.md)

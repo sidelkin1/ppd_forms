@@ -46,7 +46,7 @@ _ANALYTICS_WELL_STATUS = "V5"
 _ANALYTICS_OIL_DENSITY = "AL5"
 _ANALYTICS_WATER_DENSITY = "AM5"
 _ANALYTICS_WELL_TEST_PLAN = "AW5"
-_ANALYTICS_WELL_TEST_GOAL = "AX5"
+_ANALYTICS_WELL_TEST_ACTUAL = "BD5"
 _ANALYTICS_WELL_TEST_START_DATE = "BE5"
 _ANALYTICS_WELL_TEST_END_DATE = "BF5"
 _ANALYTICS_STATIC_LEVEL_DEPTH = "BL5"
@@ -60,7 +60,7 @@ _ANALYTICS_OWC_PRESSURE = "BZ5"
 def _fill_calculator(ws: Worksheet, props: pd.DataFrame) -> None:
     ws[_CALCULATOR_FIELD].value = props["field"].item()
     ws[_CALCULATOR_RESERVOIR].value = props["reservoir"].item()
-    ws[_CALCULATOR_WELL_NAME].value = props["well"].item()
+    ws[_CALCULATOR_WELL_NAME].value = props["branch"].item()
     ws[_CALCULATOR_WELL_MODE].value = props["well_mode"].item()
     ws[_CALCULATOR_ELEVATION].value = props["elevation"].item()
     ws[_CALCULATOR_OWC_ABS_DEPTH].value = props["abs_depth_owc"].item()
@@ -97,17 +97,18 @@ def _fill_analytics(
     ws[_ANALYTICS_WELL_STATUS].value = props["well_status"].item()
     ws[_ANALYTICS_OIL_DENSITY].value = props["layer_oil_density"].item()
     ws[_ANALYTICS_WATER_DENSITY].value = props["water_density"].item()
-    ws[_ANALYTICS_WELL_TEST_GOAL].value = "Рпл"
     ws[_ANALYTICS_WELL_TEST_START_DATE].value = on_date
     ws[_ANALYTICS_WELL_TEST_END_DATE].value = on_date
     ws[_ANALYTICS_TOP_PERF_PRESSURE].value = props["top_perf_pressure"].item()
     ws[_ANALYTICS_OWC_PRESSURE].value = props["owc_pressure"].item()
     if well_test is WellTest.static_level:
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл по Hст"
+        ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Hст"
         ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = props["pressure"].item()
         ws[_ANALYTICS_ANNULAR_PRESSURE].value = props["depth"].item()
     elif well_test is WellTest.pressure:
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл"
+        ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Pпл"
         ws[_ANALYTICS_MEASURED_DEPTH].value = props["pressure"].item()
         ws[_ANALYTICS_MEASURED_PRESSURE].value = props["depth"].item()
 
@@ -173,9 +174,7 @@ def _calc_pressures(
 
 def _validate_inputs(dfs: dict[str, pd.DataFrame], well: str) -> None:
     if len(dfs["props"]) != 1:
-        raise ValueError(
-            f"Отчет по ВНК не нашел параметры по скважине {well}"
-        )
+        raise ValueError(f"Отчет по ВНК не нашел параметры по скважине {well}")
     if dfs["depths"].empty:
         raise ValueError(
             f"Отчет по ВНК не нашел инклинометрию по скважине {well}"

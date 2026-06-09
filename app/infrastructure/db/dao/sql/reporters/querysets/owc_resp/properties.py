@@ -110,6 +110,7 @@ def select_properties() -> Select:
     return select(
         func.udmurtneft_n.dg_des(bindparam("field_id")).label("field"),
         bindparam("well").label("well"),
+        WellHdr.well_name.label("branch"),
         func.udmurtneft_n.dg_des(bindparam("reservoir_id")).label("reservoir"),
         bindparam("on_date").label("on_date"),
         WellHdr.elevation,

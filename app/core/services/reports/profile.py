@@ -1,7 +1,6 @@
 from datetime import date
 from pathlib import Path
 from shutil import make_archive
-from typing import cast
 
 import pandas as pd
 
@@ -29,9 +28,7 @@ def _group_diff_absorb(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _calc_layer_rate(df: pd.DataFrame, rate: str) -> pd.DataFrame:
-    df = cast(
-        pd.DataFrame, df.eval(f"{rate}_layer={rate}_all*diff_absorp/100")
-    )
+    df[f"{rate}_layer"] = df[f"{rate}_all"] * df["diff_absorp"] / 100
     df[f"{rate}_layer"] = df[f"{rate}_layer"].fillna(df[rate])
     df[rate] = df[rate].mul(df["1/num_layer"], fill_value=1)
     return df

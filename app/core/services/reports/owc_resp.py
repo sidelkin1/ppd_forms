@@ -104,13 +104,13 @@ def _fill_analytics(
     if well_test is WellTest.static_level:
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл по Hст"
         ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Hст"
-        ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = props["pressure"].item()
-        ws[_ANALYTICS_ANNULAR_PRESSURE].value = props["depth"].item()
+        ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = props["depth"].item()
+        ws[_ANALYTICS_ANNULAR_PRESSURE].value = props["pressure"].item()
     elif well_test is WellTest.pressure:
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл"
         ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Pпл"
-        ws[_ANALYTICS_MEASURED_DEPTH].value = props["pressure"].item()
-        ws[_ANALYTICS_MEASURED_PRESSURE].value = props["depth"].item()
+        ws[_ANALYTICS_MEASURED_DEPTH].value = props["depth"].item()
+        ws[_ANALYTICS_MEASURED_PRESSURE].value = props["pressure"].item()
 
 
 def _process_calculator(

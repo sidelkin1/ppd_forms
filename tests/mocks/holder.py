@@ -47,7 +47,9 @@ class HolderMock(HolderDAO):
 
     @property
     def owc_resp_reporter(self) -> reporters.OwcRespReporter:
-        return OwcRespMock(self.kwargs["ofm_pool"])
+        return OwcRespMock(
+            self.kwargs["ofm_pool"], self.kwargs.get("empty_depths", False)
+        )
 
     @property
     def ofm_field_list(self) -> ofm.FieldListDAO:

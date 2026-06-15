@@ -175,24 +175,35 @@ async def test_fnv_report(
 @pytest.mark.parametrize(
     (
         "task_fixture,expected_plan,expected_bl,expected_bm,"
-        "expected_bn,expected_bo"
+        "expected_bn,expected_bo,empty_depths"
     ),
     [
         (
             "task_owc_resp_static",
             "Pпл по Hст",
-            100,
             75,
+            100,
             None,
             None,
+            False,
         ),
         (
             "task_owc_resp_pressure",
             "Pпл",
             None,
             None,
-            100,
             75,
+            100,
+            False,
+        ),
+        (
+            "task_owc_resp_pressure",
+            "Pпл",
+            None,
+            None,
+            75,
+            100,
+            True,
         ),
     ],
 )
@@ -208,6 +219,7 @@ async def test_owc_resp_report(
     expected_bm: float | None,
     expected_bn: float | None,
     expected_bo: float | None,
+    empty_depths: bool,
 ):
     task = request.getfixturevalue(task_fixture)
     path = tmp_path / "owc_resp"
@@ -215,7 +227,7 @@ async def test_owc_resp_report(
     data_dir = paths.base_dir / "data"
     calculator_template = data_dir / "owc_resp_template.xlsx"
     analytics_template = data_dir / "analytics_template.xlsx"
-
+    pool_holder.kwargs["empty_depths"] = empty_depths
     await owc_resp_report(
         path,
         calculator_template,
@@ -246,6 +258,10 @@ async def test_owc_resp_report(
     assert analytics_ws["BM5"].value == expected_bm
     assert analytics_ws["BN5"].value == expected_bn
     assert analytics_ws["BO5"].value == expected_bo
-    assert analytics_ws["BY5"].value == pytest.approx(102.5)
-    assert analytics_ws["BZ5"].value == pytest.approx(103.5)
+    if empty_depths:
+        assert analytics_ws["BY5"].value is None
+        assert analytics_ws["BZ5"].value is None
+    else:
+        assert analytics_ws["BY5"].value == pytest.approx(102.5)
+        assert analytics_ws["BZ5"].value == pytest.approx(103.5)
     assert calc_ws["B15"].value == pytest.approx(1.0)

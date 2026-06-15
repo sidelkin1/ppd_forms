@@ -171,8 +171,10 @@ class FnvMock(FnvReporter):
 
 
 class OwcRespMock(OwcRespReporter):
-    def __init__(self, pool: sessionmaker[Session]) -> None:
-        pass
+    def __init__(
+        self, pool: sessionmaker[Session], empty_depths: bool = False
+    ) -> None:
+        self.empty_depths = empty_depths
 
     async def read_all(self, **params) -> dict[str, pd.DataFrame]:
         props = pd.DataFrame(
@@ -197,11 +199,14 @@ class OwcRespMock(OwcRespReporter):
                 "well_status": ["Working"],
             }
         )
-        depths = pd.DataFrame(
-            {
-                "md": [0.0, 50.0, 100.0, 150.0],
-                "tvd": [0.0, 50.0, 100.0, 150.0],
-                "offset": [0.0, 0.0, 0.0, 0.0],
-            }
-        )
+        if self.empty_depths:
+            depths = pd.DataFrame(columns=["md", "tvd", "offset"])
+        else:
+            depths = pd.DataFrame(
+                {
+                    "md": [0.0, 50.0, 100.0, 150.0],
+                    "tvd": [0.0, 50.0, 100.0, 150.0],
+                    "offset": [0.0, 0.0, 0.0, 0.0],
+                }
+            )
         return {"props": props, "depths": depths}

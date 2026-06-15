@@ -143,10 +143,14 @@ def _process_analytics(
 
 def _calc_pressures(
     props: pd.DataFrame, depths: pd.DataFrame, pressure: float, depth: float
-) -> None:
+) -> pd.DataFrame:
     props[["pressure", "depth"]] = pressure, depth
-    props[["depth_offset", "top_perf_offset"]] = np.interp(
-        (depth, props["top_perf"].item()), depths["md"], depths["offset"]
+    props[["depth_offset", "top_perf_offset"]] = (
+        np.interp(
+            (depth, props["top_perf"].item()), depths["md"], depths["offset"]
+        )
+        if not depths.empty
+        else (np.nan, np.nan)
     )
     props["liquid_density"] = (
         props["layer_oil_density"] * (1 - props["watercut"] / 100)
@@ -170,15 +174,7 @@ def _calc_pressures(
         * props["liquid_density"]
         / 10
     )
-
-
-def _validate_inputs(dfs: dict[str, pd.DataFrame], well: str) -> None:
-    if len(dfs["props"]) != 1:
-        raise ValueError(f"Отчет по ВНК не нашел параметры по скважине {well}")
-    if dfs["depths"].empty:
-        raise ValueError(
-            f"Отчет по ВНК не нашел инклинометрию по скважине {well}"
-        )
+    return props
 
 
 async def owc_resp_report(
@@ -201,8 +197,9 @@ async def owc_resp_report(
         well=well,
         on_date=on_date,
     )
-    _validate_inputs(dfs, well)
-    _calc_pressures(dfs["props"], dfs["depths"], pressure, depth)
+    dfs["props"] = await pool.run(
+        _calc_pressures, dfs["props"], dfs["depths"], pressure, depth
+    )
     async with asyncio.TaskGroup() as tg:
         tg.create_task(
             pool.run(_process_calculator, dfs, path, calculator_template)

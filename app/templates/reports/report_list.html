@@ -21,15 +21,15 @@
             <div class="col-sm-6">
                 <div class="card mb-3">
                     <div class="card-header text-dark bg-warning">
-                        <div class="row">
-                            <div class="col-11">
+                        <div class="row flex-nowrap">
+                            <div class="col">
                                 <h5>
                                     {{ report.title }}
                                 </h5>
                             </div>
-                            <div class="col-1 d-flex align-items-center">
+                            <div class="col-auto">
                                 <div
-                                    class="spinner-border spinner-border-sm d-none"
+                                    class="spinner-border spinner-border-sm flex-shrink-0 d-none"
                                     id="{{ report.path }}Fetch"
                                     role="status"
                                 >

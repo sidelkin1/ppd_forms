@@ -67,7 +67,7 @@ def _fill_calculator(ws: Worksheet, props: pd.DataFrame) -> None:
     ws[_CALCULATOR_TOP_PERF_DEPTH].value = props["top_perf"].item()
     ws[_CALCULATOR_MEASURED_PRESSURE].value = props["pressure"].item()
     ws[_CALCULATOR_MEASURED_DEPTH].value = props["depth"].item()
-    ws[_CALCULATOR_OIL_DENSITY].value = props["layer_oil_density"].item()
+    ws[_CALCULATOR_OIL_DENSITY].value = props["oil_density"].item()
     ws[_CALCULATOR_WATER_DENSITY].value = props["water_density"].item()
     ws[_CALCULATOR_WATERCUT].value = props["watercut"].item()
     ws[_CALCULATOR_LIQUID_DENSITY].value = props["liquid_density"].item()
@@ -95,7 +95,7 @@ def _fill_analytics(
     ws[_ANALYTICS_TOP_PERF_OFFSET].value = props["top_perf_offset"].item()
     ws[_ANALYTICS_WATERCUT].value = props["watercut"].item()
     ws[_ANALYTICS_WELL_STATUS].value = props["well_status"].item()
-    ws[_ANALYTICS_OIL_DENSITY].value = props["layer_oil_density"].item()
+    ws[_ANALYTICS_OIL_DENSITY].value = props["oil_density"].item()
     ws[_ANALYTICS_WATER_DENSITY].value = props["water_density"].item()
     ws[_ANALYTICS_WELL_TEST_START_DATE].value = on_date
     ws[_ANALYTICS_WELL_TEST_END_DATE].value = on_date
@@ -153,7 +153,7 @@ def _calc_pressures(
         else (np.nan, np.nan)
     )
     props["liquid_density"] = (
-        props["layer_oil_density"] * (1 - props["watercut"] / 100)
+        props["oil_density"] * (1 - props["watercut"] / 100)
         + props["water_density"] * props["watercut"] / 100
     )
     props["top_perf_pressure"] = (

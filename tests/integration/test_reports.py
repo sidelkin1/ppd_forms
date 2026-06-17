@@ -4,9 +4,9 @@ from datetime import date
 from filecmp import cmpfiles
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import structlog
-from csv_diff import compare, load_csv
 from openpyxl import load_workbook
 
 from app.common.config.models.paths import Paths
@@ -22,7 +22,6 @@ from app.core.services.reports import (
 )
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.sql.reporters import LocalBaseDAO
-from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
 from tests.fixtures.task_fixtures import (  # noqa
     task_owc_resp_pressure,
@@ -36,44 +35,44 @@ from tests.fixtures.task_fixtures import (  # noqa
         (
             "well_profile_reporter",
             profile_report,
-            "profile_report.csv",
-            "profile.csv",
+            "profile_report.xlsx",
+            "profile.xlsx",
         ),
         (
             "first_rate_inj_loss_reporter",
             inj_loss_report,
-            "first_rate_inj_loss_report.csv",
-            "inj_loss.csv",
+            "first_rate_inj_loss_report.xlsx",
+            "inj_loss.xlsx",
         ),
         (
             "max_rate_inj_loss_reporter",
             inj_loss_report,
-            "max_rate_inj_loss_report.csv",
-            "inj_loss.csv",
+            "max_rate_inj_loss_report.xlsx",
+            "inj_loss.xlsx",
         ),
         (
             "first_rate_oil_loss_reporter",
             oil_loss_report,
-            "first_rate_oil_loss_report.csv",
-            "oil_loss.csv",
+            "first_rate_oil_loss_report.xlsx",
+            "oil_loss.xlsx",
         ),
         (
             "max_rate_oil_loss_reporter",
             oil_loss_report,
-            "max_rate_oil_loss_report.csv",
-            "oil_loss.csv",
+            "max_rate_oil_loss_report.xlsx",
+            "oil_loss.xlsx",
         ),
         (
             "opp_per_year_reporter",
             opp_per_year_report,
-            "opp_per_year_report.csv",
-            "opp_per_year.csv",
+            "opp_per_year_report.xlsx",
+            "opp_per_year.xlsx",
         ),
         (
             "matrix_reporter",
             matrix_report,
-            "matrix_report.csv",
-            "matrix.csv",
+            "matrix_report.xlsx",
+            "matrix.xlsx",
         ),
     ],
 )
@@ -91,7 +90,6 @@ async def test_reports(
     date_from = date(2000, 1, 1)
     date_to = date(2001, 1, 1)
     dao_: LocalBaseDAO = getattr(pool_holder, dao)
-    csv_config = CsvSettings()
     if dao == "matrix_reporter":
         await service(
             tmp_path,
@@ -104,40 +102,25 @@ async def test_reports(
             dao_,
             process_pool,
             ",",
-            csv_config,
         )
     elif dao in (
         "opp_per_year_reporter",
         "first_rate_oil_loss_reporter",
         "max_rate_oil_loss_reporter",
     ):
-        await service(
-            tmp_path, date_from, date_to, dao_, process_pool, csv_config
-        )
+        await service(tmp_path, date_from, date_to, dao_, process_pool)
     elif dao in (
         "first_rate_inj_loss_reporter",
         "max_rate_inj_loss_reporter",
     ):
         await service(
-            tmp_path,
-            date_from,
-            date_to,
-            True,
-            dao_,
-            process_pool,
-            ",",
-            csv_config,
+            tmp_path, date_from, date_to, True, dao_, process_pool, ","
         )
     else:
-        await service(
-            tmp_path, date_from, date_to, dao_, process_pool, ",", csv_config
-        )
-    diff = compare(
-        load_csv(open(result_dir / expected_report)),
-        load_csv(open(tmp_path / resulted_report)),
-    )
-    for value in diff.values():
-        assert not value
+        await service(tmp_path, date_from, date_to, dao_, process_pool, ",")
+    df_expected = pd.read_excel(result_dir / expected_report)
+    df_actual = pd.read_excel(tmp_path / resulted_report)
+    pd.testing.assert_frame_equal(df_actual, df_expected, atol=1e-4)
 
 
 @pytest.mark.asyncio(scope="session")

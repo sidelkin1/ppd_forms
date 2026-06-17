@@ -5,9 +5,8 @@ from shutil import make_archive
 import pandas as pd
 
 from app.core.utils.process_pool import ProcessPoolManager
-from app.core.utils.save_dataframe import save_to_csv
+from app.core.utils.save_dataframe import save_to_excel
 from app.infrastructure.db.dao.sql.reporters import WellProfileReporter
-from app.infrastructure.files.config.models.csv import CsvSettings
 
 
 def _group_diff_absorb(df: pd.DataFrame) -> pd.DataFrame:
@@ -60,11 +59,8 @@ async def profile_report(
     dao: WellProfileReporter,
     pool: ProcessPoolManager,
     delimiter: str,
-    csv_config: CsvSettings,
 ) -> None:
     df = await dao.read_one(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, df, delimiter)
-    await save_to_csv(
-        df, path / "profile.csv", csv_config.encoding, csv_config.delimiter
-    )
+    await save_to_excel(df, path / "profile.xlsx")
     make_archive(str(path), "zip", root_dir=path)

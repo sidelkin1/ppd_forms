@@ -6,12 +6,11 @@ from typing import Any
 import pandas as pd
 
 from app.core.utils.process_pool import ProcessPoolManager
-from app.core.utils.save_dataframe import save_to_csv
+from app.core.utils.save_dataframe import save_to_excel
 from app.infrastructure.db.dao.sql.reporters import (
     FirstRateInjLossReporter,
     MaxRateInjLossReporter,
 )
-from app.infrastructure.files.config.models.csv import CsvSettings
 
 
 def _prepare_ns_ppd(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
@@ -240,11 +239,8 @@ async def inj_loss_report(
     dao: FirstRateInjLossReporter | MaxRateInjLossReporter,
     pool: ProcessPoolManager,
     delimiter: str,
-    csv_config: CsvSettings,
 ) -> None:
     dfs = await dao.read_all(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, dfs, neighbs_from_ns_ppd, delimiter)
-    await save_to_csv(
-        df, path / "inj_loss.csv", csv_config.encoding, csv_config.delimiter
-    )
+    await save_to_excel(df, path / "inj_loss.xlsx")
     make_archive(str(path), "zip", root_dir=path)

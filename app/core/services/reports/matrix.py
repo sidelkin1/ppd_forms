@@ -8,9 +8,8 @@ from dateutil.relativedelta import relativedelta
 
 from app.core.models.enums import ExcludeGTM
 from app.core.utils.process_pool import ProcessPoolManager
-from app.core.utils.save_dataframe import save_to_csv
+from app.core.utils.save_dataframe import save_to_excel
 from app.infrastructure.db.dao.complex.reporters import MatrixReporter
-from app.infrastructure.files.config.models.csv import CsvSettings
 
 
 def _get_mer_bounds(
@@ -44,9 +43,9 @@ def _expand_date_range(
         df = df.assign(**{result: None})
     else:
         df[result] = df[[left, right]].agg(
-            lambda s: pd.date_range(
-                start=s[left], end=s[right], freq="MS"
-            ).date,
+            lambda s: (
+                pd.date_range(start=s[left], end=s[right], freq="MS").date
+            ),
             axis=1,
         )
     df = df.explode(result)
@@ -367,7 +366,6 @@ async def matrix_report(
     dao: MatrixReporter,
     pool: ProcessPoolManager,
     delimiter: str,
-    csv_config: CsvSettings,
 ) -> None:
     mer_date_from, mer_date_to = _get_mer_bounds(
         date_from, date_to, base_period, pred_period, on_date
@@ -387,7 +385,5 @@ async def matrix_report(
         on_date,
         delimiter,
     )
-    await save_to_csv(
-        df, path / "matrix.csv", csv_config.encoding, csv_config.delimiter
-    )
+    await save_to_excel(df, path / "matrix.xlsx")
     make_archive(str(path), "zip", root_dir=path)

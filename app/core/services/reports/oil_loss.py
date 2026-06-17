@@ -5,12 +5,11 @@ from shutil import make_archive
 import pandas as pd
 
 from app.core.utils.process_pool import ProcessPoolManager
-from app.core.utils.save_dataframe import save_to_csv
+from app.core.utils.save_dataframe import save_to_excel
 from app.infrastructure.db.dao.sql.reporters.oil_loss import (
     FirstRateOilLossReporter,
     MaxRateOilLossReporter,
 )
-from app.infrastructure.files.config.models.csv import CsvSettings
 
 
 def _calc_loss(df: pd.DataFrame) -> pd.DataFrame:
@@ -48,11 +47,8 @@ async def oil_loss_report(
     date_to: date,
     dao: FirstRateOilLossReporter | MaxRateOilLossReporter,
     pool: ProcessPoolManager,
-    csv_config: CsvSettings,
 ) -> None:
     df = await dao.read_one(date_from=date_from, date_to=date_to)
     df = await pool.run(_process_data, df, date_to)
-    await save_to_csv(
-        df, path / "oil_loss.csv", csv_config.encoding, csv_config.delimiter
-    )
+    await save_to_excel(df, path / "oil_loss.xlsx")
     make_archive(str(path), "zip", root_dir=path)

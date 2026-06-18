@@ -1,0 +1,20 @@
+.warning {
+  border-left: 4px solid #f0ad4e;
+  background: #fff8e1;
+  padding: 12px 16px;
+  margin: 8px 0;
+}
+
+.note {
+  border-left: 4px solid #28a745;
+  background: #e8f5e9;
+  padding: 12px 16px;
+  margin: 8px 0;
+}
+
+.tip {
+  border-left: 4px solid #007bff;
+  background: #e8f0fe;
+  padding: 12px 16px;
+  margin: 8px 0;
+}

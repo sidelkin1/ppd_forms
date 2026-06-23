@@ -43,6 +43,7 @@ def init_api() -> FastAPI:
     endpoints.setup(app)
     middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
+    app.mount("/help", StaticFiles(directory="site", html=True), name="help")
     auth_config = get_auth_settings()
     paths = get_paths()
     dependencies.setup(app, pool, redis, app_config, auth_config, paths)

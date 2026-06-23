@@ -1,0 +1,44 @@
+site_name: РН-СУПРА
+site_description: Приложение для создания типовых отчетов ППД
+
+theme:
+  name: material
+  logo: assets/images/logo.png
+  favicon: assets/images/favicon.png
+  features:
+    - navigation.sections
+
+validation:
+  links:
+    absolute_links: relative_to_docs
+
+nav:
+  - 'Главная': 'index.md'
+  - 'Начало работы':
+    - 'Общая информация об отчетах': 'app/index.md'
+    - 'Общая информация о локальной БД': 'app/local.md'
+  - 'Описание отчетов':
+    - 'Профили добычи/закачки': 'app/reports/profile.md'
+    - 'Количество ОПП за год': 'app/reports/opp_per_year.md'
+    - 'Потери нефти по базе ГТМ ППД': 'app/reports/inj_loss.md'
+    - 'Эффект ГТМ ППД по матрице': 'app/reports/matrix.md'
+    - 'Потери нефти по НФ': 'app/reports/oil_loss.md'
+    - 'Контуры ФНВ': 'app/reports/fnv.md'
+    - 'Шаблон для матбаланса (РН-КИН)': 'app/reports/matbal.md'
+    - 'Пролонгация эффекта ППД по ХВ': 'app/reports/prolong.md'
+    - 'Выгрузка исходников для ММБ (Julia)': 'app/reports/mmb.md'
+    - 'Выгрузка для компенсаций': 'app/reports/compensation.md'
+    - 'Отчет по ГДИС': 'app/reports/well_test.md'
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.caption
+  - footnotes
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg

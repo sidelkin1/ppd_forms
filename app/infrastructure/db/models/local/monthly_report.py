@@ -1,6 +1,13 @@
 from datetime import date
 
-from sqlalchemy import Float, Index, Label, UniqueConstraint, cast, func
+from sqlalchemy import (
+    Float,
+    Index,
+    SQLColumnExpression,
+    UniqueConstraint,
+    cast,
+    func,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped
 
@@ -33,7 +40,7 @@ class MonthlyReport(date_stamp_factory("dat_rep"), Base):
 
     @oil_fvf_or_default.inplace.expression
     @classmethod
-    def _oil_fvf_or_default_expression(cls) -> Label[float]:
+    def _oil_fvf_or_default_expression(cls) -> SQLColumnExpression[float]:
         return func.coalesce(  # type: ignore
             cls.oil_fvf, cast(FVF_DEFAULT_VALUE, Float)
         ).label("_oil_fvf")
@@ -72,7 +79,7 @@ class MonthlyReport(date_stamp_factory("dat_rep"), Base):
 
     @watercut.inplace.expression
     @classmethod
-    def _watercut_expression(cls) -> Label[float]:
+    def _watercut_expression(cls) -> SQLColumnExpression[float]:
         return func.coalesce(
             cls.water_v / func.nullif(cls.liquid, 0), cast(0, Float)
         ).label("watercut")

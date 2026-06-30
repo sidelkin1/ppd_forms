@@ -30,6 +30,7 @@ nav:
     - 'Выгрузка исходников для ММБ (Julia)': 'app/reports/mmb.md'
     - 'Выгрузка для компенсаций': 'app/reports/compensation.md'
     - 'Отчет по ГДИС': 'app/reports/well_test.md'
+    - 'Пересчет давления на ВНК': 'app/reports/owc_resp.md'
 
 plugins:
   - search

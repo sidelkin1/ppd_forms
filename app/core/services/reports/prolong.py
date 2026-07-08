@@ -211,7 +211,7 @@ async def _handle_failures(
                 continue
             gtm = await failures.get()
             await logger.aexception(
-                "Не удалось обработать скважину: %s %s %s",
+                "Не удалось обработать скважину: %s %s %s (%s)",
                 gtm.field,
                 gtm.well,
                 gtm.date,

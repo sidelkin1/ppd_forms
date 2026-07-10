@@ -107,6 +107,7 @@ def app(
     endpoints.setup(app)
     middlewares.setup(app)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
+    app.mount("/help", StaticFiles(directory="site", html=True), name="help")
     dependencies.setup(app, pool, redis, app_config, auth_config, paths)
     return app
 

@@ -186,7 +186,7 @@ class OwcRespMock(OwcRespReporter):
                 "on_date": [pd.to_datetime(params["on_date"])],
                 "elevation": [10.0],
                 "abs_depth_owc": [100.0],
-                "layer_oil_density": [1.0],
+                "oil_density": [1.0],
                 "water_density": [1.0],
                 "watercut": [0.0],
                 "top_perf": [100.0],

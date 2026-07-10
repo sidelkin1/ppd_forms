@@ -5,7 +5,7 @@ from typing import Annotated
 from pydantic import (
     BaseModel,
     ConfigDict,
-    PositiveFloat,
+    NonNegativeFloat,
     StringConstraints,
     field_validator,
 )
@@ -20,8 +20,8 @@ class OwcRespParams(BaseModel):
     well: Annotated[
         str, StringConstraints(strip_whitespace=True, to_upper=True)
     ]
-    pressure: PositiveFloat
-    depth: PositiveFloat
+    pressure: NonNegativeFloat
+    depth: NonNegativeFloat
     well_test: WellTest
     on_date: date
 

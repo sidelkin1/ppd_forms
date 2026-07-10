@@ -14,7 +14,7 @@ def _group_diff_absorb(df: pd.DataFrame) -> pd.DataFrame:
     df["diff_absorp"] /= df.groupby(level=0)["diff_absorp"].transform(len)
     return df.groupby(columns.to_list(), as_index=False).agg(
         {
-            "diff_absorp": "sum",
+            "diff_absorp": lambda s: s.sum(min_count=1),
             "remarks": (
                 lambda s: (
                     s[s.str.contains(r"\w+", na=False)]
@@ -34,7 +34,7 @@ def _calc_layer_rate(df: pd.DataFrame, rate: str) -> pd.DataFrame:
 
 
 def _calc_layer_rates(df: pd.DataFrame) -> pd.DataFrame:
-    columns = ["field", "well_name", "cid", "rec_date"]
+    columns = ["field", "well_name", "cid_all", "cid", "rec_date"]
     df["1/num_layer"] = 1 / df.groupby(columns)["layer"].transform(len)
     df = _calc_layer_rate(df, "liq_rate")
     df = _calc_layer_rate(df, "inj_rate")

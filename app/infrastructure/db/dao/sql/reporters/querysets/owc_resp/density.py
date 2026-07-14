@@ -9,7 +9,7 @@ from app.infrastructure.db.models.ofm.reflected import (
 
 from .reservoirs import select_reservoir_ids
 
-_WATER_DENSITY_ID = 1238899
+_WATER_DENSITY_IDS = (1238899, 1238979)
 
 
 def _select_max_rec_id() -> ScalarSelect:
@@ -21,7 +21,7 @@ def _select_max_rec_id() -> ScalarSelect:
             WellMonthHist.layer_id.in_(select_reservoir_ids()),
             WellMonthHist.start_date <= bindparam("on_date"),
             WellMonthHistPty.wmh_id == WellMonthHist.rec_id,
-            WellMonthHistPty.parameter_id == _WATER_DENSITY_ID,
+            WellMonthHistPty.parameter_id.in_(_WATER_DENSITY_IDS),
         )
         .scalar_subquery()
         .correlate(WellHdr)
@@ -30,10 +30,10 @@ def _select_max_rec_id() -> ScalarSelect:
 
 def select_water_density() -> ScalarSelect:
     return (
-        select(WellMonthHistPty.num_val)
+        select(func.min(WellMonthHistPty.num_val).label("water_density"))
         .where(
             WellMonthHistPty.wmh_id == _select_max_rec_id(),
-            WellMonthHistPty.parameter_id == _WATER_DENSITY_ID,
+            WellMonthHistPty.parameter_id.in_(_WATER_DENSITY_IDS),
         )
         .scalar_subquery()
         .correlate(WellHdr)

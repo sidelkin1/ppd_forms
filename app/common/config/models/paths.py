@@ -10,6 +10,7 @@ class Paths(BaseModel):
     app_dir: DirectoryPath = base_dir / "app"
     data_dir: DirectoryPath = base_dir / "data"
     file_dir: DirectoryPath = base_dir / "files"
+    site_dir: DirectoryPath = base_dir / "site"
 
     @property
     def field_replace(self):

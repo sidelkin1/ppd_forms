@@ -34,6 +34,7 @@ def paths(tmp_path_factory) -> Paths:
         base_dir=base_dir,
         data_dir=base_dir / "tests" / "fixtures" / "resources" / "data",
         file_dir=tmp_path_factory.mktemp("files"),
+        site_dir=tmp_path_factory.mktemp("help"),
     )
 
 

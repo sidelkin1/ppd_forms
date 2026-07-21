@@ -46,25 +46,30 @@ class XxxParams(BaseModel):
 
 #### `app/core/models/dto/tasks/<report>.py`
 
-Task DTO. Inherits `TaskBase` with `task_id` and `route_fields`:
+Task DTO. Inherits `TaskReport` (which provides `name: ReportName` and a `filename_prefix` property) with `task_id` and `route_fields`:
 
 ```python
+from datetime import date
+
 from app.core.models.dto.db.field_list import UneftFieldDB
 from app.core.models.dto.db.reservoir_list import UneftReservoirDB
-from app.core.models.dto.tasks.base import TaskBase
-from app.core.models.enums import ReportName, TaskId
+from app.core.models.dto.tasks.report import TaskReport
+from app.core.models.enums import TaskId
 
 
-class TaskXxx(TaskBase, task_id=TaskId.report, route_fields=["task_id", "name"]):
-    name: ReportName
+class TaskXxx(TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]):
     field: UneftFieldDB
     reservoir: UneftReservoirDB
     well: str
+    date_from: date
+    date_to: date
 ```
 
 Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` → matches `@registry.add("report:xxx")` in Step 3.
 
 > `TaskId` does **not** need a new value — all reports reuse `task_id=TaskId.report`.
+>
+> `TaskReport` provides `name: ReportName` (auto-populated — do **not** redeclare in subclass) and a `filename_prefix` property (defaults to `self.name.value`). Override `filename_prefix` for custom file naming, e.g. `TaskOwcResp` returns `"{field}_{reservoir}_{well}"`. The prefix propagates to `JobStamp.prefix` → `file_id` via `ReportResponse.propagate_prefix`.
 
 > Validation lives **only** in the Schema layer — DTOs trust pre-validated data. Common patterns:
 > - `Annotated[str, StringConstraints(strip_whitespace=True, to_upper=True)]` — normalize strings
@@ -93,7 +98,7 @@ Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` 
 
 - **`app/api/models/responses/task.py`** — add Response type:
   ```python
-  XxxResponse = BaseResponse[dto.TaskXxx]
+  XxxResponse = ReportResponse[dto.TaskXxx]
   ```
 
 - **`app/api/models/responses/__init__.py`** — add export:
@@ -103,7 +108,7 @@ Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` 
 
 - **`app/api/endpoints/report.py`** — add endpoint.
 
-    > **Note:** Reports that only need `date_from`/`date_to` parameters can reuse the existing catch-all `POST /{name}` endpoint with `DateRange` schema and `TaskReport` DTO — no dedicated endpoint needed. Create a dedicated endpoint only when the report has unique parameters.
+    > **Note:** The catch-all `POST /{name}` endpoint accepts **only** a report name (no parameters) — it creates `TaskReport(name=name)`. Most reports need custom parameters and require a dedicated endpoint like the one below. See existing dedicated endpoints (`/profile`, `/opp_per_year`, `/matrix`, `/owc_resp`, etc.) for reference.
 
     Add imports at top:
     ```python
@@ -132,6 +137,8 @@ Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` 
             field=params.field,
             reservoir=params.reservoir,
             well=params.well,
+            date_from=params.date_from,
+            date_to=params.date_to,
         )
         response = XxxResponse(task=task, job=job)
         await redis.enqueue_task(response, user.username)
@@ -726,6 +733,8 @@ tests/
 ## Important conventions
 
 - **`route_fields` determines dispatch**: `route_fields=["task_id", "name"]` with `name=ReportName.xxx` produces `route_url = "report:xxx"` which matches `@registry.add("report:xxx")` in the ARQ worker.
+- **DTOs inherit `TaskReport`**, not `TaskBase`. `TaskReport` provides `name: ReportName` and `filename_prefix` (default: `self.name.value`). Override `filename_prefix` for custom file naming (e.g. `TaskOwcResp` overrides it to `"{field}_{reservoir}_{well}"`).
+- **`ReportResponse`** (not `BaseResponse`) is used for all report response aliases. Its `propagate_prefix` validator copies `task.filename_prefix` → `job.prefix` → `file_id`.
 - **`OfmBaseDAO`** in `app/infrastructure/db/dao/sql/reporters/ofm.py` is the base class for OFM reporters. Study an existing reporter (e.g. `profile.py`, `matbal.py`) before implementing.
 - **`HolderDAO`** in `app/infrastructure/holder.py` is the service locator. Each reporter needs a `@property` here.
 - **Always read existing similar files before writing new ones** — mimic patterns for imports, naming, and structure.

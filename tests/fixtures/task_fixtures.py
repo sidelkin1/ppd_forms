@@ -11,9 +11,9 @@ from app.core.models.dto import (
     TaskMatbal,
     TaskMatrix,
     TaskMmb,
+    TaskOppPerYear,
     TaskOwcResp,
     TaskProlong,
-    TaskReport,
     TaskWellTest,
     UneftFieldDB,
     UneftReservoirDB,
@@ -93,8 +93,8 @@ def task_excel() -> TaskExcel:
 
 
 @pytest.fixture
-def task_report(date_range: DateRange) -> TaskReport:
-    return TaskReport(
+def task_opp_per_year(date_range: DateRange) -> TaskOppPerYear:
+    return TaskOppPerYear(
         name=ReportName.opp_per_year,
         date_from=date_range.date_from,
         date_to=date_range.date_to,

@@ -22,7 +22,9 @@ from .tasks.matbal import TaskMatbal
 from .tasks.matrix import TaskMatrix
 from .tasks.mmb import TaskMmb
 from .tasks.oil_loss import TaskOilLoss
+from .tasks.opp_per_year import TaskOppPerYear
 from .tasks.owc_resp import TaskOwcResp
+from .tasks.profile import TaskProfile
 from .tasks.prolong import TaskProlong
 from .tasks.report import TaskReport
 from .tasks.uneft import TaskFields, TaskReservoirs, TaskUneft, TaskWells

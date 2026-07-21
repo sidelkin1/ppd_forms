@@ -1,13 +1,11 @@
-from pydantic import NonNegativeFloat, PositiveInt
+from datetime import date
 
 from app.core.models.dto.tasks.report import TaskReport
 from app.core.models.enums import TaskId
 
 
-class TaskWellTest(
+class TaskOppPerYear(
     TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]
 ):
-    file: str
-    gtm_period: PositiveInt
-    gdis_period: PositiveInt
-    radius: NonNegativeFloat
+    date_from: date
+    date_to: date

@@ -25,7 +25,7 @@ def get_unknown_name_url(task: TaskReport) -> str:
 @pytest.mark.parametrize(
     "task,schema",
     [
-        ("task_report", "date_range"),
+        ("task_opp_per_year", "date_range"),
         ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],
@@ -79,7 +79,7 @@ async def test_generate_owc_resp_report_success(
 @pytest.mark.parametrize(
     "task,schema",
     [
-        ("task_report", "date_range"),
+        ("task_opp_per_year", "date_range"),
         ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],
@@ -99,7 +99,7 @@ async def test_generate_report_unknown_name(
 
 
 @pytest.mark.parametrize(
-    "task", ["task_report", "task_inj_loss", "task_matrix"]
+    "task", ["task_opp_per_year", "task_inj_loss", "task_matrix"]
 )
 @pytest.mark.asyncio(scope="session")
 async def test_generate_report_no_dates(
@@ -114,7 +114,7 @@ async def test_generate_report_no_dates(
 @pytest.mark.parametrize(
     "task,schema",
     [
-        ("task_report", "date_range"),
+        ("task_opp_per_year", "date_range"),
         ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],
@@ -142,7 +142,7 @@ async def test_generate_report_dates_not_ordered(
 @pytest.mark.parametrize(
     "task,schema",
     [
-        ("task_report", "date_range"),
+        ("task_opp_per_year", "date_range"),
         ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
     ],

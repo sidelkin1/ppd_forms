@@ -2,14 +2,13 @@ from datetime import date
 
 from app.core.models.dto.db.field_list import UneftFieldDB
 from app.core.models.dto.db.reservoir_list import UneftReservoirDB
-from app.core.models.dto.tasks.base import TaskBase
-from app.core.models.enums import ReportName, TaskId, WellTest
+from app.core.models.dto.tasks.report import TaskReport
+from app.core.models.enums import TaskId, WellTest
 
 
 class TaskOwcResp(
-    TaskBase, task_id=TaskId.report, route_fields=["task_id", "name"]
+    TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]
 ):
-    name: ReportName
     field: UneftFieldDB
     reservoir: UneftReservoirDB
     well: str
@@ -17,3 +16,9 @@ class TaskOwcResp(
     depth: float
     well_test: WellTest
     on_date: date
+
+    @property
+    def filename_prefix(self) -> str:
+        return "{}_{}_{}".format(
+            self.field.name, self.reservoir.name, self.well
+        )

@@ -12,9 +12,10 @@ from app.api.models.responses import (
     MatrixResponse,
     MmbResponse,
     OilLossResponse,
+    OppPerYearResponse,
     OwcRespResponse,
+    ProfileResponse,
     ProlongResponse,
-    ReportResponse,
     ReservoirsResponse,
     WellsResponse,
     WellTestResponse,
@@ -184,7 +185,7 @@ async def refresh_opp(response: DatabaseResponse, ctx: dict[str, Any]) -> None:
 
 @registry.add("report:profile")
 async def create_profile_report(
-    response: ReportResponse, ctx: dict[str, Any]
+    response: ProfileResponse, ctx: dict[str, Any]
 ) -> None:
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
@@ -282,7 +283,7 @@ async def create_max_rate_oil_loss_report(
 
 @registry.add("report:opp_per_year")
 async def create_opp_per_year_report(
-    response: ReportResponse, ctx: dict[str, Any]
+    response: OppPerYearResponse, ctx: dict[str, Any]
 ) -> None:
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)

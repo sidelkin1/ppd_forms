@@ -21,11 +21,13 @@ class JobStamp(BaseModel):
     message: str | None = None
     status: JobStatus = JobStatus.created
     created_at: datetime = Field(default_factory=datetime.now)
+    prefix: str = "result"
 
     @computed_field  # type: ignore[misc]
     @property
     def file_id(self) -> str:
-        return "result_{}_{}".format(
+        return "{}_{}_{}".format(
+            self.prefix,
             self.created_at.strftime("%Y_%m_%dT%H_%M_%S"),
             self.job_id[:RESULT_SUFFIX_LENGTH],
         )

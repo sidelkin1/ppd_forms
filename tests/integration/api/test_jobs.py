@@ -71,6 +71,7 @@ async def test_job_is_not_found(client: AsyncClient):
             "status": JobStatus.not_found.value,
             "created_at": data["job"]["created_at"],
             "file_id": data["job"]["file_id"],
+            "prefix": data["job"]["prefix"],
         },
         "task": {},
     }

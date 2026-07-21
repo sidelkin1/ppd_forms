@@ -1,11 +1,10 @@
-from app.core.models.dto.tasks.base import TaskBase
-from app.core.models.enums import Interpolation, ReportName, TaskId
+from app.core.models.dto.tasks.report import TaskReport
+from app.core.models.enums import Interpolation, TaskId
 
 
 class TaskProlong(
-    TaskBase, task_id=TaskId.report, route_fields=["task_id", "name"]
+    TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]
 ):
-    name: ReportName
     expected: str
     actual: str
     interpolations: list[Interpolation]

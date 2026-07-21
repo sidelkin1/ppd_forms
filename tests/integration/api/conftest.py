@@ -41,10 +41,10 @@ from tests.fixtures.task_fixtures import (  # noqa
     task_matbal,
     task_matrix,
     task_mmb,
+    task_opp_per_year,
     task_owc_resp_pressure,
     task_owc_resp_static,
     task_prolong,
-    task_report,
     task_well_test,
     well_test,
 )

@@ -13,7 +13,9 @@ from app.api.models.responses import (
     MatrixResponse,
     MmbResponse,
     OilLossResponse,
+    OppPerYearResponse,
     OwcRespResponse,
+    ProfileResponse,
     ProlongResponse,
     ReportResponse,
     WellTestResponse,
@@ -27,7 +29,9 @@ from app.core.models.dto import (
     TaskMatrix,
     TaskMmb,
     TaskOilLoss,
+    TaskOppPerYear,
     TaskOwcResp,
+    TaskProfile,
     TaskProlong,
     TaskReport,
     TaskWellTest,
@@ -292,6 +296,50 @@ async def generate_owc_resp_report(
 
 
 @router.post(
+    "/profile",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ProfileResponse,
+    response_model_exclude_none=True,
+)
+async def generate_profile_report(
+    date_range: DateRange,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskProfile(
+        name=ReportName.profile,
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
+    )
+    response = ProfileResponse(task=task, job=job)
+    await redis.enqueue_task(response, user.username)
+    return response
+
+
+@router.post(
+    "/opp_per_year",
+    status_code=status.HTTP_201_CREATED,
+    response_model=OppPerYearResponse,
+    response_model_exclude_none=True,
+)
+async def generate_opp_per_year_report(
+    date_range: DateRange,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskOppPerYear(
+        name=ReportName.opp_per_year,
+        date_from=date_range.date_from,
+        date_to=date_range.date_to,
+    )
+    response = OppPerYearResponse(task=task, job=job)
+    await redis.enqueue_task(response, user.username)
+    return response
+
+
+@router.post(
     "/{name}",
     status_code=status.HTTP_201_CREATED,
     response_model=ReportResponse,
@@ -299,16 +347,11 @@ async def generate_owc_resp_report(
 )
 async def generate_report(
     name: ReportName,
-    date_range: DateRange,
     user: UserDep,
     redis: RedisDep,
     job: NewJobDep,
 ):
-    task = TaskReport(
-        name=name,
-        date_from=date_range.date_from,
-        date_to=date_range.date_to,
-    )
+    task = TaskReport(name=name)
     response = ReportResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)
     return response

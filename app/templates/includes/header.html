@@ -12,7 +12,7 @@
                         {% if request.route.name == 'reports' %}active{% endif %}"
                         href="{{ url_for('reports') }}"
                     >
-                        Отчеты
+                        <i class="bi bi-file-earmark-bar-graph"></i> Отчеты
                     </a>
                 </li>
                 <li class="nav-item">
@@ -21,7 +21,7 @@
                         {% if request.route.name == 'tables' %}active{% endif %}"
                         href="{{ url_for('tables') }}"
                     >
-                        Таблицы
+                        <i class="bi bi-table"></i> Таблицы
                     </a>
                 </li>
                 <li class="nav-item">
@@ -30,7 +30,7 @@
                         {% if request.route.name == 'results' %}active{% endif %}"
                         href="{{ url_for('results') }}"
                     >
-                        Результаты
+                        <i class="bi bi-folder2-open"></i> Результаты
                     </a>
                 </li>
                 <li class="nav-item">
@@ -38,7 +38,7 @@
                         class="nav-link"
                         href="{{ url_for('help', path='index.html') }}"
                     >
-                        Помощь
+                        <i class="bi bi-question-circle"></i> Помощь
                     </a>
                 </li>
             </ul>
@@ -46,11 +46,11 @@
                 <ul class="navbar-nav">
                     {% if user %}
                         <span class="navbar-text text-light">
-                            Пользователь: {{ user.username }}
+                            <i class="bi bi-person-circle"></i> {{ user.username }}
                         </span>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('logout_page') }}">
-                                Выйти
+                                <i class="bi bi-box-arrow-right"></i> Выйти
                             </a>
                         </li>
                     {% else %}
@@ -60,7 +60,7 @@
                                 {% if request.route.name == 'login_page' %}active{% endif %}"
                                 href="{{ url_for('login_page') }}"
                             >
-                                Войти
+                                <i class="bi bi-box-arrow-in-right"></i> Войти
                             </a>
                         </li>
                     {% endif %}

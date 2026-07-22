@@ -1,11 +1,41 @@
+groups:
+  ОПП:
+    icon: bi-bar-chart-steps
+    color: '#F6D106'
+    order: 0
+    text_dark: true
+  Потери:
+    icon: bi-exclamation-diamond-fill
+    color: '#EF6B01'
+    order: 1
+    text_dark: true
+  ППД:
+    icon: bi-water
+    color: '#475B79'
+    order: 2
+  ГДИС:
+    icon: bi-eye-fill
+    color: '#C20937'
+    order: 3
+  Моделирование:
+    icon: bi-diagram-3-fill
+    color: '#3D464A'
+    order: 4
+items:
 - title: Профили добычи/закачки
   path: profile
+  group: ОПП
+  icon: bi-bar-chart-line-fill
   description: Профили добычи/закачки для ТСРМ
 - title: Количество ОПП за год
   path: opp_per_year
+  group: ОПП
+  icon: bi-calendar-check-fill
   description: Количество ОПП по годам для ТСРМ
 - title: Потери нефти по базе ГТМ ППД
   path: inj_loss
+  group: Потери
+  icon: bi-droplet-fill
   loss_mode:
   - text: --Выберите режим выгрузки--
     value: --
@@ -20,6 +50,8 @@
   description: Потери Qн по округе нагнетательных скважин
 - title: Эффект ГТМ ППД по матрице
   path: matrix
+  group: Потери
+  icon: bi-grid-3x3-gap-fill
   excludes:
   - text: --Выберите исключаемые ГТМ НФ--
     value: --
@@ -67,6 +99,8 @@
   description: Эффект ГТМ ППД по матрице для ОУЗ
 - title: Потери нефти по НФ
   path: oil_loss
+  group: Потери
+  icon: bi-pie-chart-fill
   loss_mode:
   - text: --Выберите режим выгрузки--
     value: --
@@ -80,6 +114,8 @@
   description: Потери Qн по факторам (аналог PackagesRelease)
 - title: Контуры ФНВ
   path: fnv
+  group: ОПП
+  icon: bi-bullseye
   min_radius: 30
   alternative: true
   fields:
@@ -92,6 +128,8 @@
   description: Фронт нагнетаемой воды для загрузки в РН-КИН
 - title: Шаблон для матбаланса (РН-КИН)
   path: matbal
+  group: Моделирование
+  icon: bi-calculator-fill
   alternative: false
   fields:
   - text: --Выберите месторождение--
@@ -106,6 +144,8 @@
   description: Шаблон для автоадаптации параметров матбаланса
 - title: Пролонгация эффекта ППД по ХВ
   path: prolong
+  group: ППД
+  icon: bi-graph-up-arrow
   expected: ДД план
   actual: ДД факт
   interpolation:
@@ -124,14 +164,20 @@
   description: Пролонгация эффекта ППД (факт+план)
 - title: Выгрузка исходников для ММБ (Julia)
   path: mmb
+  group: Моделирование
+  icon: bi-hexagon
   alternative: true
   tank: Параметры блоков
   description: Исходники для работы ММБ (добыча, закачка, замеры Рпл и т.д.)
 - title: Выгрузка для компенсаций
   path: compensation
+  group: ППД
+  icon: bi-arrow-repeat
   description: Выгрузка для сводной таблицы с целевыми компенсациями
 - title: Отчет по ГДИС
   path: well_test
+  group: ГДИС
+  icon: bi-activity
   file: Отчет Сиам
   gtm_period: Период ГТМ (мес)
   gdis_period: Период ГДИС (лет)
@@ -139,6 +185,8 @@
   description: Выгрузка для отчета по ГДИС (аналитика, ГТМ и т.д.)
 - title: Пересчет давления на ВНК
   path: owc_resp
+  group: ГДИС
+  icon: bi-speedometer2
   fields:
   - text: --Выберите месторождение--
     value: --
@@ -148,16 +196,3 @@
     value: --
     selected: true
   well: Номер скважин
-  pressure: Давление (атм)
-  depth: Глубина (м)
-  well_test:
-  - text: --Выберите вид исследования--
-    value: --
-    selected: true
-  - text: Hст
-    value: static_level
-    selected: false
-  - text: Pпл
-    value: pressure
-    selected: false
-  description: Пересчет давления на глубину с учетом инклинометрии скважины

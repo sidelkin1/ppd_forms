@@ -16,19 +16,25 @@
                         onsubmit="showSpinner()"
                     >
                         <div class="mb-3">
-                            <input type="text" required
-                                placeholder="Введите имя пользователя"
-                                name="username"
-                                value="{{ username }}"
-                                class="form-control"
-                            >
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" required
+                                    placeholder="Введите имя пользователя"
+                                    name="username"
+                                    value="{{ username }}"
+                                    class="form-control"
+                                >
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <input type="password" required
-                                placeholder="Введите пароль"
-                                name="password"
-                                class="form-control"
-                            >
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" required
+                                    placeholder="Введите пароль"
+                                    name="password"
+                                    class="form-control"
+                                >
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary" id="submitButton">
                             <span
@@ -37,11 +43,11 @@
                                 role="status"
                             >
                             </span>
-                            Отправить
+                            <i class="bi bi-box-arrow-in-right"></i> Войти
                         </button>
                     </form>
-                    <div 
-                        class="alert alert-danger 
+                    <div
+                        class="alert alert-danger
                         {% if not error %}d-none{% endif %}"
                         id="errorMessage"
                         role="alert"

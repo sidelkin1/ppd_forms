@@ -1,0 +1,75 @@
+{% from '/macros/forms.html' import form_date_range, form_on_date %}
+{% from 'reports/macros/forms.html' import
+    form_inj_loss,
+    form_oil_loss,
+    form_matrix,
+    form_fnv,
+    form_matbal,
+    form_prolong,
+    form_mmb,
+    form_well_test,
+    form_owc_resp
+%}
+{% from '/macros/accordion.html' import accordion_form %}
+
+{% macro report_card(report, report_groups_map) -%}
+    {% set rg = report_groups_map.get(report.group, {}) %}
+    {% set bg = rg.get('color', '#F9BD27') %}
+    {% set txt = 'text-dark' if rg.get('text_dark', false) else 'text-light' %}
+    <div class="col-sm-6 report-card" data-search="{{ report.title }} {{ report.description|striptags }}">
+        <div class="card mb-3">
+            <div class="card-header {{ txt }}" style="--header-bg: {{ bg }};">
+                <div class="row flex-nowrap">
+                    <div class="col">
+                        <h5>
+                            <i class="bi {{ report.icon }}"></i>
+                            {{ report.title }}
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div
+                            class="spinner-border spinner-border-sm flex-shrink-0 d-none"
+                            id="{{ report.path }}Fetch"
+                            role="status"
+                        >
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ report.description|safe }}</p>
+                {% call(report) accordion_form(
+                    report,
+                    "Параметры для выгрузки",
+                    "Отчет успешно сформирован!",
+                    "Ошибка при формировании отчета!",
+                    need_link=True
+                ) %}
+                    {% if report.path == "inj_loss" %}
+                        {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
+                    {% elif report.path == "oil_loss" %}
+                        {{ form_oil_loss(report, "Выгрузить", "loadOilLoss") }}
+                    {% elif report.path == "matrix" %}
+                        {{ form_matrix(report, "Выгрузить", "loadMatrix") }}
+                    {% elif report.path == "fnv" %}
+                        {{ form_fnv(report, "Выгрузить", "loadFNV") }}
+                    {% elif report.path == "matbal" %}
+                        {{ form_matbal(report, "Выгрузить", "loadMatbal") }}
+                    {% elif report.path == "prolong" %}
+                        {{ form_prolong(report, "Выгрузить", "loadProlong") }}
+                    {% elif report.path == "mmb" %}
+                        {{ form_mmb(report, "Выгрузить", "loadMMB") }}
+                    {% elif report.path == "compensation" %}
+                        {{ form_on_date(report.path, "Выгрузить", "loadOnDate") }}
+                    {% elif report.path == "well_test" %}
+                        {{ form_well_test(report, "Выгрузить", "loadWellTest") }}
+                    {% elif report.path == "owc_resp" %}
+                        {{ form_owc_resp(report, "Выгрузить", "loadOwcResp") }}
+                    {% else %}
+                        {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
+                    {% endif %}
+                {% endcall %}
+            </div>
+        </div>
+    </div>
+{%- endmacro %}

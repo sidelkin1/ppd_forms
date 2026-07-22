@@ -8,11 +8,11 @@
         <td class="text-center">
             <div class="spinner-border spinner-border-sm" id="{{ job.job_id }}Fetch" role="status"></div>
             <div class="alert alert-success d-none" id="{{ job.job_id }}Success" role="alert">
-                {{ success_text }}
-                <a href="#" class="alert-link" id="{{ job.job_id }}Link">Скачать</a>
+                <i class="bi bi-check-circle-fill"></i> {{ success_text }}
+                <a href="#" class="alert-link" id="{{ job.job_id }}Link"><i class="bi bi-download"></i> Скачать</a>
             </div>
             <div class="alert alert-danger d-none" id="{{ job.job_id }}Danger" role="alert">
-                {{ danger_text }}
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ danger_text }}
             </div>
         </td>
     </tr>

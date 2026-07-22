@@ -25,3 +25,55 @@ body {
 .bg-danger {
   background-color: #C20937 !important;
 }
+
+/* Card hover effect */
+.card {
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.card:hover {
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Smooth transition for search filter */
+.report-card {
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Icon alignment in buttons */
+.btn i, .alert-link i, .nav-link i {
+  margin-right: 0.25rem;
+}
+
+/* Better input group icon styling */
+.input-group-text i {
+  font-size: 1.1rem;
+}
+
+/* Group section headers */
+#reportGrid > .mb-4 > h4 {
+  letter-spacing: 0.3px;
+  border-bottom-width: 3px !important;
+  border-bottom-color: var(--group-color);
+}
+#reportGrid > .mb-4 > h4 i {
+  font-size: 1.3rem;
+  color: var(--group-color);
+}
+
+/* Card header color from --header-bg custom property */
+.report-card .card-header {
+  background-color: var(--header-bg, #F9BD27);
+  border-bottom: 2px solid var(--header-bg, #F9BD27);
+}
+
+.table-card .card-header {
+  background-color: var(--header-bg, #6B6B6B);
+}
+
+.table-group h4 {
+  border-bottom-color: var(--group-color);
+}
+.table-group h4 i {
+  color: var(--group-color);
+}

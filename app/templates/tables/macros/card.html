@@ -1,0 +1,63 @@
+{% from '/macros/forms.html' import form_date_range, form_upload_file %}
+{% from '/macros/accordion.html' import accordion_form %}
+
+{% macro table_card(table, table_groups_map) -%}
+    {% set grp_data = table_groups_map.get(table.group, {}) %}
+    {% set bg = grp_data.get('color', '#6B6B6B') %}
+    <div class="col-sm-6 table-card">
+        <div class="card mb-3">
+            <div class="card-header text-light" style="--header-bg: {{ bg }};">
+                <div class="row flex-nowrap">
+                    <div class="col">
+                        <h5>
+                            <i class="bi {{ grp_data.get('icon', 'bi-table') }}"></i>
+                            {{ table.title }}
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div
+                            class="spinner-border spinner-border-sm flex-shrink-0 d-none"
+                            id="{{ table.path }}Fetch"
+                            role="status"
+                        >
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">
+                    <span class="badge bg-dark" id="{{ table.path }}Dates"></span>
+                </h6>
+                <p class="card-text">
+                    {{ table.description|safe }}
+                    {% if 'link' in table %}
+                        <button
+                            type="button"
+                            class="btn btn-outline-dark btn-sm"
+                            id="{{ table.path }}Link"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title="Скопировать путь к файлам в буфер"
+                            onclick="copyClipboard('{{ table.path }}Link', String.raw`{{ table.link }}`)"
+                        >
+                            Copy
+                        </button>
+                    {% endif %}
+                </p>
+                {% call(table) accordion_form(
+                    table,
+                    "Параметры для обновления",
+                    "Таблица успешно обновлена!",
+                    "Ошибка при обновлении таблицы!"
+                ) %}
+                    {% if table.source == "database" %}
+                        {{ form_date_range(table.path, "Обновить", "updateTable") }}
+                    {% endif %}
+                    {% if table.source == "excel" %}
+                        {{ form_upload_file(table.path, "Обновить", "updateExcel") }}
+                    {% endif %}
+                {% endcall %}
+            </div>
+        </div>
+    </div>
+{%- endmacro %}

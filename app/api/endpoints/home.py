@@ -28,10 +28,21 @@ async def home(request: Request):
 async def reports(request: Request, user: UserOrNoneDep, path: PathDep):
     if user is None:
         return build_redirect_response(request, "login_page")
-    reports = read_config(path.report_config_file)
+    config = read_config(path.report_config_file)
+    groups = config["groups"]
+    report_groups = sorted(
+        [(name, data) for name, data in groups.items()],
+        key=lambda x: x[1]["order"],
+    )
     return templates.TemplateResponse(
         "reports/report_list.html",
-        {"request": request, "reports": reports, "user": user},
+        {
+            "request": request,
+            "reports": config["items"],
+            "report_groups": report_groups,
+            "report_groups_map": groups,
+            "user": user,
+        },
     )
 
 
@@ -39,10 +50,21 @@ async def reports(request: Request, user: UserOrNoneDep, path: PathDep):
 async def tables(request: Request, user: UserOrNoneDep, path: PathDep):
     if user is None:
         return build_redirect_response(request, "login_page")
-    tables = read_config(path.table_config_file)
+    config = read_config(path.table_config_file)
+    groups = config["groups"]
+    table_groups = sorted(
+        [(name, data) for name, data in groups.items()],
+        key=lambda x: x[1]["order"],
+    )
     return templates.TemplateResponse(
         "tables/table_list.html",
-        {"request": request, "tables": tables, "user": user},
+        {
+            "request": request,
+            "tables": config["items"],
+            "table_groups": table_groups,
+            "table_groups_map": groups,
+            "user": user,
+        },
     )
 
 
@@ -111,7 +133,9 @@ async def results(
         user.username, task_id=TaskId.report
     )
     reports = read_config(path.report_config_file)
-    report_title = {report["path"]: report["title"] for report in reports}
+    report_title = {
+        report["path"]: report["title"] for report in reports["items"]
+    }
     return templates.TemplateResponse(
         "results/result_list.html",
         {

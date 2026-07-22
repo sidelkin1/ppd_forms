@@ -1,76 +1,34 @@
 {% extends "base.html" %}
 
-{% from '/macros/forms.html' import form_date_range, form_upload_file %}
-{% from '/macros/accordion.html' import accordion_form %}
+{% from 'tables/macros/card.html' import table_card %}
 
 {% block content %}
 
-    <div class="row">
-        {% for table in tables %}
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header text-dark bg-warning">
-                        <div class="row flex-nowrap">
-                            <div class="col">
-                                <h5>
-                                    {{ table.title }}
-                                </h5>
-                            </div>
-                            <div class="col-auto">
-                                <div
-                                    class="spinner-border spinner-border-sm flex-shrink-0 d-none"
-                                    id="{{ table.path }}Fetch"
-                                    role="status"
-                                >
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">
-                            <span class="badge bg-dark" id="{{ table.path }}Dates"></span>
-                        </h6>
-                        <p class="card-text">
-                            {{ table.description|safe }}
-                            {% if 'link' in table %}
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-dark btn-sm"
-                                    id="{{ table.path }}Link"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Скопировать путь к файлам в буфер"
-                                    onclick="copyClipboard('{{ table.path }}Link', String.raw`{{ table.link }}`)"
-                                >
-                                    Copy
-                                </button>
-                            {% endif %}
-                        </p>
-                        {% call(table) accordion_form(
-                            table,
-                            "Параметры для обновления",
-                            "Таблица успешно обновлена!",
-                            "Ошибка при обновлении таблицы!"
-                        ) %}
-                            {% if table.source == "database" %}
-                                {{ form_date_range(table.path, "Обновить", "updateTable") }}
-                            {% endif %}
-                            {% if table.source == "excel" %}
-                                {{ form_upload_file(table.path, "Обновить", "updateExcel") }}
-                            {% endif %}
-                        {% endcall %}
-                    </div>
+    {% for group_name, group_data in table_groups %}
+        {% set grp_tables = tables | selectattr('group', 'equalto', group_name) | list %}
+        {% if grp_tables %}
+            <div class="mb-4 table-group" style="--group-color: {{ group_data.color }};">
+                <h4 class="mb-3 border-bottom pb-2" style="border-bottom-width: 3px;">
+                    <i class="bi {{ group_data.icon }} me-2"></i>
+                    {{ group_name }}
+                    <small class="text-muted fs-6 ms-2">({{ grp_tables | length }})</small>
+                </h4>
+                <div class="row">
+                    {% for table in grp_tables %}
+                        {{ table_card(table, table_groups_map) }}
+                    {% endfor %}
                 </div>
             </div>
-        {% endfor %}
-    </div>
+        {% endif %}
+    {% endfor %}
 
 {% endblock %}
 
 {% block js %}
 
+    <script id="tables-data" type="application/json">{{ tables | tojson }}</script>
     <script>
-        const dbTables = {{ tables | tojson  }};
+        const dbTables = JSON.parse(document.getElementById('tables-data').textContent);
     </script>
     <script src="{{url_for('static', path='/javascript/core/assign.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/core/status.js')}}" type="text/javascript"></script>

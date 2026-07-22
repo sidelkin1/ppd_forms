@@ -1,78 +1,44 @@
 {% extends "base.html" %}
 
-{% from '/macros/forms.html' import form_date_range, form_on_date %}
-{% from 'reports/macros/forms.html' import
-    form_inj_loss,
-    form_oil_loss,
-    form_matrix,
-    form_fnv,
-    form_matbal,
-    form_prolong,
-    form_mmb,
-    form_well_test,
-    form_owc_resp
-%}
-{% from '/macros/accordion.html' import accordion_form %}
+{% from 'reports/macros/card.html' import report_card %}
 
 {% block content %}
 
-    <div class="row">
-        {% for report in reports %}
-            <div class="col-sm-6">
-                <div class="card mb-3">
-                    <div class="card-header text-dark bg-warning">
-                        <div class="row flex-nowrap">
-                            <div class="col">
-                                <h5>
-                                    {{ report.title }}
-                                </h5>
-                            </div>
-                            <div class="col-auto">
-                                <div
-                                    class="spinner-border spinner-border-sm flex-shrink-0 d-none"
-                                    id="{{ report.path }}Fetch"
-                                    role="status"
-                                >
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">{{ report.description|safe }}</p>
-                        {% call(report) accordion_form(
-                            report,
-                            "Параметры для выгрузки",
-                            "Отчет успешно сформирован!",
-                            "Ошибка при формировании отчета!",
-                            need_link=True
-                        ) %}
-                            {% if report.path == "inj_loss" %}
-                                {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}
-                            {% elif report.path == "oil_loss" %}
-                                {{ form_oil_loss(report, "Выгрузить", "loadOilLoss") }}
-                            {% elif report.path == "matrix" %}
-                                {{ form_matrix(report, "Выгрузить", "loadMatrix") }}
-                            {% elif report.path == "fnv" %}
-                                {{ form_fnv(report, "Выгрузить", "loadFNV") }}
-                            {% elif report.path == "matbal" %}
-                                {{ form_matbal(report, "Выгрузить", "loadMatbal") }}
-                            {% elif report.path == "prolong" %}
-                                {{ form_prolong(report, "Выгрузить", "loadProlong") }}
-                            {% elif report.path == "mmb" %}
-                                {{ form_mmb(report, "Выгрузить", "loadMMB") }}
-                            {% elif report.path == "compensation" %}
-                                {{ form_on_date(report.path, "Выгрузить", "loadOnDate") }}
-                            {% elif report.path == "well_test" %}
-                                {{ form_well_test(report, "Выгрузить", "loadWellTest") }}
-                            {% elif report.path == "owc_resp" %}
-                                {{ form_owc_resp(report, "Выгрузить", "loadOwcResp") }}
-                            {% else %}
-                                {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
-                            {% endif %}
-                        {% endcall %}
+    <div class="mb-4">
+        <div class="input-group input-group-lg">
+            <span class="input-group-text bg-warning border-warning">
+                <i class="bi bi-search"></i>
+            </span>
+            <input
+                type="text"
+                class="form-control"
+                id="reportSearch"
+                placeholder="Поиск отчета по названию или описанию..."
+                aria-label="Поиск отчетов"
+            >
+        </div>
+        <small class="text-muted ms-2" id="reportCount">
+            <i class="bi bi-info-circle"></i> Всего отчетов: {{ reports|length }}
+        </small>
+    </div>
+
+    <div id="reportGrid">
+        {% for group_name, group_data in report_groups %}
+            {% set group_reports = reports | selectattr('group', 'equalto', group_name) | list %}
+            {% if group_reports %}
+                <div class="mb-4" style="--group-color: {{ group_data.color }};">
+                    <h4 class="mb-3 border-bottom pb-2">
+                        <i class="bi {{ group_data.icon }} me-2"></i>
+                        {{ group_name }}
+                        <small class="text-muted fs-6 ms-2">({{ group_reports | length }})</small>
+                    </h4>
+                    <div class="row">
+                        {% for report in group_reports %}
+                            {{ report_card(report, report_groups_map) }}
+                        {% endfor %}
                     </div>
                 </div>
-            </div>
+            {% endif %}
         {% endfor %}
     </div>
 
@@ -86,5 +52,6 @@
     <script src="{{url_for('static', path='/javascript/reports/load.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/reports/fields.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/reports/reservoirs.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/javascript/reports/search.js')}}" type="text/javascript"></script>
 
 {% endblock %}

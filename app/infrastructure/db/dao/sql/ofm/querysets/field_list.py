@@ -1,11 +1,8 @@
 from sqlalchemy import bindparam, select
 from sqlalchemy.sql.expression import Select
 
-from app.infrastructure.db.models.ofm.reflected import (
-    DictG,
-    MonthlyInj,
-    MonthlyProd,
-)
+from app.infrastructure.db.models.ofm.codes import DictG
+from app.infrastructure.db.models.ofm.unofm import MonthlyInj, MonthlyProd
 
 
 def select_fields(with_field_id: bool = False) -> Select:

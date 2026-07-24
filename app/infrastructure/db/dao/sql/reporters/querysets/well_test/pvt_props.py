@@ -2,13 +2,13 @@ from sqlalchemy import bindparam, func, select
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql.expression import Select
 
-from app.infrastructure.db.models.ofm.reflected import (
-    DictG,
-    HeaderId,
+from app.infrastructure.db.models.ofm.codes import DictG
+from app.infrastructure.db.models.ofm.udmurtneft_n import (
     Reservoir2,
     ResPty,
     WellHdr,
 )
+from app.infrastructure.db.models.ofm.unofm import HeaderId
 
 
 def select_pvt_props() -> Select:

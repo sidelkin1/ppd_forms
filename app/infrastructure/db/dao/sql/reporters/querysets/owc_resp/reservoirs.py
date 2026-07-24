@@ -1,7 +1,7 @@
 from sqlalchemy import bindparam, func, select, table, union
 from sqlalchemy.sql.expression import CompoundSelect
 
-from app.infrastructure.db.models.ofm.reflected import DictG
+from app.infrastructure.db.models.ofm.codes import DictG
 
 
 def select_reservoir_ids() -> CompoundSelect:

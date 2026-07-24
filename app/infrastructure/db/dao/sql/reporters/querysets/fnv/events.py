@@ -8,13 +8,11 @@ from sqlalchemy import (
     union_all,
 )
 
-from app.infrastructure.db.models.ofm.reflected import (
+from app.infrastructure.db.models.ofm.udmurtneft_n import (
     GeophysSt,
     GeophysStAbsorp,
-    HeaderId,
-    Perf,
-    PerfAlt,
 )
+from app.infrastructure.db.models.ofm.unofm import HeaderId, Perf, PerfAlt
 
 
 def _select_perf() -> Select:

@@ -1,6 +1,6 @@
 from sqlalchemy import Select, bindparam, func, select
 
-from app.infrastructure.db.models.ofm.reflected import MonthlyInj
+from app.infrastructure.db.models.ofm.unofm import MonthlyInj
 
 
 def select_totwat() -> Select:

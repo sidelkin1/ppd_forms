@@ -10,13 +10,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import aliased
 
-from app.infrastructure.db.models.ofm.reflected import (
-    DictG,
+from app.infrastructure.db.models.ofm.codes import DictG
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellHdr
+from app.infrastructure.db.models.ofm.unofm import (
     HeaderId,
     MonthlyInj,
     MonthlyProd,
     Reservoir,
-    WellHdr,
 )
 
 

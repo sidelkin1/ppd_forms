@@ -1,7 +1,9 @@
 from sqlalchemy import and_, bindparam, func, select
 from sqlalchemy.sql.expression import Select, Subquery
 
-from app.infrastructure.db.models.ofm.reflected import DictG, HeaderId, WellHdr
+from app.infrastructure.db.models.ofm.codes import DictG
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellHdr
+from app.infrastructure.db.models.ofm.unofm import HeaderId
 
 
 def _select_well_coords() -> Subquery:

@@ -1,7 +1,10 @@
 from sqlalchemy import bindparam, func, select
 from sqlalchemy.sql.expression import ScalarSelect
 
-from app.infrastructure.db.models.ofm.reflected import WellHdr, WellMonthHist
+from app.infrastructure.db.models.ofm.udmurtneft_n import (
+    WellHdr,
+    WellMonthHist,
+)
 
 from .reservoirs import select_reservoir_ids
 

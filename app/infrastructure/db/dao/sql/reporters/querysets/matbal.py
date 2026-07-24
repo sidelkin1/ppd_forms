@@ -10,12 +10,12 @@ from sqlalchemy import (
 )
 
 from app.infrastructure.db.models.ofm.base import Base
-from app.infrastructure.db.models.ofm.reflected import (
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellHdr
+from app.infrastructure.db.models.ofm.unofm import (
     MonthlyInj,
     MonthlyInjAlt,
     MonthlyProd,
     MonthlyProdAlt,
-    WellHdr,
 )
 
 
@@ -27,7 +27,7 @@ def _select_field_production_rates(model: type[Base]) -> Select:
         literal_column("0").label("water"),
     ).where(
         model.field == bindparam("field_id"),
-        model.cid.in_(bindparam("reservoirs")),
+        model.cid_no_license.in_(bindparam("reservoirs")),
     )
 
 
@@ -45,7 +45,7 @@ def _select_field_injection_rates(model: type[Base]) -> Select:
         model.water,
     ).where(
         model.field == bindparam("field_id"),
-        model.cid.in_(bindparam("reservoirs")),
+        model.cid_no_license.in_(bindparam("reservoirs")),
     )
 
 

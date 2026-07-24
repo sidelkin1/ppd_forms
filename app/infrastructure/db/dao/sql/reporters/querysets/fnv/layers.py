@@ -1,6 +1,6 @@
 from sqlalchemy import Select, bindparam, select
 
-from app.infrastructure.db.models.ofm.reflected import LayersPty
+from app.infrastructure.db.models.ofm.unofm import LayersPty
 
 
 def select_layers() -> Select:

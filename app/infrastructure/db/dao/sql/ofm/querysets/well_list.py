@@ -1,11 +1,8 @@
 from sqlalchemy import bindparam, select
 from sqlalchemy.sql.expression import Select
 
-from app.infrastructure.db.models.ofm.reflected import (
-    MonthlyInj,
-    MonthlyProd,
-    WellHdr,
-)
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellHdr
+from app.infrastructure.db.models.ofm.unofm import MonthlyInj, MonthlyProd
 
 
 def select_production_wells() -> Select:

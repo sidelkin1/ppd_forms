@@ -1,7 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.sql.expression import Select
 
-from app.infrastructure.db.models.ofm.reflected import WellDirSrvyPts, WellHdr
+from app.infrastructure.db.models.ofm.udmurtneft_n import (
+    WellDirSrvyPts,
+    WellHdr,
+)
 
 from .branches import select_well_branch
 

@@ -1,6 +1,8 @@
 from sqlalchemy import Date, Select, bindparam, func, or_, select
 
-from app.infrastructure.db.models.ofm.reflected import DictG, Pressure, WellHdr
+from app.infrastructure.db.models.ofm.codes import DictG
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellHdr
+from app.infrastructure.db.models.ofm.unofm import Pressure
 
 
 def select_tank_pressures() -> Select:

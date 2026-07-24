@@ -16,6 +16,7 @@
     {% set rg = report_groups_map.get(report.group, {}) %}
     {% set bg = rg.get('color', '#F9BD27') %}
     {% set txt = 'text-dark' if rg.get('text_dark', false) else 'text-light' %}
+    {% set req = report.get('tables', none) %}
     <div class="col-sm-6 report-card" data-search="{{ report.title }} {{ report.description|striptags }}">
         <div class="card mb-3">
             <div class="card-header {{ txt }}" style="--header-bg: {{ bg }};">
@@ -26,7 +27,24 @@
                             {{ report.title }}
                         </h5>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-auto d-flex align-items-center gap-2">
+                        {% if req %}
+                            {% set lines = [] %}
+                            {% if req.required %}
+                                {% set _ = lines.append('Требуется: ' ~ req.required | join(', ')) %}
+                            {% endif %}
+                            {% if req.optional %}
+                                {% set _ = lines.append('Необяз.: ' ~ req.optional | join(', ')) %}
+                            {% endif %}
+                            <i
+                                class="bi bi-exclamation-triangle-fill"
+                                style="font-size: 1.1em;"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                data-bs-html="true"
+                                title="{{ lines | join('<br>') }}"
+                            ></i>
+                        {% endif %}
                         <div
                             class="spinner-border spinner-border-sm flex-shrink-0 d-none"
                             id="{{ report.path }}Fetch"

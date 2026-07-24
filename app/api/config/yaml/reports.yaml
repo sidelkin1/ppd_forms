@@ -27,6 +27,10 @@ items:
   group: ОПП
   icon: bi-bar-chart-line-fill
   description: Профили добычи/закачки для ТСРМ
+  tables:
+    required:
+    - МЭР
+    - ОПП
 - title: Количество ОПП за год
   path: opp_per_year
   group: ОПП
@@ -48,6 +52,14 @@ items:
     selected: false
   neighbs_from_ns_ppd: false
   description: Потери Qн по округе нагнетательных скважин
+  tables:
+    required:
+    - МЭР
+    - База ГТМ ППД
+    optional:
+    - НС ППД
+    - Округа
+    - НС НФ
 - title: Эффект ГТМ ППД по матрице
   path: matrix
   group: Потери
@@ -97,6 +109,11 @@ items:
     selected: false
   wells: Список скважин
   description: Эффект ГТМ ППД по матрице для ОУЗ
+  tables:
+    required:
+    - МЭР
+    - НС НФ
+    - НС ППД
 - title: Потери нефти по НФ
   path: oil_loss
   group: Потери
@@ -112,6 +129,11 @@ items:
     value: max_rate
     selected: false
   description: Потери Qн по факторам (аналог PackagesRelease)
+  tables:
+    required:
+    - МЭР
+    optional:
+    - НС НФ
 - title: Контуры ФНВ
   path: fnv
   group: ОПП
@@ -183,6 +205,12 @@ items:
   gdis_period: Период ГДИС (лет)
   radius: Радиус
   description: Выгрузка для отчета по ГДИС (аналитика, ГТМ и т.д.)
+  tables:
+    required:
+    - Аналитика ГДИС
+    optional:
+    - НС ППД
+    - НС НФ
 - title: Пересчет давления на ВНК
   path: owc_resp
   group: ГДИС

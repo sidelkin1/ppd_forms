@@ -6,7 +6,8 @@ from sqlalchemy.sql.expression import (
     Select,
 )
 
-from app.infrastructure.db.models.ofm.reflected import DictG, WellStockHistExt
+from app.infrastructure.db.models.ofm.codes import DictG
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellStockHistExt
 
 
 def _select_field_code() -> ScalarSelect:

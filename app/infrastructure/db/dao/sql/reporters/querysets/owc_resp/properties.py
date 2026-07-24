@@ -1,7 +1,7 @@
 from sqlalchemy import bindparam, func, select
 from sqlalchemy.sql.expression import Select
 
-from app.infrastructure.db.models.ofm.reflected import (
+from app.infrastructure.db.models.ofm.udmurtneft_n import (
     Reservoir2,
     ResPty,
     WellHdr,

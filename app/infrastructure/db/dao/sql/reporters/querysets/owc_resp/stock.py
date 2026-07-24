@@ -1,7 +1,7 @@
 from sqlalchemy import bindparam, func, select
 from sqlalchemy.sql.expression import Subquery
 
-from app.infrastructure.db.models.ofm.reflected import WellStockHist
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellStockHist
 
 
 def _select_max_stock_date() -> Subquery:

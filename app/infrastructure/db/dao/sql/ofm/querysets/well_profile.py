@@ -7,7 +7,7 @@ from app.infrastructure.db.dao.sql.querysets.common import (
     select_description,
 )
 from app.infrastructure.db.models.ofm.base import Base
-from app.infrastructure.db.models.ofm.reflected import (
+from app.infrastructure.db.models.ofm.udmurtneft_n import (
     GeophysSt,
     GeophysStAbsorp,
     WellHdr,

@@ -9,12 +9,12 @@ from app.infrastructure.db.dao.sql.querysets.common import (
     select_well_name,
 )
 from app.infrastructure.db.models.ofm.base import Base
-from app.infrastructure.db.models.ofm.reflected import (
+from app.infrastructure.db.models.ofm.udmurtneft_n import WellStockHistExt
+from app.infrastructure.db.models.ofm.unofm import (
     HeaderId,
     MonthlyInj,
     MonthlyProd,
     Reservoir,
-    WellStockHistExt,
 )
 
 
@@ -50,7 +50,7 @@ def _select_separate_well_rates(model: type[Base], wmode: WellMode) -> Select:
     return select(
         select_description(model, "field").label("field"),
         select_well_name(model, "prod_uwi").label("well_name"),
-        model.cid,
+        model.cid_no_license.label("cid"),
         select_cids().label("cid_all"),
         model.dat_rep.cast(Date),
         RateColumn.OIL(model, wmode),

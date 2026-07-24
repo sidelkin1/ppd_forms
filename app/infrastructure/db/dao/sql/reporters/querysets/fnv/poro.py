@@ -1,7 +1,7 @@
 from sqlalchemy import Select, and_, bindparam, func, select
 from sqlalchemy.orm import MappedColumn
 
-from app.infrastructure.db.models.ofm.reflected import HeaderId, LayersPty
+from app.infrastructure.db.models.ofm.unofm import HeaderId, LayersPty
 
 
 def _select_poro(porosity: MappedColumn) -> Select:

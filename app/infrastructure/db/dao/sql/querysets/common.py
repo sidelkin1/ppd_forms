@@ -4,8 +4,8 @@ from sqlalchemy import func, select
 from sqlalchemy.sql.expression import ScalarSelect
 
 from app.infrastructure.db.models.ofm.base import Base
-from app.infrastructure.db.models.ofm.reflected import (
-    DictG,
+from app.infrastructure.db.models.ofm.codes import DictG
+from app.infrastructure.db.models.ofm.udmurtneft_n import (
     WellHdr,
     WellStockHistExt,
 )

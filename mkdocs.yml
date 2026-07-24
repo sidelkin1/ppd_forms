@@ -7,6 +7,7 @@ theme:
   favicon: assets/images/favicon.png
   features:
     - navigation.sections
+    - navigation.expand
   language: ru
 
 validation:
@@ -19,18 +20,23 @@ nav:
     - 'Общая информация об отчетах': 'app/index.md'
     - 'Общая информация о локальной БД': 'app/local.md'
   - 'Описание отчетов':
-    - 'Профили добычи/закачки': 'app/reports/profile.md'
-    - 'Количество ОПП за год': 'app/reports/opp_per_year.md'
-    - 'Потери нефти по базе ГТМ ППД': 'app/reports/inj_loss.md'
-    - 'Эффект ГТМ ППД по матрице': 'app/reports/matrix.md'
-    - 'Потери нефти по НФ': 'app/reports/oil_loss.md'
-    - 'Контуры ФНВ': 'app/reports/fnv.md'
-    - 'Шаблон для матбаланса (РН-КИН)': 'app/reports/matbal.md'
-    - 'Пролонгация эффекта ППД по ХВ': 'app/reports/prolong.md'
-    - 'Выгрузка исходников для ММБ (Julia)': 'app/reports/mmb.md'
-    - 'Выгрузка для компенсаций': 'app/reports/compensation.md'
-    - 'Отчет по ГДИС': 'app/reports/well_test.md'
-    - 'Пересчет давления на ВНК': 'app/reports/owc_resp.md'
+    - 'ОПП':
+      - 'Профили добычи/закачки': 'app/reports/profile.md'
+      - 'Количество ОПП за год': 'app/reports/opp_per_year.md'
+      - 'Контуры ФНВ': 'app/reports/fnv.md'
+    - 'Потери':
+      - 'Потери нефти по базе ГТМ ППД': 'app/reports/inj_loss.md'
+      - 'Эффект ГТМ ППД по матрице': 'app/reports/matrix.md'
+      - 'Потери нефти по НФ': 'app/reports/oil_loss.md'
+    - 'ППД':
+      - 'Пролонгация эффекта ППД по ХВ': 'app/reports/prolong.md'
+      - 'Выгрузка для компенсаций': 'app/reports/compensation.md'
+    - 'ГДИС':
+      - 'Отчет по ГДИС': 'app/reports/well_test.md'
+      - 'Пересчет давления на ВНК': 'app/reports/owc_resp.md'
+    - 'Моделирование':
+      - 'Шаблон для матбаланса (РН-КИН)': 'app/reports/matbal.md'
+      - 'Выгрузка исходников для ММБ (Julia)': 'app/reports/mmb.md'
 
 plugins:
   - search

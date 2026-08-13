@@ -1,13 +1,14 @@
 from sqlalchemy import Select, Subquery, and_, bindparam, func, select, union
 
-from app.infrastructure.db.dao.sql.reporters.querysets.inj_loss.monthly_report import (  # noqa
+from app.infrastructure.db.models.local import MonthlyReport, NewStrategyOil
+
+from .inj_loss.monthly_report import (
     _select_first_date,
     _select_first_rate_date,
     _select_first_report,
     _select_last_report,
     _select_max_rate_date,
 )
-from app.infrastructure.db.models.local import MonthlyReport, NewStrategyOil
 
 
 def _select_last_gtm() -> Subquery:

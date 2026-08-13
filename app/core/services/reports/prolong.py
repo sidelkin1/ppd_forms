@@ -146,7 +146,7 @@ async def _process_well(
                 df["liq_garip"].to_numpy(),
             )
         )
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001
         await failures.put(
             ProlongError(
                 expected.field,

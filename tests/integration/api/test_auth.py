@@ -26,9 +26,11 @@ async def test_api_not_authenticated(anon_client: AsyncClient, url: str):
 
 @pytest.mark.asyncio(scope="session")
 async def test_websocket_not_authenticated(anon_test_client: TestClient):
-    with pytest.raises(WebSocketDisconnect) as exc_info:
-        with anon_test_client.websocket_connect("/jobs/111/ws"):
-            await asyncio.sleep(0.1)
+    with (
+        pytest.raises(WebSocketDisconnect) as exc_info,
+        anon_test_client.websocket_connect("/jobs/111/ws"),
+    ):
+        await asyncio.sleep(0.1)
     assert exc_info.value.code == status.WS_1008_POLICY_VIOLATION
     assert exc_info.value.reason == "Not authenticated"
 

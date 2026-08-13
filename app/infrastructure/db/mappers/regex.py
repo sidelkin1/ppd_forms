@@ -17,10 +17,12 @@ class RegexMapper(SimpleMapper):
     def replace_word(
         self, word: WordOrder, max_order: int
     ) -> tuple[WordOrder, int]:
-        if self.pattern is not None:
-            if match := self.pattern.match(word[self.WORD]):
-                if match.lastgroup is not None:
-                    word = self.replace[match.lastgroup]
+        if (
+            self.pattern is not None
+            and (match := self.pattern.match(word[self.WORD]))
+            and match.lastgroup is not None
+        ):
+            word = self.replace[match.lastgroup]
         return word, max(max_order, word[self.ORDER])
 
     def update(

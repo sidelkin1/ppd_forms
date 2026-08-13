@@ -19,6 +19,4 @@ class TaskOwcResp(
 
     @property
     def filename_prefix(self) -> str:
-        return "{}_{}_{}".format(
-            self.field.name, self.reservoir.name, self.well
-        )
+        return f"{self.field.name}_{self.reservoir.name}_{self.well}"

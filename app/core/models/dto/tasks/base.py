@@ -26,10 +26,14 @@ class TaskBase(BaseModel):
         return data
 
     def __init_subclass__(
-        cls, /, task_id: TaskId, route_fields=["task_id"], **kwargs
+        cls,
+        /,
+        task_id: TaskId,
+        route_fields: list[str] | None = None,
+        **kwargs,
     ):
         super().__init_subclass__(**kwargs)
         cls._task_id = task_id
-        cls._route_fields = route_fields
+        cls._route_fields = route_fields or ["task_id"]
 
     model_config = ConfigDict(extra="forbid")

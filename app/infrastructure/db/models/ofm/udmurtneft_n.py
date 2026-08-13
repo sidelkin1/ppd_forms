@@ -37,7 +37,7 @@ class WellLogResultLayers(Reflected, Base):
 
 
 class WellOrapMd(Reflected, Base):
-    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key
     uwi = Column(String, primary_key=True)
     reservoir_id = Column(Integer, primary_key=True)
 

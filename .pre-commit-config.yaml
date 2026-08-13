@@ -3,29 +3,17 @@ repos:
     rev: v3.2.0
     hooks:
     -   id: trailing-whitespace
+        exclude: (app/static)
     -   id: end-of-file-fixer
+        exclude: (app/static)
     -   id: check-yaml
         args: [--unsafe]
     -   id: check-added-large-files
         args: ["--maxkb=10000"]
 
--   repo: https://github.com/psf/black
-    rev: 23.3.0
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.2
     hooks:
-    -   id: black
-        args: ["--line-length=79"]
-        exclude: (migrations/versions/)
-
--   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-    -   id: isort
-        args: ["--profile", "black", "--filter-files", "--line-length=79"]
-        exclude: (migrations/versions/)
-
--   repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-    -   id: flake8
-        args: [--per-file-ignores, "__init__.py:F401", "--ignore", "W503,E203"]
-        exclude: (migrations/versions/)
+    -   id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+    -   id: ruff-format

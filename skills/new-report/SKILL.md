@@ -57,7 +57,9 @@ from app.core.models.dto.tasks.report import TaskReport
 from app.core.models.enums import TaskId
 
 
-class TaskXxx(TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]):
+class TaskXxx(
+    TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]
+):
     field: UneftFieldDB
     reservoir: UneftReservoirDB
     well: str
@@ -241,6 +243,7 @@ class XxxReporter(LocalBaseDAO):
   @property
   def xxx_reporter(self) -> db_reporters.XxxReporter:
       return db_reporters.XxxReporter(self.kwargs["ofm_pool"])
+
 
   # For local (PostgreSQL) reporters:
   @property
@@ -621,6 +624,7 @@ def xxx():
         well="TEST",
     )
 
+
 @pytest.fixture
 def task_xxx():
     return TaskXxx(
@@ -642,10 +646,14 @@ def task_xxx():
 async def test_generate_xxx_report(client, task, request, arq_redis):
     xxx = request.getfixturevalue("xxx")
     task_report = request.getfixturevalue(task)
-    resp = await client.post("/api/v1/reports/xxx", json=xxx.model_dump(mode="json"))
+    resp = await client.post(
+        "/api/v1/reports/xxx", json=xxx.model_dump(mode="json")
+    )
     assert resp.is_success
     data = resp.json()
-    assert data["task"] == task_report.model_dump(mode="json", exclude_none=True)
+    assert data["task"] == task_report.model_dump(
+        mode="json", exclude_none=True
+    )
 ```
 
 #### `tests/integration/test_reports.py` — service test

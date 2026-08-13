@@ -166,7 +166,7 @@ class FnvMock(FnvReporter):
         )
 
     async def totwat(self, uwi: str, date_from: str, date_to: str) -> float:
-        totwat = self.fake_totwat[uwi].get("..".join((date_from, date_to)))
+        totwat = self.fake_totwat[uwi].get(f"{date_from}..{date_to}")
         return totwat or 0
 
 

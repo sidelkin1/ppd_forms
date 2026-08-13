@@ -123,7 +123,7 @@ async def worker(
     worker_: Worker | None = None
 
     def create(
-        functions=[],
+        functions=None,
         burst=True,
         poll_delay=0,
         max_jobs=10,
@@ -132,7 +132,7 @@ async def worker(
     ) -> Worker:
         nonlocal worker_
         worker_ = Worker(
-            functions=functions,
+            functions=functions or [],
             redis_pool=arq_redis,
             burst=burst,
             poll_delay=poll_delay,

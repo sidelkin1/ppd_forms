@@ -43,7 +43,8 @@ class LayerMapper(SimpleMapper):
     ) -> tuple[WordOrder, int]:
         word = self.replace.get(word[self.WORD], [word])
         max_pair_order = max(
-            pair[self.ORDER] for pair in word  # type: ignore[index]
+            pair[self.ORDER]  # type: ignore[index]
+            for pair in word
         )
         return word, max(max_order, max_pair_order)
 

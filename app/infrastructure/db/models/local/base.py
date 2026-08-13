@@ -29,9 +29,7 @@ class Base(DeclarativeBase):
     @classmethod
     def get_constraint_by_name(cls, name: str) -> Constraint:
         return next(
-            (
-                constraint
-                for constraint in cls.__table__.constraints
-                if constraint.name == name
-            )
+            constraint
+            for constraint in cls.__table__.constraints
+            if constraint.name == name
         )

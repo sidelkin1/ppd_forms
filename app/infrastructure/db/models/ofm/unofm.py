@@ -50,7 +50,7 @@ class MonthlyInjAlt(Reflected, Unofm):
 
 
 class Reservoir(Reflected, Unofm):
-    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key
     field = Column(String, primary_key=True)
     cid = Column(String, primary_key=True)
 
@@ -69,7 +69,7 @@ class LayersPty(Reflected, Unofm):
 
 
 class Perf(Reflected, Unofm):
-    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key
     uwi = Column(String, primary_key=True)
     date_op = Column(String, primary_key=True)
 
@@ -78,7 +78,7 @@ class Perf(Reflected, Unofm):
 
 
 class PerfAlt(Reflected, Unofm):
-    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key # noqa
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key
     uwi = Column(String, primary_key=True)
     date_op = Column(String, primary_key=True)
 

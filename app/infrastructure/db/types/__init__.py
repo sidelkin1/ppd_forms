@@ -1,6 +1,7 @@
+from typing import Annotated
+
 from sqlalchemy import String
 from sqlalchemy.orm import mapped_column
-from typing_extensions import Annotated
 
 from .base import BaseType
 from .fields import FieldType

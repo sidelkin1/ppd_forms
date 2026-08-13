@@ -1,7 +1,7 @@
 """Create utils schema migration
 
 Revision ID: 000000000000
-Revises: 
+Revises:
 Create Date: 2024-01-09 21:50:03.369562
 
 """

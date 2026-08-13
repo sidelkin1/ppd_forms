@@ -23,7 +23,7 @@ async def test_upload_file(client: AsyncClient, paths: Paths):
     assert path.exists()
     with open(path) as f:
         content = f.readlines()
-    assert content == ["test"]
+    assert content == ["test\n"]
 
 
 @pytest.mark.asyncio(scope="session")
@@ -36,7 +36,7 @@ async def test_download_report(client: AsyncClient, paths: Paths):
     await save_upload_file(file, base_dir)
     resp = await client.get("/reports/test/csv")
     assert resp.is_success
-    assert resp.content == b"test"
+    assert resp.content == b"test\n"
 
 
 @pytest.mark.asyncio(scope="session")

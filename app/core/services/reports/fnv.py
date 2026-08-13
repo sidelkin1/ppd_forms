@@ -268,7 +268,7 @@ async def _calc_contours(
         r = row["radius"]
         x = row["xcoord"]
         y = row["ycoord"]
-        contour = list()
+        contour = []
         if r > min_radius:
             contour = [
                 [
@@ -408,7 +408,7 @@ async def _process_field(
                 )
                 await _save_countours(result_path, contours, logger)
                 await logger.awarning("Finish")
-            except Exception:
+            except Exception:  # noqa: BLE001
                 await logger.aexception("Ошибка во время обработки")
                 await failures.put(field)
 

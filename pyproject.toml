@@ -61,7 +61,6 @@ mypy = "^1.6.1"
 pytest = "^7.4.3"
 httpx = "^0.26.0"
 testcontainers = {extras = ["postgresql"], version = "^3.7.1"}
-flake8-pyproject = "^1.2.3"
 coverage = {extras = ["toml"], version = "^7.4.0"}
 csv-diff = "^1.1"
 pytest-asyncio = "^0.23.3"
@@ -75,6 +74,7 @@ types-colorama = "^0.4.15.20240311"
 types-openpyxl = "^3.1.0.20240428"
 types-redis = "^4.6.0.20240726"
 types-pillow = "^10.2.0.20240822"
+ruff = "^0.16.2"
 
 
 [tool.poetry.group.docs.dependencies]
@@ -92,16 +92,6 @@ uvicorn = "uvicorn app.main:app --port 8000 --host 0"
 worker = "arq app.worker.WorkerSettings"
 ofm-pre-start = "python -m app.ofm_pre_start"
 
-[tool.flake8]
-ignore = ["W503", "E203"]
-max-line-length = 79
-paths = ["./app"]
-max-complexity = 10
-exclude = "app/infrastructure/db/migrations/versions/*.py"
-per-file-ignores = [
-    "__init__.py:F401",
-]
-
 [tool.coverage.run]
 omit = [
     ".*",
@@ -118,9 +108,21 @@ exclude_lines = [
     "if __name__ == .__main__.:",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff]
+line-length = 79
+exclude = ["app/infrastructure/db/migrations/versions/*"]
+
+[tool.ruff.lint]
+ignore = ["RUF012", "PLC0105", "DTZ011", "DTZ901", "E203"]
+extend-select = ["E501", "C901"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "**/migrations/versions/*" = ["N999"]
+"tests/**" = ["DTZ001", "DTZ005", "ASYNC230", "SIM115"]
 
 [tool.mypy]
 exclude = ["/Scripts/"]

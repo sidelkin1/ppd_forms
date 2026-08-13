@@ -126,10 +126,10 @@ async def test_generate_report_dates_not_ordered(
     task_report: TaskReport = request.getfixturevalue(task)
     task_schema: DateRange = request.getfixturevalue(schema)
     task_schema = task_schema.model_copy(
-        update=dict(
-            date_from=task_schema.date_to,
-            date_to=task_schema.date_from,
-        )
+        update={
+            "date_from": task_schema.date_to,
+            "date_to": task_schema.date_from,
+        }
     )
     resp = await client.post(
         get_correct_url(task_report),

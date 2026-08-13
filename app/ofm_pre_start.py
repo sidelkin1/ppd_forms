@@ -23,7 +23,7 @@ wait_seconds = 1
     stop=stop_after_attempt(max_tries),
     wait=wait_fixed(wait_seconds),
     before=before_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
+    after=after_log(logger, logging.WARNING),
 )
 def init() -> None:
     engine = None
@@ -34,7 +34,7 @@ def init() -> None:
             conn.execute(text("SELECT 1 FROM DUAL"))
     except Exception as e:
         logger.error(e)
-        raise e
+        raise
     finally:
         if engine is not None:
             engine.dispose()

@@ -11,12 +11,9 @@
 git clone https://github.com/sidelkin1/ppd_forms
 ```
 
-2. Активируйте venv и установите зависимости:
+2. Установите зависимости через `uv` (uv создаст виртуальное окружение `.venv` и установит группы `web`, `worker`, `dev`):
 ```
-python -m venv venv
-. venv/Scripts/activate
-pip install poetry
-poetry install --with web,worker,dev --no-root
+uv sync
 ```
 
 3. Создайте в корневой директории файл `.env` на базе файла `.env.example`

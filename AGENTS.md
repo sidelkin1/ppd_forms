@@ -9,36 +9,35 @@ PPD Forms (Типовые формы для отчетов ППД) — a FastAPI
 ## Commands
 
 ```bash
-# Install dependencies (all groups)
-poetry install --with web,worker,dev --no-root
+# Install dependencies (all groups: web, worker, dev)
+uv sync
 
 # Run web server
-poetry run task uvicorn
+uv run task uvicorn
 
 # Run background worker
-poetry run task worker
+uv run task worker
 
 # Run database migrations
-poetry run task migrate
+uv run task migrate
 
 # Generate a migration
-poetry run task makemigrations
+uv run task makemigrations
 
 # Initialize seed data
-poetry run task initialize
+uv run task initialize
 
 # Run tests (requires Docker for testcontainers)
-poetry run pytest
+uv run pytest
 
 # Run a single test file
-poetry run pytest tests/unit/mapper/test_base_mapper.py
+uv run pytest tests/unit/mapper/test_base_mapper.py
 
 # Lint/format (via pre-commit or manually)
-poetry run pre-commit run --all-files
-poetry run black --line-length=79 app/ tests/
-poetry run isort --profile=black --line-length=79 app/ tests/
-poetry run flake8 app/
-poetry run mypy app/
+uv run pre-commit run --all-files
+uv run ruff check app/ tests/
+uv run ruff format app/ tests/
+uv run mypy app/
 
 # Run with Docker (full stack: DB, Redis, web, worker)
 docker-compose --profile api -f docker-compose-local.yml up -d --build
@@ -131,4 +130,4 @@ app/
 
 ### Pre-commit Hooks
 
-Runs black (line-length=79), isort (profile=black, line-length=79), flake8 (max-complexity=10, ignore W503/E203), and trailing-whitespace/end-of-file-fixer. Migrations directory is excluded from formatting.
+Runs ruff (lint: line-length=79, max-complexity=10) and ruff-format, plus trailing-whitespace, end-of-file-fixer, check-yaml and check-added-large-files. Migrations directory is excluded from formatting.

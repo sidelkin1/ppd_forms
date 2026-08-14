@@ -4,18 +4,18 @@ RUN dnf -y module disable python36 && \
     dnf -y install python3.11-3.11.5 python3.11-pip python3.11-setuptools python3.11-wheel && \
     rm -rf /var/cache/dnf
 
-RUN pip3 install poetry==1.6.1
+COPY --from=ghcr.io/astral-sh/uv:0.5.1 /uv /usr/local/bin/uv
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    UV_PYTHON_PREFERENCE=system
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml uv.lock ./
 
-RUN poetry install --with worker --no-root && rm -rf $POETRY_CACHE_DIR
+RUN uv sync --frozen --no-install-project --no-dev --no-group web --group worker
 
 FROM oraclelinux:8 as runtime
 

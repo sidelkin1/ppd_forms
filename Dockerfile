@@ -1,34 +1,34 @@
 FROM python:3.11-slim-bookworm as builder
 
-RUN pip install --no-cache-dir poetry==1.6.1
+COPY --from=ghcr.io/astral-sh/uv:0.5.1 /uv /uv/bin/uv
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PATH="/uv/bin:$PATH"
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml uv.lock ./
 
-RUN poetry install --with web --no-root && rm -rf $POETRY_CACHE_DIR
+RUN uv sync --frozen --no-install-project --no-dev --no-group worker --group web
 
 FROM python:3.11-slim-bookworm as docs-builder
 
-RUN pip install --no-cache-dir poetry==1.6.1
+COPY --from=ghcr.io/astral-sh/uv:0.5.1 /uv /uv/bin/uv
 
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PATH="/uv/bin:$PATH"
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml uv.lock ./
 COPY docs ./docs
 COPY mkdocs.yml ./
 
-RUN poetry install --with docs --no-root && rm -rf $POETRY_CACHE_DIR
+RUN uv sync --frozen --no-install-project --no-dev --no-group web --no-group worker --group docs
 RUN .venv/bin/mkdocs build --clean
 
 FROM python:3.11-slim-bookworm as runtime

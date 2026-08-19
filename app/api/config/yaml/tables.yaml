@@ -1,11 +1,11 @@
 groups:
   СМД:
     icon: bi-database
-    color: '#475B79'
+    color: 'var(--ppd-blue-dark)'
     order: 0
   Excel:
     icon: bi-file-earmark-spreadsheet
-    color: '#6B6B6B'
+    color: 'var(--ppd-gray)'
     order: 1
 items:
 - path: report

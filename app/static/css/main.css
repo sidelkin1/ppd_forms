@@ -1,3 +1,20 @@
+:root {
+  /* PPD brand palette — source: skills/ppd-colors/assets/цвета.pptx */
+  --ppd-yellow: #F6D106;        /* primary yellow — brand accent */
+  --ppd-gold: #F9BD27;          /* golden yellow — headers, warnings */
+  --ppd-amber: #FA9D10;         /* amber / orange */
+  --ppd-orange: #EF6B01;        /* orange — secondary accent */
+  --ppd-crimson: #C20937;       /* crimson — danger, alerts */
+  --ppd-blue-dark: #475B79;     /* dark blue — group headers, tables */
+  --ppd-blue: #6985AF;          /* medium blue */
+  --ppd-blue-light: #95A0B2;    /* light blue-gray */
+  --ppd-charcoal: #3D464A;      /* dark charcoal — dark backgrounds, footer */
+  --ppd-gray: #6B6B6B;          /* gray — secondary headers */
+  --ppd-gray-light: #B2B2B2;    /* light gray */
+  --ppd-gray-lighter: #BABABA;  /* light gray */
+  --ppd-gray-lightest: #E2E2E2; /* very light gray — borders, backgrounds */
+}
+
 html {
     position: relative;
     min-height: 100%;
@@ -17,13 +34,13 @@ body {
 }
 
 .bg-dark {
-  background-color: #3D464A !important;
+  background-color: var(--ppd-charcoal) !important;
 }
 .bg-warning, .table-warning {
-  background-color: #F9BD27 !important;
+  background-color: var(--ppd-gold) !important;
 }
 .bg-danger {
-  background-color: #C20937 !important;
+  background-color: var(--ppd-crimson) !important;
 }
 
 /* Card hover effect */
@@ -63,12 +80,12 @@ body {
 
 /* Card header color from --header-bg custom property */
 .report-card .card-header {
-  background-color: var(--header-bg, #F9BD27);
-  border-bottom: 2px solid var(--header-bg, #F9BD27);
+  background-color: var(--header-bg, var(--ppd-gold));
+  border-bottom: 2px solid var(--header-bg, var(--ppd-gold));
 }
 
 .table-card .card-header {
-  background-color: var(--header-bg, #6B6B6B);
+  background-color: var(--header-bg, var(--ppd-gray));
 }
 
 .table-group h4 {

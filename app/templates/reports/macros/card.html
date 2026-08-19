@@ -14,7 +14,7 @@
 
 {% macro report_card(report, report_groups_map) -%}
     {% set rg = report_groups_map.get(report.group, {}) %}
-    {% set bg = rg.get('color', '#F9BD27') %}
+    {% set bg = rg.get('color', 'var(--ppd-gold)') %}
     {% set txt = 'text-dark' if rg.get('text_dark', false) else 'text-light' %}
     {% set req = report.get('tables', none) %}
     <div class="col-sm-6 report-card" data-search="{{ report.title }} {{ report.description|striptags }}">

@@ -1,25 +1,25 @@
 groups:
   ОПП:
     icon: bi-bar-chart-steps
-    color: '#F6D106'
+    color: 'var(--ppd-yellow)'
     order: 0
     text_dark: true
   Потери:
     icon: bi-exclamation-diamond-fill
-    color: '#EF6B01'
+    color: 'var(--ppd-orange)'
     order: 1
     text_dark: true
   ППД:
     icon: bi-water
-    color: '#475B79'
+    color: 'var(--ppd-blue-dark)'
     order: 2
   ГДИС:
     icon: bi-eye-fill
-    color: '#C20937'
+    color: 'var(--ppd-crimson)'
     order: 3
   Моделирование:
     icon: bi-diagram-3-fill
-    color: '#3D464A'
+    color: 'var(--ppd-charcoal)'
     order: 4
 items:
 - title: Профили добычи/закачки

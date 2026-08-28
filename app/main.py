@@ -1,4 +1,5 @@
 import logging
+import mimetypes
 
 import uvicorn
 from fastapi import FastAPI
@@ -18,6 +19,9 @@ from app.infrastructure.provider import DbProvider
 from app.infrastructure.redis.config.main import get_redis_settings
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from app.initial_data import initialize_mapper
+
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("font/woff", ".woff")
 
 logger = logging.getLogger(__name__)
 

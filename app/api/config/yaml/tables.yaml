@@ -13,38 +13,47 @@ items:
   group: СМД
   title: МЭР
   description: Копия МЭР из базы СМД.
+  date_from: {required: true, label: "Начальная дата"}
+  date_to: {required: true, label: "Конечная дата"}
 - path: profile
   source: database
   group: СМД
   title: ОПП
   description: Копия профилей из базы СМД.
+  date_from: {required: true, label: "Начальная дата"}
+  date_to: {required: true, label: "Конечная дата"}
 - path: ns_ppd
   source: excel
   group: Excel
   title: НС ППД
   description: Сводная НС ППД с округой.
+  file: {required: true, label: "Файл для загрузки"}
   link: 'U:\Documents\ИНТЦ\Model2\Отдел мониторинга разработки\Группа управления заводнением\!ППД\_Новая стратегия ППД'
 - path: ns_oil
   source: excel
   group: Excel
   title: НС НФ
   description: Сводная НС НФ за все года.
+  file: {required: true, label: "Файл для загрузки"}
   link: 'U:\Documents\ИНТЦ\Model2\Отдел мониторинга разработки\Группа управления заводнением\!ППД\_Шаблоны\_Исходники'
 - path: inj_db
   source: excel
   group: Excel
   title: База ГТМ ППД
   description: Таблица для подбора ГТМ ППД.
+  file: {required: true, label: "Файл для загрузки"}
   link: 'U:\Documents\ИНТЦ\База ГТМ'
 - path: neighbs
   source: excel
   group: Excel
   title: Округа
   description: Выгрузка из РН-КИН по областям Вороного.
+  file: {required: true, label: "Файл для загрузки"}
   link: 'U:\Documents\ИНТЦ\Model2\Отдел мониторинга разработки\Группа управления заводнением\!ППД\_Шаблоны\_Исходники'
 - path: gdis
   source: excel
   group: Excel
   title: Аналитика ГДИС
   description: Выгрузка из РН-КИН проведенных ГДИС.
+  file: {required: true, label: "Файл для загрузки"}
   link: 'U:\Documents\ИНТЦ\Model2\Отдел мониторинга разработки\Группа управления заводнением\!ГДИС\_ГДИС аналитика'

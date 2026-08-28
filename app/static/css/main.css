@@ -94,3 +94,20 @@ body {
 .table-group h4 i {
   color: var(--group-color);
 }
+
+/* Required-field markers */
+.required-mark {
+  color: var(--ppd-crimson);
+  font-weight: 700;
+  margin-left: 0.15rem;
+}
+
+/* Invalid feedback spacing inside floating labels */
+.form-floating > .invalid-feedback {
+  margin-top: 0.25rem;
+}
+
+/* Danger alert message area */
+.alert .alert-msg {
+  margin-left: 0.25rem;
+}

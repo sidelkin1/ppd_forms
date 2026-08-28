@@ -12,7 +12,7 @@
                 <a href="#" class="alert-link" id="{{ job.job_id }}Link"><i class="bi bi-download"></i> Скачать</a>
             </div>
             <div class="alert alert-danger d-none" id="{{ job.job_id }}Danger" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i> {{ danger_text }}
+                <i class="bi bi-exclamation-triangle-fill"></i> <span class="alert-msg" data-default-text="{{ danger_text }}">{{ danger_text }}</span>
             </div>
         </td>
     </tr>

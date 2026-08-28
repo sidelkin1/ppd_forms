@@ -1,5 +1,10 @@
 async function assignWork(name, url, data) {
-  const alert = document.getElementById(`${name}Danger`);
+  resetFormAlert(name);
+  clearFormErrors(name);
+  if (!validateForm(name)) {
+    showFormAlert(name, "Заполните обязательные поля");
+    return;
+  }
 
   try {
     const response = await fetchWithAuth(buildUrl(url), {
@@ -9,12 +14,17 @@ async function assignWork(name, url, data) {
       },
       body: JSON.stringify(data),
     });
+    if (response.status === 422) {
+      const payload = await response.json().catch(() => null);
+      handleValidationErrors(name, payload);
+      return;
+    }
     if (!response.ok) {
       throw new Error(`${response.status} ${response.statusText}`);
     }
     return await response.json();
   } catch (error) {
     console.error(error);
-    alert.classList.remove("d-none");
+    showDefaultFormAlert(name);
   }
 }

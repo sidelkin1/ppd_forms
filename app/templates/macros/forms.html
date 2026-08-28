@@ -17,37 +17,80 @@
     </div>
 {%- endmacro %}
 
-{% macro date_range(name) -%}
+{% macro date_range(item) -%}
     <div class="form-floating mb-3">
-        <input type="date" class="form-control" id="{{ name }}Start" name="start" placeholder/>
-        <label for="{{ name }}Start">Начальная дата</label>
+        <input
+            type="date"
+            class="form-control"
+            id="{{ item.path }}Start"
+            name="date_from"
+            data-form="{{ item.path }}"
+            data-field="date_from"
+            data-label="{{ item.date_from.label }}"
+            {% if item.date_from.required %}data-required{% endif %}
+            {% if item.date_from.value %}value="{{ item.date_from.value }}"{% endif %}
+            placeholder
+        >
+        <label for="{{ item.path }}Start">{{ item.date_from.label }}</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="date" class="form-control" id="{{ name }}End" name="end" placeholder/>
-        <label for="{{ name }}Start">Конечная дата</label>
+        <input
+            type="date"
+            class="form-control"
+            id="{{ item.path }}End"
+            name="date_to"
+            data-form="{{ item.path }}"
+            data-field="date_to"
+            data-label="{{ item.date_to.label }}"
+            {% if item.date_to.required %}data-required{% endif %}
+            {% if item.date_to.value %}value="{{ item.date_to.value }}"{% endif %}
+            placeholder
+        >
+        <label for="{{ item.path }}End">{{ item.date_to.label }}</label>
     </div>
 {%- endmacro %}
 
-{% macro on_date(name) -%}
+{% macro on_date(item) -%}
     <div class="form-floating mb-3">
-        <input type="date" class="form-control" id="{{ name }}OnDate" name="on_date" placeholder/>
-        <label for="{{ name }}OnDate">На дату</label>
+        <input
+            type="date"
+            class="form-control"
+            id="{{ item.path }}OnDate"
+            name="on_date"
+            data-form="{{ item.path }}"
+            data-field="on_date"
+            data-label="{{ item.on_date.label }}"
+            {% if item.on_date.required %}data-required{% endif %}
+            {% if item.on_date.value %}value="{{ item.on_date.value }}"{% endif %}
+            placeholder
+        >
+        <label for="{{ item.path }}OnDate">{{ item.on_date.label }}</label>
     </div>
 {%- endmacro %}
 
-{% macro form_date_range(name, button_text, button_func) -%}
-    {{ date_range(name) }}
-    {{ spinner_button(name, button_text, button_func) }}
+{% macro form_date_range(item, button_text, button_func) -%}
+    {{ date_range(item) }}
+    {{ spinner_button(item.path, button_text, button_func) }}
 {%- endmacro %}
 
-{% macro form_on_date(name, button_text, button_func) -%}
-    {{ on_date(name) }}
-    {{ spinner_button(name, button_text, button_func) }}
+{% macro form_on_date(item, button_text, button_func) -%}
+    {{ on_date(item) }}
+    {{ spinner_button(item.path, button_text, button_func) }}
 {%- endmacro %}
 
-{% macro form_upload_file(name, button_text, button_func) -%}
-    <div class="input-group mb-1">
-        <input type="file" class="form-control" id="{{ name }}File" name="file"/>
+{% macro form_upload_file(item, button_text, button_func) -%}
+    <div class="mb-3">
+        <label class="form-check-label" for="{{ item.path }}File">{{ item.file.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ item.path }}File"
+            name="file"
+            data-form="{{ item.path }}"
+            data-field="file"
+            data-label="{{ item.file.label }}"
+            {% if item.file.required %}data-required{% endif %}
+        >
     </div>
-    {{ spinner_button(name, button_text, button_func) }}
+    {{ spinner_button(item.path, button_text, button_func) }}
 {%- endmacro %}

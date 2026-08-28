@@ -27,6 +27,8 @@ items:
   group: ОПП
   icon: bi-bar-chart-line-fill
   description: Профили добычи/закачки для ТСРМ
+  date_from: {required: true, label: "Начальная дата"}
+  date_to: {required: true, label: "Конечная дата"}
   tables:
     required:
     - МЭР
@@ -36,21 +38,28 @@ items:
   group: ОПП
   icon: bi-calendar-check-fill
   description: Количество ОПП по годам для ТСРМ
+  date_from: {required: true, label: "Начальная дата"}
+  date_to: {required: true, label: "Конечная дата"}
 - title: Потери нефти по базе ГТМ ППД
   path: inj_loss
   group: Потери
   icon: bi-droplet-fill
+  date_from: {required: true, label: "Начальная дата"}
+  date_to: {required: true, label: "Конечная дата"}
   loss_mode:
-  - text: --Выберите режим выгрузки--
-    value: --
-    selected: true
-  - text: Qн на начало периода
-    value: first_rate
-    selected: false
-  - text: Максимальный Qн
-    value: max_rate
-    selected: false
-  neighbs_from_ns_ppd: false
+    required: true
+    label: "Режим выгрузки"
+    options:
+    - text: "--Выберите режим выгрузки--"
+      value: --
+      selected: true
+    - text: "Qн на начало периода"
+      value: first_rate
+      selected: false
+    - text: "Максимальный Qн"
+      value: max_rate
+      selected: false
+  neighbs_from_ns_ppd: {label: "Округа из НС ППД", checked: false}
   description: Потери Qн по округе нагнетательных скважин
   tables:
     required:
@@ -64,50 +73,58 @@ items:
   path: matrix
   group: Потери
   icon: bi-grid-3x3-gap-fill
+  date_from: {required: true, label: "Начальная дата"}
+  date_to: {required: true, label: "Конечная дата"}
+  on_date: {label: "На дату МЭР"}
+  base_period: {required: true, label: "Базовый период", value: 1}
+  pred_period: {label: "Прогнозный период"}
   excludes:
-  - text: --Выберите исключаемые ГТМ НФ--
-    value: --
-    selected: false
-  - text: ЗБС
-    value: ЗБС
-    selected: true
-  - text: ВНС
-    value: ВНС
-    selected: true
-  - text: ПДГ
-    value: ПДГ
-    selected: true
-  - text: ОРЭ
-    value: ОРЭ
-    selected: true
-  - text: ГРП
-    value: ГРП
-    selected: true
-  - text: ВБД
-    value: ВБД
-    selected: true
-  - text: ИДФ
-    value: ИДФ
-    selected: true
-  - text: Приобщение
-    value: Приобщение
-    selected: true
-  - text: Дострел
-    value: Дострел
-    selected: false
-  - text: ОПЗ
-    value: ОПЗ
-    selected: false
-  - text: Реперфорация
-    value: Реперфорация
-    selected: false
-  - text: ИДН
-    value: ИДН
-    selected: false
-  - text: РИР
-    value: РИР
-    selected: false
-  wells: Список скважин
+    required: true
+    label: "Исключаемые ГТМ НФ"
+    options:
+    - text: "--Выберите исключаемые ГТМ НФ--"
+      value: --
+      selected: false
+    - text: "ЗБС"
+      value: ЗБС
+      selected: true
+    - text: "ВНС"
+      value: ВНС
+      selected: true
+    - text: "ПДГ"
+      value: ПДГ
+      selected: true
+    - text: "ОРЭ"
+      value: ОРЭ
+      selected: true
+    - text: "ГРП"
+      value: ГРП
+      selected: true
+    - text: "ВБД"
+      value: ВБД
+      selected: true
+    - text: "ИДФ"
+      value: ИДФ
+      selected: true
+    - text: "Приобщение"
+      value: Приобщение
+      selected: true
+    - text: "Дострел"
+      value: Дострел
+      selected: false
+    - text: "ОПЗ"
+      value: ОПЗ
+      selected: false
+    - text: "Реперфорация"
+      value: Реперфорация
+      selected: false
+    - text: "ИДН"
+      value: ИДН
+      selected: false
+    - text: "РИР"
+      value: РИР
+      selected: false
+  wells: {label: "Список скважин"}
   description: Эффект ГТМ ППД по матрице для ОУЗ
   tables:
     required:
@@ -118,16 +135,21 @@ items:
   path: oil_loss
   group: Потери
   icon: bi-pie-chart-fill
+  date_from: {required: true, label: "Начальная дата"}
+  date_to: {required: true, label: "Конечная дата"}
   loss_mode:
-  - text: --Выберите режим выгрузки--
-    value: --
-    selected: true
-  - text: Qн на начало периода
-    value: first_rate
-    selected: false
-  - text: Максимальный Qн
-    value: max_rate
-    selected: false
+    required: true
+    label: "Режим выгрузки"
+    options:
+    - text: "--Выберите режим выгрузки--"
+      value: --
+      selected: true
+    - text: "Qн на начало периода"
+      value: first_rate
+      selected: false
+    - text: "Максимальный Qн"
+      value: max_rate
+      selected: false
   description: Потери Qн по факторам (аналог PackagesRelease)
   tables:
     required:
@@ -138,72 +160,85 @@ items:
   path: fnv
   group: ОПП
   icon: bi-bullseye
-  min_radius: 30
-  alternative: true
+  min_radius: {required: true, label: "Минимальный радиус", value: 30}
   fields:
-  - text: --Выберите месторождение--
-    value: --
-    selected: true
-  - text: --Все месторождения--
-    value: 0
-    selected: false
+    required: true
+    label: "Месторождение"
+    options:
+    - text: "--Выберите месторождение--"
+      value: --
+      selected: true
+    - text: "--Все месторождения--"
+      value: 0
+      selected: false
+  alternative: {label: "Альтернативная БД", checked: true}
   description: Фронт нагнетаемой воды для загрузки в РН-КИН
 - title: Шаблон для матбаланса (РН-КИН)
   path: matbal
   group: Моделирование
   icon: bi-calculator-fill
-  alternative: false
   fields:
-  - text: --Выберите месторождение--
-    value: --
-    selected: true
+    required: true
+    label: "Месторождение"
+    options:
+    - text: "--Выберите месторождение--"
+      value: --
+      selected: true
   reservoirs:
-  - text: --Выберите объект(ы)--
-    value: --
-    selected: false
-  wells: Список скважин
-  measurements: Замеры Рпл
+    required: true
+    label: "Объект(ы)"
+    options:
+    - text: "--Выберите объект(ы)--"
+      value: --
+      selected: false
+  wells: {label: "Список скважин"}
+  measurements: {label: "Замеры Рпл"}
+  alternative: {label: "Альтернативная БД", checked: false}
   description: Шаблон для автоадаптации параметров матбаланса
 - title: Пролонгация эффекта ППД по ХВ
   path: prolong
   group: ППД
   icon: bi-graph-up-arrow
-  expected: ДД план
-  actual: ДД факт
+  expected: {required: true, label: "ДД план"}
+  actual: {required: true, label: "ДД факт"}
   interpolation:
-  - text: --Все методы--
-    value: all
-    selected: true
-  - text: Метод PCHIP
-    value: pchip
-    selected: false
-  - text: Алгоритм Акима
-    value: akima
-    selected: false
-  - text: Кубический сплайн
-    value: cubic
-    selected: false
+    required: true
+    label: "Метод интерполяции"
+    options:
+    - text: "--Все методы--"
+      value: all
+      selected: true
+    - text: "Метод PCHIP"
+      value: pchip
+      selected: false
+    - text: "Алгоритм Акима"
+      value: akima
+      selected: false
+    - text: "Кубический сплайн"
+      value: cubic
+      selected: false
   description: Пролонгация эффекта ППД (факт+план)
 - title: Выгрузка исходников для ММБ (Julia)
   path: mmb
   group: Моделирование
   icon: bi-hexagon
-  alternative: true
-  tank: Параметры блоков
+  tank: {required: true, label: "Параметры блоков"}
+  alternative: {label: "Альтернативная БД", checked: true}
   description: Исходники для работы ММБ (добыча, закачка, замеры Рпл и т.д.)
 - title: Выгрузка для компенсаций
   path: compensation
   group: ППД
   icon: bi-arrow-repeat
+  on_date: {required: true, label: "На дату"}
   description: Выгрузка для сводной таблицы с целевыми компенсациями
 - title: Отчет по ГДИС
   path: well_test
   group: ГДИС
   icon: bi-activity
-  file: Отчет Сиам
-  gtm_period: Период ГТМ (мес)
-  gdis_period: Период ГДИС (лет)
-  radius: Радиус
+  file: {required: true, label: "Отчет Сиам"}
+  gtm_period: {required: true, label: "Период ГТМ (мес)", value: 50}
+  gdis_period: {required: true, label: "Период ГДИС (лет)", value: 50}
+  radius: {required: true, label: "Радиус", value: 500}
   description: Выгрузка для отчета по ГДИС (аналитика, ГТМ и т.д.)
   tables:
     required:
@@ -216,24 +251,34 @@ items:
   group: ГДИС
   icon: bi-speedometer2
   fields:
-  - text: --Выберите месторождение--
-    value: --
-    selected: true
+    required: true
+    label: "Месторождение"
+    options:
+    - text: "--Выберите месторождение--"
+      value: --
+      selected: true
   reservoirs:
-  - text: --Выберите объект--
-    value: --
-    selected: true
-  well: Номер скважин
-  pressure: Давление (атм)
-  depth: Глубина (м)
+    required: true
+    label: "Объект"
+    options:
+    - text: "--Выберите объект--"
+      value: --
+      selected: true
+  well: {required: true, label: "Номер скважин"}
+  pressure: {required: true, label: "Давление (атм)"}
+  depth: {required: true, label: "Глубина (м)"}
   well_test:
-  - text: --Выберите вид исследования--
-    value: --
-    selected: true
-  - text: Hст
-    value: static_level
-    selected: false
-  - text: Pпл
-    value: pressure
-    selected: false
+    required: true
+    label: "Вид исследования"
+    options:
+    - text: "--Выберите вид исследования--"
+      value: --
+      selected: true
+    - text: "Hст"
+      value: static_level
+      selected: false
+    - text: "Pпл"
+      value: pressure
+      selected: false
+  on_date: {required: true, label: "На дату"}
   description: Пересчет давления на глубину с учетом инклинометрии скважины

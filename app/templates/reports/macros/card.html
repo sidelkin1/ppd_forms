@@ -78,13 +78,13 @@
                     {% elif report.path == "mmb" %}
                         {{ form_mmb(report, "Выгрузить", "loadMMB") }}
                     {% elif report.path == "compensation" %}
-                        {{ form_on_date(report.path, "Выгрузить", "loadOnDate") }}
+                        {{ form_on_date(report, "Выгрузить", "loadOnDate") }}
                     {% elif report.path == "well_test" %}
                         {{ form_well_test(report, "Выгрузить", "loadWellTest") }}
                     {% elif report.path == "owc_resp" %}
                         {{ form_owc_resp(report, "Выгрузить", "loadOwcResp") }}
                     {% else %}
-                        {{ form_date_range(report.path, "Выгрузить", "loadReport") }}
+                        {{ form_date_range(report, "Выгрузить", "loadReport") }}
                     {% endif %}
                 {% endcall %}
             </div>

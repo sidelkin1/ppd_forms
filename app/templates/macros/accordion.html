@@ -24,7 +24,7 @@
                         {% endif %}
                     </div>
                     <div class="alert alert-danger d-none" id="{{ item.path }}Danger" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill"></i> {{ danger_text }}
+                        <i class="bi bi-exclamation-triangle-fill"></i> <span class="alert-msg" data-default-text="{{ danger_text }}">{{ danger_text }}</span>
                     </div>
                 </div>
             </div>

@@ -1,16 +1,22 @@
 async function sendExcelFile(name, url) {
-  const alert = document.getElementById(`${name}Danger`);
   const file = document.getElementById(`${name}File`).files[0];
 
+  resetFormAlert(name);
+  clearFormErrors(name);
+  if (!validateForm(name)) {
+    showFormAlert(name, "Заполните обязательные поля");
+    return;
+  }
+
   try {
-    result = await sendFile(file, url);
+    const result = await sendFile(file, url);
     if (!result) {
       throw new Error("File is not selected");
     }
     return result;
   } catch (error) {
     console.error(error);
-    alert.classList.remove("d-none");
+    showDefaultFormAlert(name);
   }
 }
 

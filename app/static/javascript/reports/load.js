@@ -1,12 +1,17 @@
 async function sendReportFiles(name, files, url) {
-  const alert = document.getElementById(`${name}Danger`);
+  resetFormAlert(name);
+  clearFormErrors(name);
+  if (!validateForm(name)) {
+    showFormAlert(name, "Заполните обязательные поля");
+    return;
+  }
 
   try {
-    results = await sendMultipleFiles(files, url);
+    const results = await sendMultipleFiles(files, url);
     return results;
   } catch (error) {
     console.error(error);
-    alert.classList.remove("d-none");
+    showDefaultFormAlert(name);
   }
 }
 
@@ -163,7 +168,7 @@ async function loadMatrix(reportName) {
       date_from: dateFrom,
       date_to: dateTo,
       excludes: excludes,
-      ...(basePeriod && { base_period: basePeriod }),
+      base_period: basePeriod,
       ...(predPeriod && { pred_period: predPeriod }),
       ...(onDate && { on_date: onDate }),
       ...(files[0] && { wells: files[0].filename }),

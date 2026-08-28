@@ -1,9 +1,9 @@
 async function checkStatus(name, jobID, resultURL = null) {
   const success = document.getElementById(`${name}Success`);
-  const alert = document.getElementById(`${name}Danger`);
   const link = document.getElementById(`${name}Link`);
 
   let result;
+  let jobMessage = null;
   const webSocketClient = new WebSocketClient();
   try {
     const url = buildUrl(`/jobs/${jobID}/ws`);
@@ -11,7 +11,8 @@ async function checkStatus(name, jobID, resultURL = null) {
     const response = await webSocketClient.receive();
     const data = JSON.parse(response);
     if (data.job.status !== "completed") {
-      throw new Error(data.job.message);
+      jobMessage = data.job.message;
+      throw new Error(jobMessage);
     }
     success.classList.remove("d-none");
     if (resultURL) {
@@ -20,7 +21,11 @@ async function checkStatus(name, jobID, resultURL = null) {
     result = true;
   } catch (error) {
     console.error(error);
-    alert.classList.remove("d-none");
+    if (jobMessage) {
+      showFormAlert(name, jobMessage);
+    } else {
+      showDefaultFormAlert(name);
+    }
     result = false;
   } finally {
     await webSocketClient.disconnect();

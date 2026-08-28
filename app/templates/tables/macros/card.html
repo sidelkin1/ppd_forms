@@ -51,10 +51,10 @@
                     "Ошибка при обновлении таблицы!"
                 ) %}
                     {% if table.source == "database" %}
-                        {{ form_date_range(table.path, "Обновить", "updateTable") }}
+                        {{ form_date_range(table, "Обновить", "updateTable") }}
                     {% endif %}
                     {% if table.source == "excel" %}
-                        {{ form_upload_file(table.path, "Обновить", "updateExcel") }}
+                        {{ form_upload_file(table, "Обновить", "updateExcel") }}
                     {% endif %}
                 {% endcall %}
             </div>

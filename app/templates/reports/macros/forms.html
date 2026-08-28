@@ -1,9 +1,16 @@
 {% from '/macros/forms.html' import date_range, spinner_button %}
 
 {% macro form_inj_loss(report, button_text, button_func) -%}
-    {{ date_range(report.path) }}
-    <select class="form-select mb-3" id="{{ report.path }}Select">
-        {% for option in report.loss_mode %}
+    {{ date_range(report) }}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Select"
+        data-form="{{ report.path }}"
+        data-field="mode"
+        data-label="{{ report.loss_mode.label }}"
+        {% if report.loss_mode.required %}data-required{% endif %}
+    >
+        {% for option in report.loss_mode.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -18,17 +25,27 @@
             type="checkbox"
             id="{{ report.path }}Neighbs"
             value="neighbs_from_ns_ppd"
-            {% if report.neighbs_from_ns_ppd %}checked{% endif %}
+            data-form="{{ report.path }}"
+            data-field="neighbs_from_ns_ppd"
+            data-label="{{ report.neighbs_from_ns_ppd.label }}"
+            {% if report.neighbs_from_ns_ppd.checked %}checked{% endif %}
         >
-        <label class="form-check-label" for="{{ report.path }}Neighbs">Округа из НС ППД</label>
+        <label class="form-check-label" for="{{ report.path }}Neighbs">{{ report.neighbs_from_ns_ppd.label }}</label>
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
 
 {% macro form_oil_loss(report, button_text, button_func) -%}
-    {{ date_range(report.path) }}
-    <select class="form-select mb-3" id="{{ report.path }}Select">
-        {% for option in report.loss_mode %}
+    {{ date_range(report) }}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Select"
+        data-form="{{ report.path }}"
+        data-field="mode"
+        data-label="{{ report.loss_mode.label }}"
+        {% if report.loss_mode.required %}data-required{% endif %}
+    >
+        {% for option in report.loss_mode.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -41,21 +58,60 @@
 {%- endmacro %}
 
 {% macro form_matrix(report, button_text, button_func) -%}
-    {{ date_range(report.path) }}
+    {{ date_range(report) }}
     <div class="form-floating mb-3">
-        <input type="date" class="form-control" id="{{ report.path }}Mer" name="mer" placeholder>
-        <label for="{{ report.path }}Mer">На дату МЭР</label>
+        <input
+            type="date"
+            class="form-control"
+            id="{{ report.path }}Mer"
+            name="on_date"
+            data-form="{{ report.path }}"
+            data-field="on_date"
+            data-label="{{ report.on_date.label }}"
+            {% if report.on_date.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}Mer">{{ report.on_date.label }}</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}Base" name="base" placeholder>
-        <label for="{{ report.path }}Base">Базовый период</label>
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}Base"
+            name="base_period"
+            value="{{ report.base_period.value }}"
+            data-form="{{ report.path }}"
+            data-field="base_period"
+            data-label="{{ report.base_period.label }}"
+            {% if report.base_period.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}Base">{{ report.base_period.label }}</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}Pred" name="pred" placeholder>
-        <label for="{{ report.path }}Pred">Прогнозный период</label>
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}Pred"
+            name="pred_period"
+            data-form="{{ report.path }}"
+            data-field="pred_period"
+            data-label="{{ report.pred_period.label }}"
+            {% if report.pred_period.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}Pred">{{ report.pred_period.label }}</label>
     </div>
-    <select class="form-select mb-3" id="{{ report.path }}Excludes" multiple size="4">
-        {% for option in report.excludes %}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Excludes"
+        data-form="{{ report.path }}"
+        data-field="excludes"
+        data-label="{{ report.excludes.label }}"
+        {% if report.excludes.required %}data-required{% endif %}
+        multiple size="4"
+    >
+        {% for option in report.excludes.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -66,8 +122,17 @@
         {% endfor %}
     </select>
     <div class="mb-3">
-        <label class="form-check-label" for="{{ report.path }}Wells">{{ report.wells }}</label>
-        <input type="file" class="form-control" id="{{ report.path }}Wells" name="file"/>
+        <label class="form-check-label" for="{{ report.path }}Wells">{{ report.wells.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}Wells"
+            name="wells"
+            data-form="{{ report.path }}"
+            data-field="wells"
+            data-label="{{ report.wells.label }}"
+            {% if report.wells.required %}data-required{% endif %}
+        >
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
@@ -79,13 +144,24 @@
             class="form-control"
             id="{{ report.path }}MinRadius"
             name="min_radius"
-            value="{{ report.min_radius }}"
+            value="{{ report.min_radius.value }}"
+            data-form="{{ report.path }}"
+            data-field="min_radius"
+            data-label="{{ report.min_radius.label }}"
+            {% if report.min_radius.required %}data-required{% endif %}
             placeholder
         >
-        <label for="{{ report.path }}MinRadius">Минимальный радиус</label>
+        <label for="{{ report.path }}MinRadius">{{ report.min_radius.label }}</label>
     </div>
-    <select class="form-select mb-3" id="{{ report.path }}Fields">
-        {% for option in report.fields %}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Fields"
+        data-form="{{ report.path }}"
+        data-field="fields"
+        data-label="{{ report.fields.label }}"
+        {% if report.fields.required %}data-required{% endif %}
+    >
+        {% for option in report.fields.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -100,9 +176,12 @@
             type="checkbox"
             id="{{ report.path }}Alternative"
             value="alternative"
-            {% if report.alternative %}checked{% endif %}
+            data-form="{{ report.path }}"
+            data-field="alternative"
+            data-label="{{ report.alternative.label }}"
+            {% if report.alternative.checked %}checked{% endif %}
         >
-        <label class="form-check-label" for="{{ report.path }}Alternative">Альтернативная БД</label>
+        <label class="form-check-label" for="{{ report.path }}Alternative">{{ report.alternative.label }}</label>
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
@@ -111,9 +190,13 @@
     <select
         class="form-select mb-3"
         id="{{ report.path }}Fields"
+        data-form="{{ report.path }}"
+        data-field="field"
+        data-label="{{ report.fields.label }}"
+        {% if report.fields.required %}data-required{% endif %}
         onchange="fetchReservoirs('{{ report.path }}', 'reservoirs')"
     >
-        {% for option in report.fields %}
+        {% for option in report.fields.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -122,8 +205,16 @@
             </option>
         {% endfor %}
     </select>
-    <select class="form-select mb-3" id="{{ report.path }}Reservoirs" multiple size="4">
-        {% for option in report.reservoirs %}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Reservoirs"
+        data-form="{{ report.path }}"
+        data-field="reservoirs"
+        data-label="{{ report.reservoirs.label }}"
+        {% if report.reservoirs.required %}data-required{% endif %}
+        multiple size="4"
+    >
+        {% for option in report.reservoirs.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -134,12 +225,30 @@
         {% endfor %}
     </select>
     <div class="mb-3">
-        <label class="form-check-label" for="{{ report.path }}Wells">{{ report.wells }}</label>
-        <input type="file" class="form-control" id="{{ report.path }}Wells" name="file"/>
+        <label class="form-check-label" for="{{ report.path }}Wells">{{ report.wells.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}Wells"
+            name="wells"
+            data-form="{{ report.path }}"
+            data-field="wells"
+            data-label="{{ report.wells.label }}"
+            {% if report.wells.required %}data-required{% endif %}
+        >
     </div>
     <div class="mb-3">
-        <label class="form-check-label" for="{{ report.path }}Measurements">{{ report.measurements }}</label>
-        <input type="file" class="form-control" id="{{ report.path }}Measurements" name="file"/>
+        <label class="form-check-label" for="{{ report.path }}Measurements">{{ report.measurements.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}Measurements"
+            name="measurements"
+            data-form="{{ report.path }}"
+            data-field="measurements"
+            data-label="{{ report.measurements.label }}"
+            {% if report.measurements.required %}data-required{% endif %}
+        >
     </div>
     <div class="form-check form-check-inline mb-3">
         <input
@@ -147,24 +256,52 @@
             type="checkbox"
             id="{{ report.path }}Alternative"
             value="alternative"
-            {% if report.alternative %}checked{% endif %}
+            data-form="{{ report.path }}"
+            data-field="alternative"
+            data-label="{{ report.alternative.label }}"
+            {% if report.alternative.checked %}checked{% endif %}
         >
-        <label class="form-check-label" for="{{ report.path }}Alternative">Альтернативная БД</label>
+        <label class="form-check-label" for="{{ report.path }}Alternative">{{ report.alternative.label }}</label>
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
 
 {% macro form_prolong(report, button_text, button_func) -%}
     <div class="mb-3">
-        <label class="form-check-label" for="{{ report.path }}Expected">{{ report.expected }}</label>
-        <input type="file" class="form-control" id="{{ report.path }}Expected" name="file"/>
+        <label class="form-check-label" for="{{ report.path }}Expected">{{ report.expected.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}Expected"
+            name="expected"
+            data-form="{{ report.path }}"
+            data-field="expected"
+            data-label="{{ report.expected.label }}"
+            {% if report.expected.required %}data-required{% endif %}
+        >
     </div>
     <div class="mb-3">
-        <label class="form-check-label" for="{{ report.path }}Actual">{{ report.actual }}</label>
-        <input type="file" class="form-control" id="{{ report.path }}Actual" name="file"/>
+        <label class="form-check-label" for="{{ report.path }}Actual">{{ report.actual.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}Actual"
+            name="actual"
+            data-form="{{ report.path }}"
+            data-field="actual"
+            data-label="{{ report.actual.label }}"
+            {% if report.actual.required %}data-required{% endif %}
+        >
     </div>
-    <select class="form-select mb-3" id="{{ report.path }}Interpolation">
-        {% for option in report.interpolation %}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Interpolation"
+        data-form="{{ report.path }}"
+        data-field="interpolations"
+        data-label="{{ report.interpolation.label }}"
+        {% if report.interpolation.required %}data-required{% endif %}
+    >
+        {% for option in report.interpolation.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -178,8 +315,17 @@
 
 {% macro form_mmb(report, button_text, button_func) -%}
     <div class="mb-3">
-        <label class="form-check-label" for="{{ report.path }}Tank">{{ report.tank }}</label>
-        <input type="file" class="form-control" id="{{ report.path }}Tank" name="file"/>
+        <label class="form-check-label" for="{{ report.path }}Tank">{{ report.tank.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}Tank"
+            name="file"
+            data-form="{{ report.path }}"
+            data-field="file"
+            data-label="{{ report.tank.label }}"
+            {% if report.tank.required %}data-required{% endif %}
+        >
     </div>
     <div class="form-check form-check-inline mb-3">
         <input
@@ -187,29 +333,74 @@
             type="checkbox"
             id="{{ report.path }}Alternative"
             value="alternative"
-            {% if report.alternative %}checked{% endif %}
+            data-form="{{ report.path }}"
+            data-field="alternative"
+            data-label="{{ report.alternative.label }}"
+            {% if report.alternative.checked %}checked{% endif %}
         >
-        <label class="form-check-label" for="{{ report.path }}Alternative">Альтернативная БД</label>
+        <label class="form-check-label" for="{{ report.path }}Alternative">{{ report.alternative.label }}</label>
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
 
 {% macro form_well_test(report, button_text, button_func) -%}
     <div class="mb-3">
-        <label class="form-check-label" for="{{ report.path }}WellTest">{{ report.file }}</label>
-        <input type="file" class="form-control" id="{{ report.path }}WellTest" name="file"/>
+        <label class="form-check-label" for="{{ report.path }}WellTest">{{ report.file.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}WellTest"
+            name="file"
+            data-form="{{ report.path }}"
+            data-field="file"
+            data-label="{{ report.file.label }}"
+            {% if report.file.required %}data-required{% endif %}
+        >
     </div>
     <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}GtmPeriod" name="gtm" placeholder>
-        <label for="{{ report.path }}GtmPeriod">{{ report.gtm_period }}</label>
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}GtmPeriod"
+            name="gtm_period"
+            value="{{ report.gtm_period.value }}"
+            data-form="{{ report.path }}"
+            data-field="gtm_period"
+            data-label="{{ report.gtm_period.label }}"
+            {% if report.gtm_period.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}GtmPeriod">{{ report.gtm_period.label }}</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}GdisPeriod" name="gdis" placeholder>
-        <label for="{{ report.path }}GdisPeriod">{{ report.gdis_period }}</label>
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}GdisPeriod"
+            name="gdis_period"
+            value="{{ report.gdis_period.value }}"
+            data-form="{{ report.path }}"
+            data-field="gdis_period"
+            data-label="{{ report.gdis_period.label }}"
+            {% if report.gdis_period.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}GdisPeriod">{{ report.gdis_period.label }}</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}Radius" name="radius" placeholder>
-        <label for="{{ report.path }}Radius">{{ report.radius }}</label>
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}Radius"
+            name="radius"
+            value="{{ report.radius.value }}"
+            data-form="{{ report.path }}"
+            data-field="radius"
+            data-label="{{ report.radius.label }}"
+            {% if report.radius.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}Radius">{{ report.radius.label }}</label>
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
@@ -218,9 +409,13 @@
     <select
         class="form-select mb-3"
         id="{{ report.path }}Fields"
+        data-form="{{ report.path }}"
+        data-field="field"
+        data-label="{{ report.fields.label }}"
+        {% if report.fields.required %}data-required{% endif %}
         onchange="fetchReservoirs('{{ report.path }}', 'reservoirs')"
     >
-        {% for option in report.fields %}
+        {% for option in report.fields.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -229,30 +424,15 @@
             </option>
         {% endfor %}
     </select>
-    <select class="form-select mb-3" id="{{ report.path }}Reservoirs">
-        {% for option in report.reservoirs %}
-            <option
-                value="{{ option.value }}"
-                {% if option.selected %}selected{% endif %}
-            >
-                {{ option.text }}
-            </option>
-        {% endfor %}
-    </select>
-    <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="{{ report.path }}Well" name="well" placeholder>
-        <label for="{{ report.path }}Well">Номер скважины</label>
-    </div>
-    <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}Pressure" name="pressure" placeholder>
-        <label for="{{ report.path }}Pressure">Давление (атм)</label>
-    </div>
-    <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="{{ report.path }}Depth" name="depth" placeholder>
-        <label for="{{ report.path }}Depth">Глубина (м)</label>
-    </div>
-    <select class="form-select mb-3" id="{{ report.path }}WellTest">
-        {% for option in report.well_test %}
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}Reservoirs"
+        data-form="{{ report.path }}"
+        data-field="reservoir"
+        data-label="{{ report.reservoirs.label }}"
+        {% if report.reservoirs.required %}data-required{% endif %}
+    >
+        {% for option in report.reservoirs.options %}
             <option
                 value="{{ option.value }}"
                 {% if option.selected %}selected{% endif %}
@@ -262,8 +442,77 @@
         {% endfor %}
     </select>
     <div class="form-floating mb-3">
-        <input type="date" class="form-control" id="{{ report.path }}OnDate" name="on_date" placeholder>
-        <label for="{{ report.path }}OnDate">На дату</label>
+        <input
+            type="text"
+            class="form-control"
+            id="{{ report.path }}Well"
+            name="well"
+            data-form="{{ report.path }}"
+            data-field="well"
+            data-label="{{ report.well.label }}"
+            {% if report.well.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}Well">{{ report.well.label }}</label>
+    </div>
+    <div class="form-floating mb-3">
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}Pressure"
+            name="pressure"
+            data-form="{{ report.path }}"
+            data-field="pressure"
+            data-label="{{ report.pressure.label }}"
+            {% if report.pressure.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}Pressure">{{ report.pressure.label }}</label>
+    </div>
+    <div class="form-floating mb-3">
+        <input
+            type="number"
+            class="form-control"
+            id="{{ report.path }}Depth"
+            name="depth"
+            data-form="{{ report.path }}"
+            data-field="depth"
+            data-label="{{ report.depth.label }}"
+            {% if report.depth.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}Depth">{{ report.depth.label }}</label>
+    </div>
+    <select
+        class="form-select mb-3"
+        id="{{ report.path }}WellTest"
+        data-form="{{ report.path }}"
+        data-field="well_test"
+        data-label="{{ report.well_test.label }}"
+        {% if report.well_test.required %}data-required{% endif %}
+    >
+        {% for option in report.well_test.options %}
+            <option
+                value="{{ option.value }}"
+                {% if option.selected %}selected{% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+    <div class="form-floating mb-3">
+        <input
+            type="date"
+            class="form-control"
+            id="{{ report.path }}OnDate"
+            name="on_date"
+            data-form="{{ report.path }}"
+            data-field="on_date"
+            data-label="{{ report.on_date.label }}"
+            {% if report.on_date.required %}data-required{% endif %}
+            placeholder
+        >
+        <label for="{{ report.path }}OnDate">{{ report.on_date.label }}</label>
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}

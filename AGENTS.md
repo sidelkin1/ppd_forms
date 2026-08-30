@@ -88,13 +88,17 @@ app/
     │   └── dao/          # File-based DAOs (csv/, excel/, reporters/)
     ├── log/               # Structured logging (structlog + rotating file handler)
     ├── redis/             # Redis/arq config, factories, DAO (ArqDAO, ScheduledJobsDAO)
-    ├── holder.py          # HolderDAO — service locator providing all DAO instances
-    └── provider.py        # DbProvider — creates and manages session pools
+    ├── sessions.py        # Sessions — владение пулами + local_session/ofm_session/redis_conn
+    └── reporters.py       # Reporters — предсобранные pool-based репортёры
 ```
 
 ### Key Patterns
 
-- **HolderDAO** (`app/infrastructure/holder.py`): Central service locator. Accepts `**kwargs` (sessions, pools, paths) and exposes properties for every DAO. Different context managers in `DbProvider` inject different session combinations (local only, OFM only, OFM+local, OFM+Redis).
+- **Sessions** (`app/infrastructure/sessions.py`): Owns the connection pools and exposes `local_session()` / `ofm_session()` / `redis_conn()` context managers. Handlers open exactly the sessions they need instead of receiving a pre-combined holder.
+
+- **Reporters** (`app/infrastructure/reporters.py`): Pre-built, pool-based SQL reporters (`Reporters`, `build_reporters`). Local reporters are always built; OFM reporters are `None` when Oracle is unavailable (handlers raise a clear error via `_ofm`).
+
+- **WorkerContext** (`app/core/context.py`): Typed dataclass injected into job handlers (`settings`, `csv`, `paths`, `sessions`, `reporters`, `process_pool`), replacing the former `dict[str, Any]` context and `HolderDAO`.
 
 - **WorkRegistry** (`app/core/services/entrypoints/registry.py`): Decorator-based registry mapping route strings (e.g. `"report:profile"`, `"excel:ns_ppd:refresh"`) to async handler functions. The worker's `perform_work` looks up `response.task.route_url` in this registry.
 
@@ -104,14 +108,14 @@ app/
 
 - **Config pattern**: All settings use `pydantic_settings.BaseSettings` reading from `.env` file. Factory functions (`get_postgres_settings`, `get_redis_settings`, etc.) are `@lru_cache`d singletons.
 
-- **DTO/Schema split**: `app/core/models/dto/` contains internal data transfer objects used by workers. `app/core/models/schemas/` contains API request validation models. `app/api/models/responses.py` contains API response models.
+- **DTO/Schema split**: `app/core/models/dto/` contains internal DTOs used by workers; `app/core/models/responses/` contains job/response DTOs shared by API and worker; `app/core/models/schemas/` contains API request validation models.
 
 ### Data Flow
 
 1. API endpoint creates a `TaskXxx` DTO and `JobStamp`, wraps in a typed `Response`
 2. Response is enqueued to Redis via `ArqDAO.enqueue_task()`
 3. Worker picks up job, calls `perform_work()` which dispatches to the registered handler via `WorkRegistry`
-4. Handler acquires a `HolderDAO` context (with appropriate sessions), calls domain service
+4. Handler receives `WorkerContext`, opens needed sessions (`ctx.sessions.*`), calls domain service
 5. Domain service uses DAOs to query data, generates report files (CSV/Excel)
 6. Job status tracked via arq's `Job` API; clients poll via REST or WebSocket
 
@@ -124,7 +128,7 @@ app/
 
 - `tests/unit/` — unit tests (mappers, no DB required)
 - `tests/integration/` — integration tests using testcontainers (PostgreSQL + Redis containers)
-- `tests/mocks/` — mock DAOs and holders for integration tests
+- `tests/mocks/` — mock DAOs for integration tests
 - `tests/fixtures/` — test data and task fixtures
 - Integration tests spin up real PostgreSQL and Redis containers via `testcontainers`
 

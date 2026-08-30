@@ -67,3 +67,26 @@ class Paths(BaseModel):
     @property
     def mmb_config(self):
         return self.app_dir / "core" / "config" / "yaml" / "mmb.yaml"
+
+    def user_dir(self, user_id: str) -> Path:
+        directory = self.file_dir / user_id
+        directory.mkdir(parents=True, exist_ok=True)
+        return directory
+
+    def upload_dir(self, user_id: str) -> Path:
+        directory = self.user_dir(user_id) / "uploads"
+        directory.mkdir(parents=True, exist_ok=True)
+        return directory
+
+    def result_dir(self, user_id: str) -> Path:
+        directory = self.user_dir(user_id) / "results"
+        directory.mkdir(parents=True, exist_ok=True)
+        return directory
+
+    def file_path(self, user_id: str, file_id: str, ext: str = "csv") -> Path:
+        return (self.result_dir(user_id) / file_id).with_suffix(f".{ext}")
+
+    def dir_path(self, user_id: str, file_id: str) -> Path:
+        directory = self.result_dir(user_id) / file_id
+        directory.mkdir(parents=True, exist_ok=True)
+        return directory

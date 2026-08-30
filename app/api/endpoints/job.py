@@ -7,8 +7,8 @@ from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import JobResponseDep
 from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.tracker import JobTrackerDep
-from app.api.models.responses import JobResponse
 from app.core.models.enums.task_id import TaskId
+from app.core.models.responses import JobResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jobs", tags=["jobs"])

@@ -13,7 +13,7 @@ from .auth import (
     get_current_user,
     get_current_user_or_none,
 )
-from .db import DbProvider, dao_provider
+from .db import SessionProvider, session_provider
 from .job import (
     JobProvider,
     get_current_job,
@@ -22,7 +22,7 @@ from .job import (
     get_new_job,
 )
 from .pagination import PageSize, get_pagination_params
-from .path import PathProvider, get_path_provider
+from .path import get_path_provider
 from .redis import RedisProvider, redis_provider
 from .tracker import JobTracker, get_job_tracker
 
@@ -35,13 +35,12 @@ def setup(
     auth_config: AuthSettings,
     paths: Paths,
 ) -> None:
-    app.dependency_overrides[dao_provider] = DbProvider(pool).dao
+    app.dependency_overrides[session_provider] = SessionProvider(pool).session
     app.dependency_overrides[redis_provider] = RedisProvider(
         pool=redis, expires=app_config.keep_result
     ).dao
 
-    path_provider = PathProvider(paths)
-    app.dependency_overrides[get_path_provider] = lambda: path_provider
+    app.dependency_overrides[get_path_provider] = lambda: paths
 
     auth_provider = AuthProvider(auth_config)
     app.dependency_overrides[get_current_user] = auth_provider.get_current_user

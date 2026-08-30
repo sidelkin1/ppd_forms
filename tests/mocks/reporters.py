@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import pandas as pd
-from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters import (
     FnvReporter,
@@ -11,7 +10,7 @@ from app.infrastructure.db.dao.sql.reporters import (
 
 
 class OppPerYearMock(OppPerYearReporter):
-    def __init__(self, pool: sessionmaker[Session]) -> None:
+    def __init__(self, pool: object) -> None:
         pass
 
     async def read_one(
@@ -148,7 +147,7 @@ class FnvMock(FnvReporter):
         },
     }
 
-    def __init__(self, pool: sessionmaker[Session]) -> None:
+    def __init__(self, pool: object) -> None:
         pass
 
     async def cumwat(self, field_id: int) -> pd.DataFrame:
@@ -171,9 +170,7 @@ class FnvMock(FnvReporter):
 
 
 class OwcRespMock(OwcRespReporter):
-    def __init__(
-        self, pool: sessionmaker[Session], empty_depths: bool = False
-    ) -> None:
+    def __init__(self, pool: object, empty_depths: bool = False) -> None:
         self.empty_depths = empty_depths
 
     async def read_all(self, **params) -> dict[str, pd.DataFrame]:

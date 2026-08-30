@@ -1,11 +1,9 @@
-from sqlalchemy.orm import Session
-
 from app.core.models.dto import MonthlyReportDB, WellProfileDB
 from app.infrastructure.db.dao.sql.ofm import MonthlyReportDAO, WellProfileDAO
 
 
 class MonthlyReportMock(MonthlyReportDAO):
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: object) -> None:
         pass
 
     async def get_by_params(self, **params) -> list[MonthlyReportDB]:
@@ -30,7 +28,7 @@ class MonthlyReportMock(MonthlyReportDAO):
 
 
 class WellProfileMock(WellProfileDAO):
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: object) -> None:
         pass
 
     async def get_by_params(self, **params) -> list[WellProfileDB]:

@@ -12,7 +12,7 @@ Follow these 6 steps to add a new report. Replace `<report>` with the lowercase 
 | Step | Layer Group | What you build |
 |------|-------------|----------------|
 | 1. API contract | Enum → Schema → DTO → Response → Endpoint | Typed request/response, validation, route registration |
-| 2. Data | Queryset → Reporter → Holder | SQL queries + DAO wired into the service locator |
+| 2. Data | Queryset → Reporter → Reporters | SQL queries + reporter wired into the reporters container |
 | 3. Service + Entrypoint | Service → ARQ Registry | Business logic + background worker dispatch |
 | 4. Frontend | YAML → Jinja2 → JS | HTML form for parameter input |
 | 5. Refinement | Iterate as needed | Additional params, templates, enums |
@@ -98,12 +98,12 @@ Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` 
   from .xxx_params import XxxParams
   ```
 
-- **`app/api/models/responses/task.py`** — add Response type:
+- **`app/core/models/responses/task.py`** — add Response type:
   ```python
   XxxResponse = ReportResponse[dto.TaskXxx]
   ```
 
-- **`app/api/models/responses/__init__.py`** — add export:
+- **`app/core/models/responses/__init__.py`** — add export:
   ```python
   from .task import XxxResponse
   ```
@@ -114,7 +114,7 @@ Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` 
 
     Add imports at top:
     ```python
-    from app.api.models.responses import XxxResponse
+    from app.core.models.responses import XxxResponse
     from app.core.models.dto import TaskXxx
     from app.core.models.enums import ReportName
     from app.core.models.schemas import XxxParams
@@ -237,21 +237,29 @@ class XxxReporter(LocalBaseDAO):
   from .xxx import XxxReporter
   ```
 
-- **`app/infrastructure/holder.py`** — add `@property`. Choose the pool based on data source:
+- **`app/infrastructure/reporters.py`** — add a field to the `Reporters` dataclass and wire it in `build_reporters`. Choose the pool based on data source.
+
+  Local (PostgreSQL) reporter — always built:
   ```python
-  # For OFM (Oracle) reporters:
-  @property
-  def xxx_reporter(self) -> db_reporters.XxxReporter:
-      return db_reporters.XxxReporter(self.kwargs["ofm_pool"])
+  # in the Reporters dataclass
+  xxx: XxxReporter
 
-
-  # For local (PostgreSQL) reporters:
-  @property
-  def xxx_reporter(self) -> db_reporters.XxxReporter:
-      return db_reporters.XxxReporter(self.kwargs["local_pool"])
+  # in build_reporters
+  xxx=XxxReporter(local),
   ```
 
-    > Some reporters compose multiple DAOs (e.g. `matbal_reporter` combines `db_matbal_reporter` + `file_matbal_reporter`). Study existing properties in `holder.py` for complex patterns.
+  OFM (Oracle) reporter — nullable (`None` when Oracle is unavailable):
+  ```python
+  # in the Reporters dataclass
+  xxx: XxxReporter | None
+
+  # in build_reporters
+  xxx=XxxReporter(ofm) if ofm else None,
+  ```
+
+    > OFM reporters are `None` without Oracle; the handler raises a clear error via `_ofm(ctx.reporters.xxx, "xxx")`.
+    >
+    > Some reporters compose multiple DAOs (e.g. `matbal` combines the OFM `matbal` reporter + a per-job `file_reporters.MatbalReporter`). Study the composite reporters in `app/core/services/entrypoints/arq.py` (`matrix`, `matbal`, `well_test`) for how they are assembled in handlers.
 
 ---
 
@@ -330,45 +338,51 @@ make_archive(str(path), "zip", root_dir=path)
 - **`app/core/services/entrypoints/arq.py`** — register handler.
   Add imports:
   ```python
-  from app.api.models.responses import XxxResponse
+  from app.core.models.responses import XxxResponse
   from app.core.services.reports import xxx_report
   ```
 
-  Add handler:
+  Add handler (pool-based reporter — no session):
   ```python
   @registry.add("report:xxx")
   async def create_xxx_report(
-      response: XxxResponse, ctx: dict[str, Any]
+      response: XxxResponse, ctx: WorkerContext
   ) -> None:
-      path_provider: PathProvider = ctx["path_provider"]
-      user_id = cast(str, response.job.user_id)
-      file_id = cast(str, response.job.file_id)
-      async with ctx["ofm_dao"]() as holder:
-          holder = cast(HolderDAO, holder)
-          await xxx_report(
-              path_provider.dir_path(user_id, file_id),
-              response.task.field.id,
-              response.task.reservoir.id,
-              response.task.well,
-              holder.xxx_reporter,
-              ctx["pool"],
-          )
+      await xxx_report(
+          ctx.paths.dir_path(
+              cast(str, response.job.user_id), response.job.file_id
+          ),
+          response.task.field.id,
+          response.task.reservoir.id,
+          response.task.well,
+          _ofm(ctx.reporters.xxx, "xxx"),  # local reporter: ctx.reporters.xxx
+          ctx.process_pool,
+      )
+  ```
+
+  If the report composes a DB reporter with a per-job file reporter (wells/measurements), build the composite inline — see the `matrix`, `matbal`, `well_test` handlers:
+  ```python
+  reporter = complex_reporters.XxxReporter(
+      ctx.reporters.xxx,
+      file_reporters.XxxReporter(upload_dir, response.task.wells),
+  )
   ```
 
   If Excel templates are needed:
   ```python
   await xxx_report(
       ...
-      path_provider.data_dir / "xxx_template.xlsx",
+      ctx.paths.data_dir / "xxx_template.xlsx",
       ...
   )
   ```
 
-> **DAO context**: pick the right context manager from `ctx` based on data sources:
-> - `ctx["local_dao"]()` — PostgreSQL-only reports (e.g. `profile`, `inj_loss`, `matrix`)
-> - `ctx["ofm_dao"]()` — Oracle-only reports (e.g. `opp_per_year`, `fnv`, `matbal`, `owc_resp`)
-> - `ctx["ofm_local_dao"]()` — mixed reports (e.g. `well_test`)
-> - `ctx["ofm_redis_dao"]()`, `ctx["local_dao"]()`, etc. — for other combinations
+> **Data access**: the handler receives a typed `WorkerContext` (`app/core/context.py`) with `settings`, `csv`, `paths`, `sessions`, `reporters`, `process_pool`:
+> - **Pool-based reports** (most) — `ctx.reporters.<name>` (local) or `_ofm(ctx.reporters.<name>, "name")` (OFM; raises a clear error when Oracle is down).
+> - **Session-based loads/writes** — open `ctx.sessions.local_session()` / `ctx.sessions.ofm_session()` / `ctx.sessions.redis_conn()` explicitly and build the DAO inline (see `excel:*` and `database:*` handlers).
+> - **uneft** (OFM + Redis) — `async with _uneft(ctx) as uneft:` (defined in `arq.py`).
+>
+> `user_id` is nullable on `JobStamp` — use `cast(str, response.job.user_id)`; `file_id` is already `str`.
 
 ---
 
@@ -560,7 +574,7 @@ Iterative step. Common patterns:
 
 1. Place `.xlsx` template in `data_dir`
 2. Service — fill function `_fill_xxx(ws, df)` + call `_process_xxx`
-3. Entrypoint — pass `path_provider.data_dir / "template.xlsx"` to service
+3. Entrypoint — pass `ctx.paths.data_dir / "template.xlsx"` to service
 4. If >1 sheet — use `asyncio.TaskGroup` for parallel save
 
 ### Adding a new enum
@@ -601,14 +615,16 @@ class XxxMock(XxxReporter):
         }
 ```
 
-#### `tests/mocks/holder.py` — mock HolderDAO
+#### `tests/integration/conftest.py` — wire the mock into `Reporters`
 
-Add property:
+The `reporters` fixture builds a `Reporters` instance with real local reporters and mock OFM reporters. Replace the relevant field with your mock:
 
 ```python
-@property
-def xxx_reporter(self):
-    return XxxMock(self.kwargs["ofm_pool"])
+return Reporters(
+    ...
+    xxx=XxxMock(pool),
+    ...
+)
 ```
 
 #### `tests/fixtures/task_fixtures.py` — Schema + Task fixtures
@@ -694,10 +710,7 @@ Legend: ✚ create, ✎ edit.
 app/
 ├── api/
 │   ├── config/yaml/reports.yaml              ✎
-│   ├── endpoints/report.py                   ✎
-│   └── models/responses/
-│       ├── __init__.py                       ✎
-│       └── task.py                           ✎
+│   └── endpoints/report.py                   ✎
 ├── core/
 │   ├── models/
 │   │   ├── dto/
@@ -705,6 +718,9 @@ app/
 │   │   │   └── tasks/<report>.py             ✚
 │   │   ├── enums/
 │   │   │   └── report_name.py                ✎
+│   │   ├── responses/
+│   │   │   ├── __init__.py                   ✎
+│   │   │   └── task.py                       ✎
 │   │   └── schemas/
 │   │       ├── __init__.py                   ✎
 │   │       └── <report>_params.py            ✚
@@ -720,7 +736,7 @@ app/
 │   │   └── querysets/<report>/
 │   │       ├── __init__.py                   ✚
 │   │       └── properties.py                 ✚
-│   └── holder.py                             ✎
+│   └── reporters.py                          ✎
 ├── static/javascript/reports/load.js         ✎
 └── templates/reports/macros/forms.html       ✎
 
@@ -730,9 +746,9 @@ tests/
 │   ├── api/
 │   │   ├── conftest.py                       ✎
 │   │   └── test_reports.py                   ✎
+│   ├── conftest.py                           ✎
 │   └── test_reports.py                       ✎
 └── mocks/
-    ├── holder.py                             ✎
     └── reporters.py                          ✎
 ```
 
@@ -744,7 +760,7 @@ tests/
 - **DTOs inherit `TaskReport`**, not `TaskBase`. `TaskReport` provides `name: ReportName` and `filename_prefix` (default: `self.name.value`). Override `filename_prefix` for custom file naming (e.g. `TaskOwcResp` overrides it to `"{field}_{reservoir}_{well}"`).
 - **`ReportResponse`** (not `BaseResponse`) is used for all report response aliases. Its `propagate_prefix` validator copies `task.filename_prefix` → `job.prefix` → `file_id`.
 - **`OfmBaseDAO`** in `app/infrastructure/db/dao/sql/reporters/ofm.py` is the base class for OFM reporters. Study an existing reporter (e.g. `profile.py`, `matbal.py`) before implementing.
-- **`HolderDAO`** in `app/infrastructure/holder.py` is the service locator. Each reporter needs a `@property` here.
+- **`Reporters`** in `app/infrastructure/reporters.py` is the pre-built reporters container. Each reporter needs a field in the dataclass + wiring in `build_reporters`.
 - **Always read existing similar files before writing new ones** — mimic patterns for imports, naming, and structure.
 - **Frontend ID convention**: `{report.path}{Suffix}` where `Suffix` starts with uppercase, e.g. `owc_respFields`, `profileWell`.
 - Prefer `make_archive(str(path), "zip", root_dir=path)` for final output bundling.

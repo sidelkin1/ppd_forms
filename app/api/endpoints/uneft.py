@@ -5,11 +5,6 @@ from fastapi import APIRouter
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import JobDep, NewJobDep
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import (
-    FieldsResponse,
-    ReservoirsResponse,
-    WellsResponse,
-)
 from app.api.utils.validators import check_field_exists
 from app.core.models.dto import (
     TaskFields,
@@ -20,6 +15,11 @@ from app.core.models.dto import (
     UneftWellDB,
 )
 from app.core.models.enums import UneftAssets, WellStock
+from app.core.models.responses import (
+    FieldsResponse,
+    ReservoirsResponse,
+    WellsResponse,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/uneft", tags=["uneft"])

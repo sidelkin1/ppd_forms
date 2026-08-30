@@ -6,8 +6,8 @@ from fastapi import Depends
 
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import JobResponse
 from app.core.models.dto import JobStamp
+from app.core.models.responses import JobResponse
 
 
 def get_new_job() -> JobStamp:

@@ -1,90 +1,116 @@
-from contextlib import asynccontextmanager
-
 from app.common.config.models.paths import Paths
 from app.core.services import init_db
-from app.infrastructure.provider import DbProvider
+from app.infrastructure.db.dao import local
+from app.infrastructure.db.dao.complex import initializers
+from app.infrastructure.files.dao import csv
+from app.infrastructure.sessions import Sessions
 
 
-async def init_field_replace(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.field_replace
-    ) as holder:
-        await init_db.init_field_replace(holder.field_replace_initializer)
+async def init_field_replace(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
+        await init_db.init_field_replace(
+            initializers.FieldReplaceInitializer(
+                csv.FieldReplaceDAO(paths.field_replace),
+                local.FieldReplaceDAO(session),
+            )
+        )
 
 
-async def init_reservoir_replace(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.reservoir_replace
-    ) as holder:
+async def init_reservoir_replace(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
         await init_db.init_reservoir_replace(
-            holder.reservoir_replace_initializer
+            initializers.ReservoirReplaceInitializer(
+                csv.ReservoirReplaceDAO(paths.reservoir_replace),
+                local.ReservoirReplaceDAO(session),
+            )
         )
 
 
-async def init_layer_replace(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.layer_replace
-    ) as holder:
-        await init_db.init_layer_replace(holder.layer_replace_initializer)
+async def init_layer_replace(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
+        await init_db.init_layer_replace(
+            initializers.LayerReplaceInitializer(
+                csv.LayerReplaceDAO(paths.layer_replace),
+                local.LayerReplaceDAO(session),
+            )
+        )
 
 
-async def init_gtm_replace(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.gtm_replace
-    ) as holder:
-        await init_db.init_gtm_replace(holder.gtm_replace_initializer)
+async def init_gtm_replace(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
+        await init_db.init_gtm_replace(
+            initializers.GtmReplaceInitializer(
+                csv.GtmReplaceDAO(paths.gtm_replace),
+                local.GtmReplaceDAO(session),
+            )
+        )
 
 
-async def init_monthly_report(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.monthly_report
-    ) as holder:
-        await init_db.init_monthly_report(holder.monthly_report_initializer)
+async def init_monthly_report(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
+        await init_db.init_monthly_report(
+            initializers.MonthlyReportInitializer(
+                csv.MonthlyReportDAO(paths.monthly_report),
+                local.MonthlyReportDAO(session),
+            )
+        )
 
 
-async def init_well_profile(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.well_profile
-    ) as holder:
-        await init_db.init_well_profile(holder.well_profile_initializer)
+async def init_well_profile(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
+        await init_db.init_well_profile(
+            initializers.WellProfileInitializer(
+                csv.WellProfileDAO(paths.well_profile),
+                local.WellProfileDAO(session),
+            )
+        )
 
 
-async def init_inj_well_database(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.inj_well_database
-    ) as holder:
+async def init_inj_well_database(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
         await init_db.init_inj_well_database(
-            holder.inj_well_database_initializer
+            initializers.InjWellDatabaseInitializer(
+                csv.InjWellDatabaseDAO(paths.inj_well_database),
+                local.InjWellDatabaseDAO(session),
+            )
         )
 
 
-async def init_neighborhood(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.neighborhood
-    ) as holder:
-        await init_db.init_neighborhood(holder.neighborhood_initializer)
+async def init_neighborhood(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
+        await init_db.init_neighborhood(
+            initializers.NeighborhoodInitializer(
+                csv.NeighborhoodDAO(paths.neighborhood),
+                local.NeighborhoodDAO(session),
+            )
+        )
 
 
-async def init_new_strategy_inj(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.new_strategy_inj
-    ) as holder:
+async def init_new_strategy_inj(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
         await init_db.init_new_strategy_inj(
-            holder.new_strategy_inj_initializer
+            initializers.NewStrategyInjInitializer(
+                csv.NewStrategyInjDAO(paths.new_strategy_inj),
+                local.NewStrategyInjDAO(session),
+            )
         )
 
 
-async def init_new_strategy_oil(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.new_strategy_oil
-    ) as holder:
+async def init_new_strategy_oil(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
         await init_db.init_new_strategy_oil(
-            holder.new_strategy_oil_initializer
+            initializers.NewStrategyOilInitializer(
+                csv.NewStrategyOilDAO(paths.new_strategy_oil),
+                local.NewStrategyOilDAO(session),
+            )
         )
 
 
-async def init_well_test(provider: DbProvider, paths: Paths) -> None:
-    async with asynccontextmanager(provider.local_dao)(
-        file_path=paths.well_test
-    ) as holder:
-        await init_db.init_well_test(holder.well_test_initializer)
+async def init_well_test(sessions: Sessions, paths: Paths) -> None:
+    async with sessions.local_session() as session:
+        await init_db.init_well_test(
+            initializers.WellTestInitializer(
+                csv.WellTestDAO(paths.well_test),
+                local.WellTestDAO(session),
+            )
+        )

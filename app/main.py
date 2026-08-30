@@ -1,5 +1,7 @@
 import logging
 import mimetypes
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
@@ -13,11 +15,14 @@ from app.core.config.main import get_app_settings
 from app.infrastructure.db.config.main import get_postgres_settings
 from app.infrastructure.db.config.models.local import PostgresSettings
 from app.infrastructure.db.factories.local import (
-    create_pool as create_local_pool,
+    create_engine as create_local_engine,
 )
-from app.infrastructure.provider import DbProvider
+from app.infrastructure.db.factories.local import (
+    create_session_maker as create_local_session_maker,
+)
 from app.infrastructure.redis.config.main import get_redis_settings
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
+from app.infrastructure.sessions import Sessions
 from app.initial_data import initialize_mapper
 
 mimetypes.add_type("font/woff2", ".woff2")
@@ -27,22 +32,41 @@ logger = logging.getLogger(__name__)
 
 
 async def init_mapper(settings: PostgresSettings) -> None:
-    pool = create_local_pool(settings)
-    provider = DbProvider(local_pool=pool)
-    await initialize_mapper(provider)
+    """Инициализирует мапперы во временном пуле и освобождает его.
+
+    Web-процесс не использует `Sessions` для обработки запросов, поэтому
+    пул здесь одноразовый: создали -> загрузили мапперы -> dispose.
+    """
+    sessions = Sessions.create(local_settings=settings)
+    try:
+        await initialize_mapper(sessions)
+    finally:
+        await sessions.dispose()
 
 
 def init_api() -> FastAPI:
     postgres_config = get_postgres_settings()
-    pool = create_local_pool(postgres_config)
+    engine = create_local_engine(postgres_config)
+    pool = create_local_session_maker(engine)
     redis_config = get_redis_settings()
     redis = create_redis_pool(redis_config)
     app_config = get_app_settings()
     paths = get_paths()
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+        logger.info("App started")
+        yield
+        # Redis-maker не требует закрытия: соединение открывается
+        # на каждый запрос и закрывается в RedisProvider.dao().
+        await engine.dispose()
+        logger.info("App stopped")
+
     app = FastAPI(
         title=app_config.title,
         description=app_config.description,
         root_path=app_config.root_path,
+        lifespan=lifespan,
     )
     add_pagination(app)
     endpoints.setup(app)

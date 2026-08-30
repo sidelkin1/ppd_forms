@@ -152,15 +152,12 @@ disable_error_code = ["attr-defined"]
 [[tool.mypy.overrides]]
 module = [
     "tests.*",
-    "app.core.services.entrypoints.db",
-    "app.infrastructure.holder",
     "app.infrastructure.redis.dao.arq",
 ]
 disable_error_code = ["union-attr", "arg-type"]
 
 [[tool.mypy.overrides]]
 module = [
-    "app.infrastructure.provider",
     "app.infrastructure.db.models.local.inj_well_database",
     "app.infrastructure.db.models.local.monthly_report",
     "app.infrastructure.db.models.local.neighborhood",

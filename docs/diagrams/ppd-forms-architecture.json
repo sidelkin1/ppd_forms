@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Архитектура PPD Forms",
+    "output": "ppd-forms-architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1340, 708],
+    "repository": {
+      "url": "https://github.com/sidelkin1/ppd_forms.git",
+      "revision": "c479e0c6cb42f0d1cd9ce1931421354de2492b21"
+    },
+    "views": [
+      {
+        "id": "main-path",
+        "label": "Основной путь",
+        "focus": ["user", "web", "redis", "worker"],
+        "note": "Запрос от пользователя до генерации отчёта через очередь arq."
+      },
+      {
+        "id": "data-stores",
+        "label": "Источники данных",
+        "focus": ["worker", "postgres", "oracle", "files"],
+        "note": "Локальная БД PostgreSQL, OFM Oracle и файловое хранилище отчётов."
+      },
+      {
+        "id": "delivery",
+        "label": "Доставка отчёта",
+        "focus": ["user", "web", "files", "worker"],
+        "note": "Готовый файл отдаётся пользователю через FileResponse."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "Пользователь",
+      "sublabel": "Браузер",
+      "pos": [40, 360],
+      "size": [130, 64]
+    },
+    {
+      "id": "web",
+      "type": "backend",
+      "label": "FastAPI Web",
+      "sublabel": "app/main.py · :8000",
+      "pos": [270, 340],
+      "size": [160, 72],
+      "sources": [
+        { "path": "app/main.py", "line": 31 },
+        { "path": "app/api/endpoints/report.py", "line": 53 }
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth",
+      "sublabel": "JWT · OAuth2 · LDAP",
+      "pos": [270, 130],
+      "size": [160, 64],
+      "sources": [
+        { "path": "app/api/config/models/auth.py", "line": 1 },
+        { "path": "app/api/config/models/ldap.py", "line": 1 }
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "messagebus",
+      "label": "Redis",
+      "sublabel": "очередь arq · статусы · кэш",
+      "pos": [520, 340],
+      "size": [160, 72],
+      "sources": [
+        { "path": "app/infrastructure/redis/dao/arq.py", "line": 1 },
+        { "path": "app/worker.py", "line": 63 }
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Worker (arq)",
+      "sublabel": "app/worker.py",
+      "pos": [770, 340],
+      "size": [160, 72],
+      "sources": [
+        { "path": "app/worker.py", "line": 44 },
+        { "path": "app/worker.py", "line": 91 }
+      ]
+    },
+    {
+      "id": "registry",
+      "type": "backend",
+      "label": "WorkRegistry",
+      "sublabel": "route_url → handler",
+      "pos": [770, 560],
+      "size": [160, 60],
+      "sources": [
+        { "path": "app/core/services/entrypoints/registry.py", "line": 6 },
+        { "path": "app/core/services/entrypoints/arq.py", "line": 45 }
+      ]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "локальная БД · async SQLAlchemy",
+      "pos": [1030, 150],
+      "size": [160, 64],
+      "sources": [
+        { "path": "app/infrastructure/db/dao/local/base.py", "line": 1 },
+        { "path": "app/infrastructure/db/models/local/__init__.py", "line": 1 }
+      ]
+    },
+    {
+      "id": "oracle",
+      "type": "database",
+      "label": "Oracle OFM",
+      "sublabel": "sync oracledb · reflected",
+      "pos": [1030, 340],
+      "size": [160, 64],
+      "sources": [
+        { "path": "app/infrastructure/db/dao/sql/ofm/base.py", "line": 1 }
+      ]
+    },
+    {
+      "id": "files",
+      "type": "cloud",
+      "label": "Файлы",
+      "sublabel": "CSV · Excel · шаблоны",
+      "pos": [1030, 530],
+      "size": [160, 64],
+      "sources": [
+        { "path": "app/infrastructure/files/dao/csv/__init__.py", "line": 1 },
+        { "path": "app/infrastructure/files/dao/excel/__init__.py", "line": 1 }
+      ]
+    }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Web — FastAPI :8000", "wraps": ["web", "auth"] },
+    { "kind": "region", "label": "Worker — arq", "wraps": ["worker", "registry"] }
+  ],
+  "connections": [
+    { "id": "user-to-web", "from": "user", "to": "web", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "auth-to-web", "from": "auth", "to": "web", "label": "проверка JWT", "variant": "security", "labelDy": 24 },
+    { "id": "web-to-redis", "from": "web", "to": "redis", "label": "enqueue_task", "variant": "dashed" },
+    { "id": "redis-to-worker", "from": "redis", "to": "worker", "label": "jobs" },
+    { "id": "worker-to-registry", "from": "worker", "to": "registry", "label": "dispatch", "labelDy": 24 },
+    { "id": "worker-to-postgres", "from": "worker", "to": "postgres", "label": "async SQL", "fromSide": "right", "toSide": "top" },
+    { "id": "worker-to-oracle", "from": "worker", "to": "oracle", "label": "sync SQL · OFM", "fromSide": "right", "toSide": "left", "labelDy": 14 },
+    { "id": "worker-to-files", "from": "worker", "to": "files", "label": "запись CSV/Excel" },
+    { "id": "files-to-web", "from": "files", "to": "web", "label": "скачивание (FileResponse)", "variant": "dashed", "fromSide": "bottom", "toSide": "bottom", "via": [[1110, 700], [350, 700]] }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Презентация (app/api)",
+      "items": [
+        "REST + WebSocket: /reports, /jobs",
+        "Auth: JWT / OAuth2 / LDAP",
+        "Скачивание: GET /reports/{file_id}/{ext}"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Обработка задач (Worker)",
+      "items": [
+        "arq: WorkRegistry[route_url] → handler",
+        "Cron: refresh MER/OPP, clean files",
+        "ProcessPoolManager для CPU-задач"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Данные и механизмы",
+      "items": [
+        "PostgreSQL: async SQLAlchemy 2.0",
+        "Oracle OFM: sync oracledb, reflected",
+        "HolderDAO / DbProvider / Mappers"
+      ]
+    }
+  ]
+}

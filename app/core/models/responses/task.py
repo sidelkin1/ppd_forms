@@ -2,9 +2,9 @@ from typing import Self, TypeVar
 
 from pydantic import model_validator
 
-from app.api.models.responses.base import BaseResponse
 from app.core.models import dto
 from app.core.models.dto.tasks.report import TaskReport
+from app.core.models.responses.base import BaseResponse
 
 RT = TypeVar("RT", bound=TaskReport)
 

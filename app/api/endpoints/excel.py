@@ -1,14 +1,14 @@
 from fastapi import APIRouter, UploadFile, status
 
 from app.api.dependencies.auth import UserDep
-from app.api.dependencies.db import HolderDep
+from app.api.dependencies.db import DbSessionDep
 from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import ExcelResponse
 from app.api.utils.upload_file import save_upload_file
 from app.core.models.dto import TaskExcel
 from app.core.models.enums import ExcelTableName, LoadMode
+from app.core.models.responses import ExcelResponse
 from app.core.models.schemas import ExcelPath
 from app.core.services.date_range import date_range
 
@@ -42,6 +42,8 @@ async def load_database(
 
 
 @router.get("/{table}", response_model=dict)
-async def get_dates(table: ExcelTableName, holder: HolderDep, user: UserDep):
-    min_date, max_date = await date_range(table, holder)
+async def get_dates(
+    table: ExcelTableName, session: DbSessionDep, user: UserDep
+):
+    min_date, max_date = await date_range(table, session)
     return {"min_date": min_date, "max_date": max_date}

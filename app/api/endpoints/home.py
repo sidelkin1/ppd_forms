@@ -28,7 +28,7 @@ async def home(request: Request):
 async def reports(request: Request, user: UserOrNoneDep, path: PathDep):
     if user is None:
         return build_redirect_response(request, "login_page")
-    config = read_config(path.report_config_file)
+    config = read_config(path.report_config)
     groups = config["groups"]
     report_groups = sorted(
         [(name, data) for name, data in groups.items()],
@@ -50,7 +50,7 @@ async def reports(request: Request, user: UserOrNoneDep, path: PathDep):
 async def tables(request: Request, user: UserOrNoneDep, path: PathDep):
     if user is None:
         return build_redirect_response(request, "login_page")
-    config = read_config(path.table_config_file)
+    config = read_config(path.table_config)
     groups = config["groups"]
     table_groups = sorted(
         [(name, data) for name, data in groups.items()],
@@ -132,7 +132,7 @@ async def results(
     responses = await redis.get_scheduled_tasks(
         user.username, task_id=TaskId.report
     )
-    reports = read_config(path.report_config_file)
+    reports = read_config(path.report_config)
     report_title = {
         report["path"]: report["title"] for report in reports["items"]
     }

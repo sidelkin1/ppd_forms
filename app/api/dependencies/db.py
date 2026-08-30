@@ -4,20 +4,20 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.infrastructure.holder import HolderDAO
 
-
-def dao_provider() -> HolderDAO:
+def session_provider() -> AsyncSession:
     raise NotImplementedError
 
 
-class DbProvider:
+class SessionProvider:
+    """Единственная обязанность: выдать AsyncSession из пула."""
+
     def __init__(self, pool: async_sessionmaker[AsyncSession]) -> None:
         self.pool = pool
 
-    async def dao(self) -> AsyncGenerator[HolderDAO, None]:
+    async def session(self) -> AsyncGenerator[AsyncSession, None]:
         async with self.pool() as session:
-            yield HolderDAO(local_session=session)
+            yield session
 
 
-HolderDep = Annotated[HolderDAO, Depends(dao_provider)]
+DbSessionDep = Annotated[AsyncSession, Depends(session_provider)]

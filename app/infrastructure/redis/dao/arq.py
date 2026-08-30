@@ -5,8 +5,8 @@ import structlog
 from arq import ArqRedis
 from arq.jobs import Job
 
-from app.api.models.responses import BaseResponse, JobResponse
 from app.core.models.enums.task_id import TaskId
+from app.core.models.responses import BaseResponse, JobResponse
 from app.infrastructure.redis.dao.job import ScheduledJobsDAO
 
 

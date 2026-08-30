@@ -1,6 +1,5 @@
 import logging
 import os
-from contextlib import asynccontextmanager
 from typing import Any, cast
 
 import structlog
@@ -8,10 +7,10 @@ from arq import cron
 from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
-from app.api.dependencies.path import PathProvider
-from app.api.models.responses import BaseResponse
 from app.common.config.models.paths import Paths
 from app.core.config.main import get_app_settings
+from app.core.context import WorkerContext
+from app.core.models.responses import BaseResponse
 from app.core.services.cron.clean_files import cron_clean_files
 from app.core.services.cron.refresh_table import (
     cron_refresh_mer,
@@ -23,17 +22,13 @@ from app.infrastructure.db.config.main import (
     get_oracle_settings,
     get_postgres_settings,
 )
-from app.infrastructure.db.factories.local import (
-    create_pool as create_local_pool,
-)
-from app.infrastructure.db.factories.ofm import create_pool as create_ofm_pool
 from app.infrastructure.db.models import ofm
 from app.infrastructure.files.config.main import get_csv_settings
 from app.infrastructure.log.config.main import get_log_settings
 from app.infrastructure.log.main import configure_logging
-from app.infrastructure.provider import DbProvider
 from app.infrastructure.redis.config.main import get_redis_settings
-from app.infrastructure.redis.factory import create_pool as create_redis_pool
+from app.infrastructure.reporters import build_reporters
+from app.infrastructure.sessions import Sessions
 from app.initial_data import initialize_mapper
 
 load_dotenv()
@@ -48,43 +43,37 @@ async def perform_work(
     logger.info(
         "Started job", extra={"task": response.task, "job": response.job}
     )
-    return await registry[response.task.route_url](response, ctx)
+    app: WorkerContext = ctx["app"]
+    handler = registry.handler(response.task.route_url)
+    return await handler(response, app)
 
 
 async def startup(ctx: dict[str, Any]) -> None:
     log_config = get_log_settings()
     configure_logging(log_config)
-    postgres_config = get_postgres_settings()
-    local_pool = create_local_pool(postgres_config)
     oracle_config = get_oracle_settings()
-    ofm_pool = (
-        create_ofm_pool(oracle_config) if ofm.setup(oracle_config) else None
+    sessions = Sessions.create(
+        local_settings=get_postgres_settings(),
+        ofm_settings=oracle_config if ofm.setup(oracle_config) else None,
+        redis_settings=get_redis_settings(),
     )
-    redis_config = get_redis_settings()
-    redis_pool = create_redis_pool(redis_config)
-    provider = DbProvider(
-        local_pool=local_pool, ofm_pool=ofm_pool, redis_pool=redis_pool
-    )
-    paths = Paths()
     app_config = get_app_settings()
-    ctx["app_config"] = app_config
-    ctx["csv_config"] = get_csv_settings()
-    ctx["provider"] = provider
-    ctx["path_provider"] = PathProvider(paths)
-    ctx["pool"] = ProcessPoolManager(max_workers=app_config.max_workers)
-    ctx["local_dao"] = asynccontextmanager(provider.local_dao)
-    ctx["ofm_dao"] = asynccontextmanager(provider.ofm_dao)
-    ctx["ofm_local_dao"] = asynccontextmanager(provider.ofm_local_dao)
-    ctx["ofm_redis_dao"] = asynccontextmanager(provider.ofm_redis_dao)
-    await initialize_mapper(provider)
+    ctx["app"] = WorkerContext(
+        settings=app_config,
+        csv=get_csv_settings(),
+        paths=Paths(),
+        sessions=sessions,
+        reporters=build_reporters(sessions),
+        process_pool=ProcessPoolManager(max_workers=app_config.max_workers),
+    )
+    await initialize_mapper(sessions)
     logger.info("worker prepared")
 
 
 async def shutdown(ctx: dict[str, Any]) -> None:
-    if pool := cast(ProcessPoolManager, ctx.get("pool")):
-        pool.close()
-    if provider := cast(DbProvider, ctx.get("provider")):
-        await provider.dispose()
+    if app := cast(WorkerContext | None, ctx.get("app")):
+        app.process_pool.close()
+        await app.sessions.dispose()
     logger.info("worker closed")
 
 

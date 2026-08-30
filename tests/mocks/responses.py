@@ -1,8 +1,8 @@
 from typing import Self
 
-from app.api.models.responses import BaseResponse
 from app.core.models.dto import JobStamp, TaskBase
 from app.core.models.enums import TaskId
+from app.core.models.responses import BaseResponse
 
 
 class TaskTest(TaskBase, task_id=TaskId.report):

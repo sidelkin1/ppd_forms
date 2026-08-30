@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.api.dependencies.auth import UserDep
-from app.api.dependencies.db import HolderDep
+from app.api.dependencies.db import DbSessionDep
 from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import DatabaseResponse
 from app.core.models.dto import TaskDatabase
 from app.core.models.enums import LoadMode, OfmTableName
+from app.core.models.responses import DatabaseResponse
 from app.core.models.schemas import DateRange
 from app.core.services.date_range import date_range
 
@@ -47,6 +47,6 @@ async def load_database(
 
 
 @router.get("/{table}", response_model=dict)
-async def get_dates(table: OfmTableName, holder: HolderDep, user: UserDep):
-    min_date, max_date = await date_range(table, holder)
+async def get_dates(table: OfmTableName, session: DbSessionDep, user: UserDep):
+    min_date, max_date = await date_range(table, session)
     return {"min_date": min_date, "max_date": max_date}

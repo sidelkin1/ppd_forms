@@ -5,21 +5,6 @@ from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import (
-    CompensationResponse,
-    FnvResponse,
-    InjLossResponse,
-    MatbalResponse,
-    MatrixResponse,
-    MmbResponse,
-    OilLossResponse,
-    OppPerYearResponse,
-    OwcRespResponse,
-    ProfileResponse,
-    ProlongResponse,
-    ReportResponse,
-    WellTestResponse,
-)
 from app.api.utils.validators import check_file_exists
 from app.core.models.dto import (
     TaskCompensation,
@@ -37,6 +22,21 @@ from app.core.models.dto import (
     TaskWellTest,
 )
 from app.core.models.enums import FileExtension, LossMode, ReportName
+from app.core.models.responses import (
+    CompensationResponse,
+    FnvResponse,
+    InjLossResponse,
+    MatbalResponse,
+    MatrixResponse,
+    MmbResponse,
+    OilLossResponse,
+    OppPerYearResponse,
+    OwcRespResponse,
+    ProfileResponse,
+    ProlongResponse,
+    ReportResponse,
+    WellTestResponse,
+)
 from app.core.models.schemas import (
     DateRange,
     FnvParams,

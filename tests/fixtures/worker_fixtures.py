@@ -4,14 +4,15 @@ from typing import Any, cast
 import pytest
 from arq.worker import Function, func
 
-from app.api.models.responses import (
+from app.core.models.dto import TaskBase
+from app.core.models.responses import (
     BaseResponse,
     FieldsResponse,
     ReservoirsResponse,
 )
-from app.core.models.dto import TaskBase
 from app.core.services.uneft import uneft_fields, uneft_reservoirs
-from app.infrastructure.holder import HolderDAO
+from app.infrastructure.db.dao.complex.uneft import UneftDAO
+from tests.mocks.uneft import FieldListMock, ReservoirListMock, WellListMock
 
 
 @pytest.fixture
@@ -45,7 +46,11 @@ def work_long() -> Function:
 
 
 @pytest.fixture
-def work_uneft(holder: HolderDAO) -> Function:
+def work_uneft() -> Function:
+    uneft = UneftDAO(
+        FieldListMock(None), ReservoirListMock(None), WellListMock(None)
+    )
+
     async def perform_work(
         ctx: dict[str, Any],
         response: FieldsResponse | ReservoirsResponse,
@@ -55,13 +60,11 @@ def work_uneft(holder: HolderDAO) -> Function:
             case "uneft:fields":
                 response = cast(FieldsResponse, response)
                 return await uneft_fields(
-                    response.task.stock, response.task.field_id, holder.uneft
+                    response.task.stock, response.task.field_id, uneft
                 )
             case "uneft:reservoirs":
                 response = cast(ReservoirsResponse, response)
-                return await uneft_reservoirs(
-                    response.task.field_id, holder.uneft
-                )
+                return await uneft_reservoirs(response.task.field_id, uneft)
         raise ValueError("Unknown job!")
 
     return func(perform_work, name="perform_work")

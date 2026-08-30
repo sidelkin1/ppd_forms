@@ -1,5 +1,5 @@
 from collections.abc import AsyncGenerator, Callable
-from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from typing import TypeVar
 
 from arq import ArqRedis
@@ -9,7 +9,7 @@ from arq.connections import RedisSettings as ArqRedisSettings
 from app.infrastructure.redis.config.main import RedisSettings
 
 T = TypeVar("T")
-redismaker = Callable[[], _AsyncGeneratorContextManager[T]]
+redismaker = Callable[[], AbstractAsyncContextManager[T]]
 
 
 def create_redis_maker(

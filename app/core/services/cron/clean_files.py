@@ -5,14 +5,14 @@ import aioshutil
 import anyio
 from colorama import Fore
 
-from app.api.dependencies.path import PathProvider
+from app.core.context import WorkerContext
 
 logger = logging.getLogger(__name__)
 
 
 async def cron_clean_files(ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    file_dir = anyio.Path(path_provider.file_dir)
+    app: WorkerContext = ctx["app"]
+    file_dir = anyio.Path(app.paths.file_dir)
     logger.info("Trying to clean %s%s", Fore.YELLOW, file_dir)
     async for child in file_dir.iterdir():
         if child.name == ".gitkeep":

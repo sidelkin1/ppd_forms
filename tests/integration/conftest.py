@@ -10,6 +10,7 @@ from arq import create_pool as create_redis
 from arq.connections import ArqRedis
 from arq.connections import RedisSettings as ArqRedisSettings
 from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
@@ -22,40 +23,70 @@ from testcontainers.redis import RedisContainer
 from app.common.config.models.paths import Paths
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.config.models.local import PostgresSettings
-from app.infrastructure.holder import HolderDAO
-from app.infrastructure.provider import DbProvider
+from app.infrastructure.db.dao.sql.reporters import (
+    FirstRateInjLossReporter,
+    FirstRateOilLossReporter,
+    LocalWellTestReporter,
+    MatrixReporter,
+    MaxRateInjLossReporter,
+    MaxRateOilLossReporter,
+    WellProfileReporter,
+)
 from app.infrastructure.redis.config.main import RedisSettings
+from app.infrastructure.reporters import Reporters
+from app.infrastructure.sessions import Sessions
 from app.initial_data import (
     initialize_all,
     initialize_mapper,
     initialize_replace,
 )
-from tests.mocks.holder import HolderMock
+from tests.mocks.reporters import FnvMock, OppPerYearMock, OwcRespMock
 
 logger = logging.getLogger(__name__)
 
 
 @pytest_asyncio.fixture
-async def holder(session: AsyncSession) -> HolderDAO:
-    return HolderMock(
-        local_session=session,
-        file_path=None,
-        ofm_session=None,
-        ofm_pool=None,
-        path=None,
-        wells=None,
+async def session(pool: sessionmaker) -> AsyncGenerator[AsyncSession, None]:
+    async with pool() as session_:
+        yield session_
+
+
+@pytest.fixture(scope="session")
+def engine(postgres_url: str) -> Generator[AsyncEngine, None, None]:
+    engine_ = create_async_engine(
+        url=postgres_url,
+        poolclass=NullPool,  # FIXME workaround for pytest-asyncio==0.23.3
     )
+    yield engine_
+    close_all_sessions()
 
 
-@pytest_asyncio.fixture(scope="session")
-async def pool_holder(pool: sessionmaker) -> HolderDAO:
-    return HolderMock(
-        local_pool=pool,
-        file_path=None,
-        ofm_session=None,
-        ofm_pool=None,
-        path=None,
-        wells=None,
+@pytest.fixture(scope="session")
+def pool(engine: AsyncEngine) -> Generator[sessionmaker, None, None]:
+    pool_: async_sessionmaker[AsyncSession] = async_sessionmaker(
+        bind=engine, expire_on_commit=False, autoflush=False
+    )
+    yield pool_  # type: ignore[misc]
+
+
+@pytest.fixture(scope="session")
+def reporters(pool: sessionmaker) -> Reporters:
+    return Reporters(
+        profile=WellProfileReporter(pool),
+        first_rate_inj_loss=FirstRateInjLossReporter(pool),
+        max_rate_inj_loss=MaxRateInjLossReporter(pool),
+        first_rate_oil_loss=FirstRateOilLossReporter(pool),
+        max_rate_oil_loss=MaxRateOilLossReporter(pool),
+        matrix=MatrixReporter(pool),
+        well_test_local=LocalWellTestReporter(pool),
+        opp_per_year=OppPerYearMock(pool),
+        fnv=FnvMock(pool),
+        matbal=None,
+        mmb=None,
+        mmb_alt=None,
+        owc_resp=OwcRespMock(pool),
+        compensation=None,
+        well_test_ofm=None,
     )
 
 
@@ -66,28 +97,9 @@ def process_pool() -> Generator[ProcessPoolManager, None, None]:
     pool.close()
 
 
-@pytest_asyncio.fixture
-async def session(pool: sessionmaker) -> AsyncGenerator[AsyncSession, None]:
-    async with pool() as session_:
-        yield session_
-
-
-@pytest.fixture(scope="session")
-def pool(postgres_url: str) -> Generator[sessionmaker, None, None]:
-    engine = create_async_engine(
-        url=postgres_url,
-        poolclass=NullPool,  # FIXME workaround for pytest-asyncio==0.23.3
-    )
-    pool_: async_sessionmaker[AsyncSession] = async_sessionmaker(
-        bind=engine, expire_on_commit=False, autoflush=False
-    )
-    yield pool_  # type: ignore[misc]
-    close_all_sessions()
-
-
 @pytest.fixture(scope="session")
 def postgres_url() -> Generator[str, None, None]:
-    postgres = PostgresContainer("postgres:latest")
+    postgres = PostgresContainer("postgres:15.7-alpine")
     if (
         os.name == "nt"
     ):  # TODO workaround from testcontainers/testcontainers-python#108
@@ -115,7 +127,7 @@ async def arq_redis(
 
 @pytest.fixture(scope="session")
 def arq_settings() -> Generator[ArqRedisSettings, None, None]:
-    redis_container = RedisContainer("redis:latest")
+    redis_container = RedisContainer("redis:7.0.15-alpine")
     if (
         os.name == "nt"
     ):  # TODO workaround from testcontainers/testcontainers-python#108
@@ -160,9 +172,12 @@ def upgrade_schema_db(alembic_config: AlembicConfig) -> None:
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def initialize_db(
-    upgrade_schema_db, pool: sessionmaker, paths: Paths
+    upgrade_schema_db,
+    engine: AsyncEngine,
+    pool: sessionmaker,
+    paths: Paths,
 ) -> None:
-    provider = DbProvider(local_pool=pool)
-    await initialize_replace(provider, paths)
-    await initialize_mapper(provider)
-    await initialize_all(provider, paths)
+    sessions = Sessions(local=pool, local_engine=engine)
+    await initialize_replace(sessions, paths)
+    await initialize_mapper(sessions)
+    await initialize_all(sessions, paths)

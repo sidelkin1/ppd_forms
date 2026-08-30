@@ -1,7 +1,12 @@
-from typing import Any, cast
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import TypeVar, cast
 
-from app.api.dependencies.path import PathProvider
-from app.api.models.responses import (
+from app.core.config.main import get_mmb_settings
+from app.core.context import WorkerContext
+from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
+from app.core.models.responses import (
     CompensationResponse,
     DatabaseResponse,
     ExcelResponse,
@@ -20,9 +25,6 @@ from app.api.models.responses import (
     WellsResponse,
     WellTestResponse,
 )
-from app.core.config.main import get_mmb_settings
-from app.core.config.models.app import AppSettings
-from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.reports import (
     compensation_report,
@@ -39,479 +41,445 @@ from app.core.services.reports import (
     well_test_report,
 )
 from app.core.services.uneft import uneft_fields, uneft_reservoirs, uneft_wells
-from app.infrastructure.files.config.models.csv import CsvSettings
-from app.infrastructure.holder import HolderDAO
+from app.infrastructure.db.dao.complex import loaders
+from app.infrastructure.db.dao.complex import reporters as complex_reporters
+from app.infrastructure.db.dao.complex.uneft import UneftDAO
+from app.infrastructure.db.dao.sql import ofm
+from app.infrastructure.files.dao import excel
+from app.infrastructure.files.dao import reporters as file_reporters
 
 registry = WorkRegistry()
 
+T = TypeVar("T")
+
+
+def _upload_path(ctx: WorkerContext, response: ExcelResponse) -> Path:
+    return (
+        ctx.paths.upload_dir(cast(str, response.job.user_id))
+        / response.task.file
+    )
+
+
+def _ofm(reporter: T | None, name: str) -> T:
+    if reporter is None:
+        raise RuntimeError(f"OFM (Oracle) недоступен: {name}")
+    return reporter
+
+
+@asynccontextmanager
+async def _uneft(ctx: WorkerContext) -> AsyncGenerator[UneftDAO, None]:
+    with ctx.sessions.ofm_session() as session:
+        async with ctx.sessions.redis_conn() as redis:
+            yield UneftDAO(
+                ofm.FieldListDAO(session, redis, ctx.settings.keep_result),
+                ofm.ReservoirListDAO(session, redis, ctx.settings.keep_result),
+                ofm.WellListDAO(session, redis, ctx.settings.keep_result),
+            )
+
 
 @registry.add("excel:ns_ppd:refresh")
-async def refresh_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    app_config: AppSettings = ctx["app_config"]
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](
-        file_path=path, delimiter=app_config.delimiter
-    ) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.new_strategy_inj_loader.refresh()
+async def refresh_ns_ppd(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.new_strategy_inj_loader(ctx.settings.delimiter)(
+            session, _upload_path(ctx, response)
+        )
+        await loader.refresh()
 
 
 @registry.add("excel:ns_ppd:reload")
-async def reload_ns_ppd(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    app_config: AppSettings = ctx["app_config"]
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](
-        file_path=path, delimiter=app_config.delimiter
-    ) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.new_strategy_inj_loader.reload()
+async def reload_ns_ppd(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.new_strategy_inj_loader(ctx.settings.delimiter)(
+            session, _upload_path(ctx, response)
+        )
+        await loader.reload()
 
 
 @registry.add("excel:ns_oil:refresh")
-async def refresh_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.new_strategy_oil_loader.refresh()
+async def refresh_ns_oil(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.new_strategy_oil_loader(
+            session, _upload_path(ctx, response)
+        )
+        await loader.refresh()
 
 
 @registry.add("excel:ns_oil:reload")
-async def reload_ns_oil(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.new_strategy_oil_loader.reload()
+async def reload_ns_oil(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.new_strategy_oil_loader(
+            session, _upload_path(ctx, response)
+        )
+        await loader.reload()
 
 
 @registry.add("excel:inj_db:refresh")
-async def refresh_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.inj_well_database_loader.refresh()
+async def refresh_inj_db(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.inj_well_database_loader(
+            session, _upload_path(ctx, response)
+        )
+        await loader.refresh()
 
 
 @registry.add("excel:inj_db:reload")
-async def reload_inj_db(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.inj_well_database_loader.reload()
+async def reload_inj_db(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.inj_well_database_loader(
+            session, _upload_path(ctx, response)
+        )
+        await loader.reload()
 
 
 @registry.add("excel:neighbs:refresh")
-async def refresh_neighbs(
-    response: ExcelResponse, ctx: dict[str, Any]
-) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.neighborhood_loader.refresh()
+async def refresh_neighbs(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.neighborhood_loader(
+            session, _upload_path(ctx, response)
+        )
+        await loader.refresh()
 
 
 @registry.add("excel:neighbs:reload")
-async def reload_neighbs(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.neighborhood_loader.reload()
+async def reload_neighbs(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.neighborhood_loader(
+            session, _upload_path(ctx, response)
+        )
+        await loader.reload()
 
 
 @registry.add("excel:gdis:refresh")
-async def refresh_gdis(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.well_test_loader.refresh()
+async def refresh_gdis(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.well_test_loader(session, _upload_path(ctx, response))
+        await loader.refresh()
 
 
 @registry.add("excel:gdis:reload")
-async def reload_gdis(response: ExcelResponse, ctx: dict[str, Any]) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    async with ctx["local_dao"](file_path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.well_test_loader.reload()
+async def reload_gdis(response: ExcelResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as session:
+        loader = loaders.well_test_loader(session, _upload_path(ctx, response))
+        await loader.reload()
 
 
 @registry.add("database:report:refresh")
-async def refresh_mer(response: DatabaseResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["ofm_local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.monthly_report_loader.refresh(
-            date_from=response.task.date_from,
-            date_to=response.task.date_to,
-        )
+async def refresh_mer(response: DatabaseResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as local_session:
+        with ctx.sessions.ofm_session() as ofm_session:
+            loader = loaders.monthly_report_loader(local_session, ofm_session)
+            await loader.refresh(
+                date_from=response.task.date_from,
+                date_to=response.task.date_to,
+            )
 
 
 @registry.add("database:report:reload")
-async def reload_mer(response: DatabaseResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["ofm_local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.monthly_report_loader.reload(
-            date_from=response.task.date_from,
-            date_to=response.task.date_to,
-        )
+async def reload_mer(response: DatabaseResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as local_session:
+        with ctx.sessions.ofm_session() as ofm_session:
+            loader = loaders.monthly_report_loader(local_session, ofm_session)
+            await loader.reload(
+                date_from=response.task.date_from,
+                date_to=response.task.date_to,
+            )
 
 
 @registry.add("database:profile:refresh")
-async def refresh_opp(response: DatabaseResponse, ctx: dict[str, Any]) -> None:
-    async with ctx["ofm_local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await holder.well_profile_loader.refresh(
-            date_from=response.task.date_from,
-            date_to=response.task.date_to,
-        )
+async def refresh_opp(response: DatabaseResponse, ctx: WorkerContext) -> None:
+    async with ctx.sessions.local_session() as local_session:
+        with ctx.sessions.ofm_session() as ofm_session:
+            loader = loaders.well_profile_loader(local_session, ofm_session)
+            await loader.refresh(
+                date_from=response.task.date_from,
+                date_to=response.task.date_to,
+            )
 
 
 @registry.add("report:profile")
 async def create_profile_report(
-    response: ProfileResponse, ctx: dict[str, Any]
+    response: ProfileResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    app_config: AppSettings = ctx["app_config"]
-    async with ctx["local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await profile_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.date_from,
-            response.task.date_to,
-            holder.well_profile_reporter,
-            ctx["pool"],
-            app_config.delimiter,
-        )
+    await profile_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.date_from,
+        response.task.date_to,
+        ctx.reporters.profile,
+        ctx.process_pool,
+        ctx.settings.delimiter,
+    )
 
 
 @registry.add("report:inj_loss:first_rate")
 async def create_first_rate_inj_loss_report(
-    response: InjLossResponse, ctx: dict[str, Any]
+    response: InjLossResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    app_config: AppSettings = ctx["app_config"]
-    async with ctx["local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await inj_loss_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.date_from,
-            response.task.date_to,
-            response.task.neighbs_from_ns_ppd,
-            holder.first_rate_inj_loss_reporter,
-            ctx["pool"],
-            app_config.delimiter,
-        )
+    await inj_loss_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.date_from,
+        response.task.date_to,
+        response.task.neighbs_from_ns_ppd,
+        ctx.reporters.first_rate_inj_loss,
+        ctx.process_pool,
+        ctx.settings.delimiter,
+    )
 
 
 @registry.add("report:inj_loss:max_rate")
 async def create_max_rate_inj_loss_report(
-    response: InjLossResponse, ctx: dict[str, Any]
+    response: InjLossResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    app_config: AppSettings = ctx["app_config"]
-    async with ctx["local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await inj_loss_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.date_from,
-            response.task.date_to,
-            response.task.neighbs_from_ns_ppd,
-            holder.max_rate_inj_loss_reporter,
-            ctx["pool"],
-            app_config.delimiter,
-        )
+    await inj_loss_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.date_from,
+        response.task.date_to,
+        response.task.neighbs_from_ns_ppd,
+        ctx.reporters.max_rate_inj_loss,
+        ctx.process_pool,
+        ctx.settings.delimiter,
+    )
 
 
 @registry.add("report:oil_loss:first_rate")
 async def create_first_rate_oil_loss_report(
-    response: OilLossResponse, ctx: dict[str, Any]
+    response: OilLossResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    async with ctx["local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await oil_loss_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.date_from,
-            response.task.date_to,
-            holder.first_rate_oil_loss_reporter,
-            ctx["pool"],
-        )
+    await oil_loss_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.date_from,
+        response.task.date_to,
+        ctx.reporters.first_rate_oil_loss,
+        ctx.process_pool,
+    )
 
 
 @registry.add("report:oil_loss:max_rate")
 async def create_max_rate_oil_loss_report(
-    response: OilLossResponse, ctx: dict[str, Any]
+    response: OilLossResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    async with ctx["local_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await oil_loss_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.date_from,
-            response.task.date_to,
-            holder.max_rate_oil_loss_reporter,
-            ctx["pool"],
-        )
+    await oil_loss_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.date_from,
+        response.task.date_to,
+        ctx.reporters.max_rate_oil_loss,
+        ctx.process_pool,
+    )
 
 
 @registry.add("report:opp_per_year")
 async def create_opp_per_year_report(
-    response: OppPerYearResponse, ctx: dict[str, Any]
+    response: OppPerYearResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    async with ctx["ofm_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await opp_per_year_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.date_from,
-            response.task.date_to,
-            holder.opp_per_year_reporter,
-            ctx["pool"],
-        )
+    await opp_per_year_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.date_from,
+        response.task.date_to,
+        _ofm(ctx.reporters.opp_per_year, "opp_per_year"),
+        ctx.process_pool,
+    )
 
 
 @registry.add("report:matrix")
 async def create_matrix_report(
-    response: MatrixResponse, ctx: dict[str, Any]
+    response: MatrixResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    app_config: AppSettings = ctx["app_config"]
-    path = path_provider.upload_dir(user_id)
-    async with ctx["local_dao"](
-        path=path, wells=response.task.wells
-    ) as holder:
-        holder = cast(HolderDAO, holder)
-        await matrix_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.date_from,
-            response.task.date_to,
-            response.task.base_period,
-            response.task.pred_period,
-            response.task.excludes,
-            response.task.on_date,
-            holder.matrix_reporter,
-            ctx["pool"],
-            app_config.delimiter,
-        )
+    path = ctx.paths.upload_dir(cast(str, response.job.user_id))
+    reporter = complex_reporters.MatrixReporter(
+        ctx.reporters.matrix,
+        file_reporters.MatrixReporter(path, response.task.wells),
+    )
+    await matrix_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.date_from,
+        response.task.date_to,
+        response.task.base_period,
+        response.task.pred_period,
+        response.task.excludes,
+        response.task.on_date,
+        reporter,
+        ctx.process_pool,
+        ctx.settings.delimiter,
+    )
 
 
 @registry.add("report:fnv")
-async def create_fnv_report(
-    response: FnvResponse, ctx: dict[str, Any]
-) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    async with ctx["ofm_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await fnv_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.fields,
-            response.task.min_radius,
-            response.task.alternative,
-            response.task.max_fields,
-            holder.fnv_reporter,
-        )
+async def create_fnv_report(response: FnvResponse, ctx: WorkerContext) -> None:
+    await fnv_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.fields,
+        response.task.min_radius,
+        response.task.alternative,
+        response.task.max_fields,
+        _ofm(ctx.reporters.fnv, "fnv"),
+    )
 
 
 @registry.add("report:matbal")
 async def create_matbal_report(
-    response: MatbalResponse, ctx: dict[str, Any]
+    response: MatbalResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    path = path_provider.upload_dir(user_id)
-    async with ctx["ofm_dao"](
-        path=path,
-        wells=response.task.wells,
-        measurements=response.task.measurements,
-    ) as holder:
-        holder = cast(HolderDAO, holder)
-        await matbal_report(
-            path_provider.dir_path(user_id, file_id),
-            path_provider.data_dir / "matbal_template.xlsm",
-            response.task.field,
-            response.task.reservoirs,
-            response.task.alternative,
-            holder.matbal_reporter,
-            ctx["pool"],
-        )
+    path = ctx.paths.upload_dir(cast(str, response.job.user_id))
+    reporter = complex_reporters.MatbalReporter(
+        _ofm(ctx.reporters.matbal, "matbal"),
+        file_reporters.MatbalReporter(
+            path, response.task.wells, response.task.measurements
+        ),
+    )
+    await matbal_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        ctx.paths.data_dir / "matbal_template.xlsm",
+        response.task.field,
+        response.task.reservoirs,
+        response.task.alternative,
+        reporter,
+        ctx.process_pool,
+    )
 
 
 @registry.add("report:prolong")
 async def create_prolong_report(
-    response: ProlongResponse, ctx: dict[str, Any]
+    response: ProlongResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    path = path_provider.upload_dir(user_id)
-    holder = HolderDAO(file_path=path / response.task.expected)
-    csv_config: CsvSettings = ctx["csv_config"]
+    path = ctx.paths.upload_dir(cast(str, response.job.user_id))
     await prolong_report(
-        path_provider.dir_path(user_id, file_id),
-        holder.excel_prolong_expected,
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        excel.ProlongExpectedDAO(path / response.task.expected),
         path / response.task.actual,
         response.task.interpolations,
-        ctx["pool"],
-        csv_config,
+        ctx.process_pool,
+        ctx.csv,
     )
 
 
 @registry.add("report:mmb")
-async def create_mmb_report(
-    response: MmbResponse, ctx: dict[str, Any]
-) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    app_config: AppSettings = ctx["app_config"]
-    csv_config: CsvSettings = ctx["csv_config"]
-    mmb_config = get_mmb_settings()
-    async with ctx["ofm_dao"](path=path) as holder:
-        holder = cast(HolderDAO, holder)
-        await mmb_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.alternative,
-            holder.mmb_reporter,
-            ctx["pool"],
-            app_config.delimiter,
-            csv_config,
-            mmb_config,
-        )
+async def create_mmb_report(response: MmbResponse, ctx: WorkerContext) -> None:
+    path = (
+        ctx.paths.upload_dir(cast(str, response.job.user_id))
+        / response.task.file
+    )
+    reporter = complex_reporters.MmbReporter(
+        _ofm(ctx.reporters.mmb, "mmb"),
+        _ofm(ctx.reporters.mmb_alt, "mmb_alt"),
+        file_reporters.MmbReporter(path),
+    )
+    await mmb_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.alternative,
+        reporter,
+        ctx.process_pool,
+        ctx.settings.delimiter,
+        ctx.csv,
+        get_mmb_settings(),
+    )
 
 
 @registry.add("report:compensation")
 async def create_compensation_report(
-    response: CompensationResponse, ctx: dict[str, Any]
+    response: CompensationResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    async with ctx["ofm_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await compensation_report(
-            path_provider.dir_path(user_id, file_id),
-            response.task.on_date,
-            holder.compensation_reporter,
-        )
+    await compensation_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        response.task.on_date,
+        _ofm(ctx.reporters.compensation, "compensation"),
+    )
 
 
 @registry.add("report:well_test")
 async def create_well_test_report(
-    response: WellTestResponse, ctx: dict[str, Any]
+    response: WellTestResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    path = path_provider.upload_dir(user_id) / response.task.file
-    app_config: AppSettings = ctx["app_config"]
-    async with ctx["ofm_local_dao"](
-        path=path, delimiter=app_config.delimiter
-    ) as holder:
-        holder = cast(HolderDAO, holder)
-        await well_test_report(
-            path_provider.dir_path(user_id, file_id),
-            path_provider.data_dir / "well_test_template.xlsx",
-            path_provider.data_dir / "well_test_arrow.png",
-            response.task.gtm_period,
-            response.task.gdis_period,
-            response.task.radius,
-            holder.well_test_reporter,
-            ctx["pool"],
-        )
+    path = (
+        ctx.paths.upload_dir(cast(str, response.job.user_id))
+        / response.task.file
+    )
+    reporter = complex_reporters.WellTestReporter(
+        ctx.reporters.well_test_local,
+        file_reporters.WellTestReporter(path, ctx.settings.delimiter),
+        _ofm(ctx.reporters.well_test_ofm, "well_test_ofm"),
+    )
+    await well_test_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        ctx.paths.data_dir / "well_test_template.xlsx",
+        ctx.paths.data_dir / "well_test_arrow.png",
+        response.task.gtm_period,
+        response.task.gdis_period,
+        response.task.radius,
+        reporter,
+        ctx.process_pool,
+    )
 
 
 @registry.add("report:owc_resp")
 async def create_owc_resp_report(
-    response: OwcRespResponse, ctx: dict[str, Any]
+    response: OwcRespResponse, ctx: WorkerContext
 ) -> None:
-    path_provider: PathProvider = ctx["path_provider"]
-    user_id = cast(str, response.job.user_id)
-    file_id = cast(str, response.job.file_id)
-    async with ctx["ofm_dao"]() as holder:
-        holder = cast(HolderDAO, holder)
-        await owc_resp_report(
-            path_provider.dir_path(user_id, file_id),
-            path_provider.data_dir / "owc_resp_template.xlsx",
-            path_provider.data_dir / "analytics_template.xlsx",
-            response.task.field,
-            response.task.reservoir,
-            response.task.well,
-            response.task.pressure,
-            response.task.depth,
-            response.task.well_test,
-            response.task.on_date,
-            holder.owc_resp_reporter,
-            ctx["pool"],
-        )
+    await owc_resp_report(
+        ctx.paths.dir_path(
+            cast(str, response.job.user_id), response.job.file_id
+        ),
+        ctx.paths.data_dir / "owc_resp_template.xlsx",
+        ctx.paths.data_dir / "analytics_template.xlsx",
+        response.task.field,
+        response.task.reservoir,
+        response.task.well,
+        response.task.pressure,
+        response.task.depth,
+        response.task.well_test,
+        response.task.on_date,
+        _ofm(ctx.reporters.owc_resp, "owc_resp"),
+        ctx.process_pool,
+    )
 
 
 @registry.add("uneft:fields")
 async def get_fields(
-    response: FieldsResponse, ctx: dict[str, Any]
+    response: FieldsResponse, ctx: WorkerContext
 ) -> UneftFieldDB | list[UneftFieldDB] | None:
-    app_config: AppSettings = ctx["app_config"]
-    async with ctx["ofm_redis_dao"](expires=app_config.keep_result) as holder:
-        holder = cast(HolderDAO, holder)
-        results = await uneft_fields(
-            response.task.stock, response.task.field_id, holder.uneft
+    async with _uneft(ctx) as uneft:
+        return await uneft_fields(
+            response.task.stock, response.task.field_id, uneft
         )
-    return results
 
 
 @registry.add("uneft:reservoirs")
 async def get_reservoirs(
-    response: ReservoirsResponse, ctx: dict[str, Any]
+    response: ReservoirsResponse, ctx: WorkerContext
 ) -> list[UneftReservoirDB]:
-    app_config: AppSettings = ctx["app_config"]
-    async with ctx["ofm_redis_dao"](expires=app_config.keep_result) as holder:
-        holder = cast(HolderDAO, holder)
-        results = await uneft_reservoirs(response.task.field_id, holder.uneft)
-    return results
+    async with _uneft(ctx) as uneft:
+        return await uneft_reservoirs(response.task.field_id, uneft)
 
 
 @registry.add("uneft:wells")
 async def get_wells(
-    response: WellsResponse, ctx: dict[str, Any]
+    response: WellsResponse, ctx: WorkerContext
 ) -> list[UneftWellDB]:
-    app_config: AppSettings = ctx["app_config"]
-    async with ctx["ofm_redis_dao"](expires=app_config.keep_result) as holder:
-        holder = cast(HolderDAO, holder)
-        results = await uneft_wells(
-            response.task.stock, response.task.field_id, holder.uneft
+    async with _uneft(ctx) as uneft:
+        return await uneft_wells(
+            response.task.stock, response.task.field_id, uneft
         )
-    return results

@@ -29,8 +29,14 @@ class RegexMapper(SimpleMapper):
         self,
         replace: ReplaceDict | None = None,
         pattern: re.Pattern | None = None,
+        *,
+        full: bool = False,
     ) -> None:
         if replace is not None:
-            self.replace.update(replace)
+            if full:
+                self.replace = replace
+            else:
+                self.replace.update(replace)
         if pattern is not None:
             self.pattern = pattern
+        self.invalidate()

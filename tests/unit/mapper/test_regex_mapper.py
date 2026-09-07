@@ -31,3 +31,23 @@ def test_update_pattern_and_replacement(regex_mapper: RegexMapper):
     replaced_word, max_order = regex_mapper.replace_word(word_order, 0)
     assert replaced_word == expected_result
     assert max_order == 1
+
+
+def test_update_invalidates_cache(regex_mapper: RegexMapper):
+    assert regex_mapper["abc"] == "WORD"
+    assert regex_mapper["123"] == "NUMBER"
+    new_pattern = re.compile(r"(?P<alpha>\w+)")
+    new_replace = {"alpha": ("LETTERS", 1)}
+    regex_mapper.update(pattern=new_pattern, replace=new_replace)
+    assert regex_mapper["abc"] == "LETTERS"
+    assert regex_mapper["123"] == "LETTERS"
+
+
+def test_update_full_replacement(regex_mapper: RegexMapper):
+    new_pattern = re.compile(r"(?P<alpha>\w+)")
+    new_replace = {"alpha": ("LETTERS", 1)}
+    regex_mapper.update(pattern=new_pattern, replace=new_replace, full=True)
+    assert regex_mapper.replace == new_replace
+    replaced_word, max_order = regex_mapper.replace_word(("123", 1), 0)
+    assert replaced_word == ("LETTERS", 1)
+    assert max_order == 1

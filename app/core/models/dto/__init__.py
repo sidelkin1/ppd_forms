@@ -28,4 +28,5 @@ from .tasks.profile import TaskProfile
 from .tasks.prolong import TaskProlong
 from .tasks.report import TaskReport
 from .tasks.uneft import TaskFields, TaskReservoirs, TaskUneft, TaskWells
+from .tasks.utils import TaskUtils
 from .tasks.well_test import TaskWellTest

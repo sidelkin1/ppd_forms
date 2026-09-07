@@ -59,8 +59,14 @@ class LayerMapper(SimpleMapper):
     def update(
         self,
         replace: ReplaceDict | None = None,
+        *,
+        full: bool = False,
     ) -> None:
         if replace:
             self.prepare_replace(replace)
-            self.replace.update(replace)
+            if full:
+                self.replace = replace
+            else:
+                self.replace.update(replace)
             self.remake_replace(self.replace)
+        self.invalidate()

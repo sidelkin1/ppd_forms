@@ -1,3 +1,4 @@
+from .csv_path import CsvPath
 from .date_range import DateRange
 from .excel_path import ExcelPath
 from .fnv_params import FnvParams

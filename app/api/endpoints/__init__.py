@@ -8,6 +8,7 @@ from .job import router as job_router
 from .report import router as report_router
 from .uneft import router as uneft_router
 from .users import router as users_router
+from .utils import router as utils_router
 
 
 def setup(app: FastAPI) -> None:
@@ -19,3 +20,4 @@ def setup(app: FastAPI) -> None:
     app.include_router(report_router)
     app.include_router(uneft_router)
     app.include_router(users_router)
+    app.include_router(utils_router)

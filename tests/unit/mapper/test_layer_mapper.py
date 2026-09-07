@@ -42,3 +42,16 @@ def test_update(layer_mapper: LayerMapper):
         "B": [("b", 10)],
         "C": [("c", 3)],
     }
+
+
+def test_update_full(layer_mapper: LayerMapper):
+    layer_mapper.update(
+        {"B": ("b", 10), "A+B": ("A,B", 0), "A+D": ("A,d", 0), "C": ("c", 3)},
+        full=True,
+    )
+    assert layer_mapper.replace == {
+        "A+B": [("A", 0), ("b", 10)],
+        "A+D": [("A", 0), ("d", 0)],
+        "B": [("b", 10)],
+        "C": [("c", 3)],
+    }

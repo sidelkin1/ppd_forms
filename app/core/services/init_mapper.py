@@ -23,7 +23,8 @@ async def _update_simple_mapper(
         {
             dto.group: (dto.replace, dto.order or BaseMapper.NULL_ORDER)
             for dto in objs
-        }
+        },
+        full=True,
     )
 
 
@@ -39,7 +40,7 @@ async def _update_regex_mapper(
         dto.group: (dto.replace, dto.order or BaseMapper.NULL_ORDER)
         for dto in objs
     }
-    mapper.update(replace, pattern)
+    mapper.update(replace, pattern, full=True)
 
 
 async def init_field_mapper(dao: local.FieldReplaceDAO) -> None:

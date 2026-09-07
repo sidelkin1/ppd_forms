@@ -22,3 +22,14 @@ def test_update_add_new_word(simple_mapper: SimpleMapper):
 def test_update_existing_word(simple_mapper: SimpleMapper):
     simple_mapper.update({"hello": ("greetings", 3)})
     assert simple_mapper.replace["hello"] == ("greetings", 3)
+
+
+def test_update_invalidates_cache(simple_mapper: SimpleMapper):
+    assert simple_mapper["hello"] == "hi"
+    simple_mapper.update({"hello": ("greetings", 3)})
+    assert simple_mapper["hello"] == "greetings"
+
+
+def test_update_full_replacement(simple_mapper: SimpleMapper):
+    simple_mapper.update({"goodbye": ("bye", 2)}, full=True)
+    assert simple_mapper.replace == {"goodbye": ("bye", 2)}

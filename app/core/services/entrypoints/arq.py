@@ -17,6 +17,7 @@ from app.api.models.responses import (
     ProfileResponse,
     ProlongResponse,
     ReservoirsResponse,
+    UtilsResponse,
     WellsResponse,
     WellTestResponse,
 )
@@ -41,6 +42,8 @@ from app.core.services.reports import (
 from app.core.services.uneft import uneft_fields, uneft_reservoirs, uneft_wells
 from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
+from app.infrastructure.provider import DbProvider
+from app.initial_data import initialize_mapper
 
 registry = WorkRegistry()
 
@@ -515,3 +518,49 @@ async def get_wells(
             response.task.stock, response.task.field_id, holder.uneft
         )
     return results
+
+
+@registry.add("utils:field:refresh")
+@registry.add("utils:field:reload")
+async def load_field_replace(
+    response: UtilsResponse, ctx: dict[str, Any]
+) -> None:
+    await _load_replace(response, ctx, "field_replace_loader")
+
+
+@registry.add("utils:reservoir:refresh")
+@registry.add("utils:reservoir:reload")
+async def load_reservoir_replace(
+    response: UtilsResponse, ctx: dict[str, Any]
+) -> None:
+    await _load_replace(response, ctx, "reservoir_replace_loader")
+
+
+@registry.add("utils:layer:refresh")
+@registry.add("utils:layer:reload")
+async def load_layer_replace(
+    response: UtilsResponse, ctx: dict[str, Any]
+) -> None:
+    await _load_replace(response, ctx, "layer_replace_loader")
+
+
+@registry.add("utils:gtm:refresh")
+@registry.add("utils:gtm:reload")
+async def load_gtm_replace(
+    response: UtilsResponse, ctx: dict[str, Any]
+) -> None:
+    await _load_replace(response, ctx, "gtm_replace_loader")
+
+
+async def _load_replace(
+    response: UtilsResponse, ctx: dict[str, Any], loader: str
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    path = path_provider.upload_dir(user_id) / response.task.file
+    async with ctx["local_dao"](file_path=path) as holder:
+        holder = cast(HolderDAO, holder)
+        replacer = getattr(holder, loader)
+        await getattr(replacer, response.task.mode)()
+    provider = cast(DbProvider, ctx["provider"])
+    await initialize_mapper(provider)

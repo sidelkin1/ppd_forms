@@ -6,3 +6,4 @@ class TaskId(str, Enum):
     report = "report"
     excel = "excel"
     uneft = "uneft"
+    utils = "utils"

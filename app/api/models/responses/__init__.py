@@ -17,6 +17,7 @@ from .task import (
     ProlongResponse,
     ReportResponse,
     ReservoirsResponse,
+    UtilsResponse,
     WellsResponse,
     WellTestResponse,
 )

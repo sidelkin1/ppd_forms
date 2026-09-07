@@ -24,6 +24,12 @@ class SimpleMapper(BaseMapper):
     def update(
         self,
         replace: ReplaceDict | None = None,
+        *,
+        full: bool = False,
     ) -> None:
         if replace is not None:
-            self.replace.update(replace)
+            if full:
+                self.replace = replace
+            else:
+                self.replace.update(replace)
+        self.invalidate()

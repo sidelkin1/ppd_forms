@@ -36,8 +36,13 @@ class BaseMapper(ABC):
         self.unique = unique
         self.delimiter = delimiter
         self.split_mode = split_mode
+        self.cached = cached
         if cached:
             self._getitem = cache(self._getitem)  # type: ignore[method-assign]
+
+    def invalidate(self) -> None:
+        if self.cached:
+            self._getitem.cache_clear()  # type: ignore[attr-defined]
 
     def __getitem__(self, input: str) -> str:
         return self._getitem(input)

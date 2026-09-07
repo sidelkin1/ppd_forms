@@ -204,6 +204,30 @@ class HolderDAO:
         )
 
     @property
+    def field_replace_loader(self) -> loaders.FieldReplaceLoader:
+        return loaders.FieldReplaceLoader(
+            self.csv_field_replace, self.local_field_replace
+        )
+
+    @property
+    def reservoir_replace_loader(self) -> loaders.ReservoirReplaceLoader:
+        return loaders.ReservoirReplaceLoader(
+            self.csv_reservoir_replace, self.local_reservoir_replace
+        )
+
+    @property
+    def layer_replace_loader(self) -> loaders.LayerReplaceLoader:
+        return loaders.LayerReplaceLoader(
+            self.csv_layer_replace, self.local_layer_replace
+        )
+
+    @property
+    def gtm_replace_loader(self) -> loaders.GtmReplaceLoader:
+        return loaders.GtmReplaceLoader(
+            self.csv_gtm_replace, self.local_gtm_replace
+        )
+
+    @property
     def inj_well_database_initializer(
         self,
     ) -> initializers.InjWellDatabaseInitializer:

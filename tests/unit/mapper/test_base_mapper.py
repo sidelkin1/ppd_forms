@@ -62,3 +62,11 @@ def test_getitem_with_cache(base_mapper: BaseMapper):
     second_cache_info = base_mapper._getitem.cache_info()
     assert second_cache_info.hits == 1
     assert second_cache_info.misses == 1
+
+
+def test_invalidate_clears_cache(base_mapper: BaseMapper):
+    base_mapper["word1"]
+    assert isinstance(base_mapper._getitem, _lru_cache_wrapper)
+    assert base_mapper._getitem.cache_info().currsize == 1
+    base_mapper.invalidate()
+    assert base_mapper._getitem.cache_info().currsize == 0

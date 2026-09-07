@@ -12,3 +12,10 @@ class ExcelTableName(str, Enum):
     inj_db = "inj_db"
     neighbs = "neighbs"
     gdis = "gdis"
+
+
+class UtilsTableName(str, Enum):
+    field = "field"
+    reservoir = "reservoir"
+    layer = "layer"
+    gtm = "gtm"

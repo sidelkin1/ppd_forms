@@ -169,9 +169,9 @@ async function loadMatrix(reportName) {
       date_to: dateTo,
       excludes: excludes,
       base_period: basePeriod,
-      ...(predPeriod && { pred_period: predPeriod }),
-      ...(onDate && { on_date: onDate }),
-      ...(files[0] && { wells: files[0].filename }),
+      pred_period: predPeriod || null,
+      on_date: onDate || null,
+      wells: files[0]?.filename || null,
     };
     const result = await assignWork(reportName, url, data);
     if (result) {
@@ -262,8 +262,8 @@ async function loadMatbal(reportName) {
     const data = {
       field: { id: fieldID, name: fieldName },
       reservoirs: reservoirs,
-      ...(files[0] && { wells: files[0].filename }),
-      ...(files[1] && { measurements: files[1].filename }),
+      wells: files[0]?.filename || null,
+      measurements: files[1]?.filename || null,
       alternative: alternative,
     };
     const result = await assignWork(reportName, url, data);
@@ -306,8 +306,8 @@ async function loadProlong(reportName) {
   if (files) {
     const url = `/reports/${reportName}`;
     const data = {
-      expected: files[0] ? files[0].filename : null,
-      actual: files[1] ? files[1].filename : null,
+      expected: files[0]?.filename || null,
+      actual: files[1]?.filename || null,
       interpolations: interpolation === "all" ? allMethods : [interpolation],
     };
     const result = await assignWork(reportName, url, data);
@@ -343,7 +343,7 @@ async function loadMMB(reportName) {
   if (files) {
     const url = `/reports/${reportName}`;
     const data = {
-      file: files[0] ? files[0].filename : null,
+      file: files[0]?.filename || null,
       alternative: alternative,
     };
     const result = await assignWork(reportName, url, data);
@@ -379,7 +379,7 @@ async function loadWellTest(reportName) {
   if (files) {
     const url = `/reports/${reportName}`;
     const data = {
-      file: files[0] ? files[0].filename : null,
+      file: files[0]?.filename || null,
       gtm_period: gtmPeriod,
       gdis_period: gdisPeriod,
       radius: radius,

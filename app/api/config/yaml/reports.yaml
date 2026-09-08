@@ -79,7 +79,6 @@ items:
   base_period: {required: true, label: "Базовый период", value: 1}
   pred_period: {label: "Прогнозный период"}
   excludes:
-    required: true
     label: "Исключаемые ГТМ НФ"
     options:
     - text: "--Выберите исключаемые ГТМ НФ--"

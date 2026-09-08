@@ -36,7 +36,7 @@ async def test_download_report(client: AsyncClient, paths: Paths):
     await save_upload_file(file, base_dir)
     resp = await client.get("/reports/test/csv")
     assert resp.is_success
-    assert resp.content == b"test\n"
+    assert resp.content == b"test\r\n"
 
 
 @pytest.mark.asyncio(scope="session")

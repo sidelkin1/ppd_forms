@@ -48,6 +48,12 @@ def _process_data(df: pd.DataFrame, delimiter: str) -> pd.DataFrame:
     df["well_type"] = df["well_type"].fillna("")
     df["layer"] = df["layer"].fillna("")
     df = _group_diff_absorb(df)
+    df.loc[
+        df["rec_date"].notna()
+        & df["rec_date"].ne("")
+        & df["diff_absorp"].isna(),
+        "diff_absorp",
+    ] = 0
     df = _calc_layer_rates(df)
     return df
 

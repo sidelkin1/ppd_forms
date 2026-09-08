@@ -12,7 +12,7 @@ from app.infrastructure.holder import HolderDAO
         ("local_new_strategy_oil", "new_strategy_oil_loader", 3),
         ("local_inj_well_database", "inj_well_database_loader", 2),
         ("local_neighborhood", "neighborhood_loader", 4),
-        ("local_well_profile", "well_profile_loader", 6),
+        ("local_well_profile", "well_profile_loader", 7),
         ("local_monthly_report", "monthly_report_loader", 23),
     ],
 )

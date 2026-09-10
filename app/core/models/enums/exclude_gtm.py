@@ -12,6 +12,6 @@ class ExcludeGTM(str, Enum):
     commingle = "Приобщение"
     perf = "Дострел"
     acid = "ОПЗ"
-    reperf = "Перестрел"
+    reperf = "Реперфорация"
     stimulate = "ИДН"
     squeeze = "РИР"

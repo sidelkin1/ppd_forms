@@ -12,7 +12,7 @@ from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
 from app.api.endpoints.auth import revoke, token
 from app.api.utils.redirect import build_redirect_response
-from app.common.parsers import read_config
+from app.common.parsers import read_config, read_config_map
 from app.core.models.enums import TaskId
 
 templates = Jinja2Templates(directory="app/templates")
@@ -29,6 +29,7 @@ async def reports(request: Request, user: UserOrNoneDep, path: PathDep):
     if user is None:
         return build_redirect_response(request, "login_page")
     config = read_config(path.report_config_file)
+    tables = read_config_map(path.table_config_file, "path")
     groups = config["groups"]
     report_groups = sorted(
         [(name, data) for name, data in groups.items()],
@@ -41,6 +42,7 @@ async def reports(request: Request, user: UserOrNoneDep, path: PathDep):
             "reports": config["items"],
             "report_groups": report_groups,
             "report_groups_map": groups,
+            "tables": tables,
             "user": user,
         },
     )

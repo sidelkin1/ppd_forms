@@ -31,8 +31,8 @@ items:
   date_to: {required: true, label: "Конечная дата"}
   tables:
     required:
-    - МЭР
-    - ОПП
+    - report
+    - profile
 - title: Количество ОПП за год
   path: opp_per_year
   group: ОПП
@@ -63,12 +63,12 @@ items:
   description: Потери Qн по округе нагнетательных скважин
   tables:
     required:
-    - МЭР
-    - База ГТМ ППД
+    - report
+    - inj_db
     optional:
-    - НС ППД
-    - Округа
-    - НС НФ
+    - ns_ppd
+    - neighbs
+    - ns_oil
 - title: Эффект ГТМ ППД по матрице
   path: matrix
   group: Потери
@@ -127,9 +127,9 @@ items:
   description: Эффект ГТМ ППД по матрице для ОУЗ
   tables:
     required:
-    - МЭР
-    - НС НФ
-    - НС ППД
+    - report
+    - ns_oil
+    - ns_ppd
 - title: Потери нефти по НФ
   path: oil_loss
   group: Потери
@@ -152,9 +152,9 @@ items:
   description: Потери Qн по факторам (аналог PackagesRelease)
   tables:
     required:
-    - МЭР
+    - report
     optional:
-    - НС НФ
+    - ns_oil
 - title: Контуры ФНВ
   path: fnv
   group: ОПП
@@ -241,10 +241,10 @@ items:
   description: Выгрузка для отчета по ГДИС (аналитика, ГТМ и т.д.)
   tables:
     required:
-    - Аналитика ГДИС
+    - gdis
     optional:
-    - НС ППД
-    - НС НФ
+    - ns_ppd
+    - ns_oil
 - title: Пересчет давления на ВНК
   path: owc_resp
   group: ГДИС

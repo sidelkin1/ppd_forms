@@ -29,21 +29,20 @@
                     </div>
                     <div class="col-auto d-flex align-items-center gap-2">
                         {% if req %}
-                            {% set lines = [] %}
-                            {% if req.required %}
-                                {% set _ = lines.append('Требуется: ' ~ req.required | join(', ')) %}
-                            {% endif %}
-                            {% if req.optional %}
-                                {% set _ = lines.append('Необяз.: ' ~ req.optional | join(', ')) %}
-                            {% endif %}
                             <i
-                                class="bi bi-exclamation-triangle-fill"
+                                id="{{ report.path }}TablesTip"
+                                class="bi bi-exclamation-triangle-fill d-none"
                                 style="font-size: 1.1em;"
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="top"
                                 data-bs-html="true"
-                                title="{{ lines | join('<br>') }}"
                             ></i>
+                            <div
+                                class="spinner-border spinner-border-sm flex-shrink-0 d-none"
+                                id="{{ report.path }}StalenessFetch"
+                                role="status"
+                            >
+                            </div>
                         {% endif %}
                         <div
                             class="spinner-border spinner-border-sm flex-shrink-0 d-none"

@@ -46,6 +46,12 @@
 
 {% block js %}
 
+    <script id="tables-data" type="application/json">{{ tables | tojson }}</script>
+    <script id="reports-data" type="application/json">{{ reports | tojson }}</script>
+    <script>
+        const dbTables = JSON.parse(document.getElementById('tables-data').textContent);
+        const reports = JSON.parse(document.getElementById('reports-data').textContent);
+    </script>
     <script src="{{url_for('static', path='/javascript/core/assign.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/core/status.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/core/upload.js')}}" type="text/javascript"></script>
@@ -53,5 +59,6 @@
     <script src="{{url_for('static', path='/javascript/reports/fields.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/reports/reservoirs.js')}}" type="text/javascript"></script>
     <script src="{{url_for('static', path='/javascript/reports/search.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('static', path='/javascript/reports/staleness.js')}}" type="text/javascript"></script>
 
 {% endblock %}

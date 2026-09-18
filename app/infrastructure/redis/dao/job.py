@@ -33,3 +33,10 @@ class ScheduledJobsDAO:
                 response = JobResponse.model_validate_json(obj_data)
                 objs.append(response)
         return objs
+
+    async def get_job(self, username: str, job_id: str) -> JobResponse | None:
+        key = self._create_key(username, job_id)
+        data = await self.redis.get(key)
+        if not data:
+            return None
+        return JobResponse.model_validate_json(data)

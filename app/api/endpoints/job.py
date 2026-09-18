@@ -4,7 +4,6 @@ from fastapi import APIRouter, WebSocket
 from fastapi_pagination import Page, paginate
 
 from app.api.dependencies.auth import UserDep
-from app.api.dependencies.job import JobResponseDep
 from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.tracker import JobTrackerDep
 from app.api.models.responses import JobResponse
@@ -31,7 +30,8 @@ async def get_user_tasks(
     response_model=JobResponse,
     response_model_exclude_none=True,
 )
-async def get_job_status(job_id: str, user: UserDep, response: JobResponseDep):
+async def get_job_status(job_id: str, redis: RedisDep, user: UserDep):
+    response = await redis.response(job_id, user.username)
     logger.debug(
         "Current job", extra={"task": response.task, "job": response.job}
     )
@@ -42,10 +42,11 @@ async def get_job_status(job_id: str, user: UserDep, response: JobResponseDep):
 async def websocket_endpoint(
     websocket: WebSocket,
     job_id: str,
+    redis: RedisDep,
     user: UserDep,
-    response: JobResponseDep,
     tracker: JobTrackerDep,
 ):
+    response = await redis.response(job_id, user.username)
     logger.debug(
         "Current job", extra={"task": response.task, "job": response.job}
     )

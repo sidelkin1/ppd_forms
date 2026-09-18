@@ -14,13 +14,23 @@ def redis_provider() -> ArqDAO:
 
 
 class RedisProvider:
-    def __init__(self, pool: redismaker[ArqRedis], expires: timedelta) -> None:
+    def __init__(
+        self,
+        pool: redismaker[ArqRedis],
+        expires: timedelta,
+        abort_timeout: float,
+    ) -> None:
         self.pool = pool
         self.expires = expires
+        self.abort_timeout = abort_timeout
 
     async def dao(self) -> AsyncGenerator[ArqDAO, None]:
         async with self.pool() as redis:
-            yield ArqDAO(redis=redis, expires=self.expires)
+            yield ArqDAO(
+                redis=redis,
+                expires=self.expires,
+                abort_timeout=self.abort_timeout,
+            )
 
 
 RedisDep = Annotated[ArqDAO, Depends(redis_provider)]

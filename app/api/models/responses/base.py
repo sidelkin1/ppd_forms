@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,5 +10,6 @@ T = TypeVar("T")
 class BaseResponse(BaseModel, Generic[T]):
     task: T
     job: JobStamp
+    result: Any = None
 
     model_config = ConfigDict(extra="forbid")

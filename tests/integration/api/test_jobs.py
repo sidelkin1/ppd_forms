@@ -5,21 +5,27 @@ from arq.connections import ArqRedis
 from arq.worker import Function, Worker
 from httpx import AsyncClient
 
+from app.api.models.auth import User
 from app.core.models.enums import JobStatus
+from app.infrastructure.redis.dao.job import ScheduledJobsDAO
 from tests.mocks.responses import TaskTestResponse
 
 
 @pytest.mark.asyncio(scope="session")
 async def test_job_ok(
     client: AsyncClient,
+    user: User,
     arq_redis: ArqRedis,
+    scheduled_jobs_dao: ScheduledJobsDAO,
     worker: Callable[..., Worker],
     work_ok: Function,
 ):
     response_ok = TaskTestResponse.test(status=JobStatus.completed)
+    response_ok.result = "OK!"
     response = TaskTestResponse.test(
         job_id=response_ok.job.job_id, created_at=response_ok.job.created_at
     )
+    await scheduled_jobs_dao.add_job(user.username, response)
     job = await arq_redis.enqueue_job(
         work_ok.name, response, _job_id=response.job.job_id
     )
@@ -35,7 +41,9 @@ async def test_job_ok(
 @pytest.mark.asyncio(scope="session")
 async def test_job_error(
     client: AsyncClient,
+    user: User,
     arq_redis: ArqRedis,
+    scheduled_jobs_dao: ScheduledJobsDAO,
     worker: Callable[..., Worker],
     work_error: Function,
 ):
@@ -46,6 +54,7 @@ async def test_job_error(
         job_id=response_error.job.job_id,
         created_at=response_error.job.created_at,
     )
+    await scheduled_jobs_dao.add_job(user.username, response)
     job = await arq_redis.enqueue_job(
         work_error.name, response, _job_id=response.job.job_id
     )
@@ -68,6 +77,7 @@ async def test_job_is_not_found(client: AsyncClient):
     assert data == {
         "job": {
             "job_id": job_id,
+            "message": "Job is not found",
             "status": JobStatus.not_found.value,
             "created_at": data["job"]["created_at"],
             "file_id": data["job"]["file_id"],

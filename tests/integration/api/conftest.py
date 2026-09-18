@@ -21,6 +21,8 @@ from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )
 from app.infrastructure.redis.config.models.redis import RedisSettings
+from app.infrastructure.redis.dao.arq import ArqDAO
+from app.infrastructure.redis.dao.job import ScheduledJobsDAO
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from tests.fixtures.task_fixtures import (  # noqa
     date_range,
@@ -144,6 +146,16 @@ async def worker(
     yield create
     if worker_:
         await worker_.close()
+
+
+@pytest.fixture
+def scheduled_jobs_dao(arq_redis: ArqRedis) -> ScheduledJobsDAO:
+    return ScheduledJobsDAO(arq_redis)
+
+
+@pytest.fixture
+def arq_dao(arq_redis: ArqRedis, app_config: AppSettings):
+    return ArqDAO(arq_redis, app_config.keep_result, app_config.abort_timeout)
 
 
 @pytest.fixture(scope="session")

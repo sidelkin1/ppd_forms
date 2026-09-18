@@ -21,5 +21,8 @@ class AppSettings(BaseSettings):
         default=86400, validation_alias="app_keep_result"
     )
     page_size: int = Field(default=5, validation_alias="app_page_size")
+    abort_timeout: float = Field(
+        default=10.0, validation_alias="app_abort_timeout"
+    )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

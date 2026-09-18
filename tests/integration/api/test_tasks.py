@@ -1,16 +1,9 @@
 import pytest
-from arq.connections import ArqRedis
 from httpx import AsyncClient
 
 from app.api.models.auth import User
-from app.core.config.models.app import AppSettings
 from app.infrastructure.redis.dao.arq import ArqDAO
 from tests.mocks.responses import TaskTestResponse
-
-
-@pytest.fixture
-def arq_dao(arq_redis: ArqRedis, app_config: AppSettings):
-    return ArqDAO(arq_redis, app_config.keep_result)
 
 
 @pytest.mark.asyncio

@@ -18,6 +18,7 @@ class JobStatus(str, Enum):
     in_progress = "in_progress"
     error = "error"
     not_found = "not_found"
+    cancelled = "cancelled"
 
     @classmethod
     def from_arq(cls, status: ArqJobStatus) -> Self:

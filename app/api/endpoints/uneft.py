@@ -5,19 +5,17 @@ from fastapi import APIRouter
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import NewJobDep, create_job_stamp
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import (
-    FieldsResponse,
-    ReservoirsResponse,
-    WellsResponse,
-)
 from app.api.utils.validators import check_field_exists
 from app.core.models.dto import (
+    FieldsResponse,
+    ReservoirsResponse,
     TaskFields,
     TaskReservoirs,
     TaskWells,
     UneftFieldDB,
     UneftReservoirDB,
     UneftWellDB,
+    WellsResponse,
 )
 from app.core.models.enums import UneftAssets, WellStock
 

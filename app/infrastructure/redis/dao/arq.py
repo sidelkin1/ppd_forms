@@ -6,14 +6,12 @@ import structlog
 from arq import ArqRedis
 from arq.jobs import Job, JobResult, ResultNotFound
 
-from app.api.models.responses import BaseResponse, JobResponse
+from app.core.models.dto import BaseResponse, JobResponse
 from app.core.models.enums import JobStatus
 from app.core.models.enums.task_id import TaskId
 from app.infrastructure.redis.dao.job import ScheduledJobsDAO
 
 
-# TODO(layers/A): infra must not import app.api - move the JobRequest
-# envelope to core/models/dto. See cancel-job-plan.md.
 class ArqDAO:
     def __init__(
         self, redis: ArqRedis, expires: timedelta, abort_timeout: float

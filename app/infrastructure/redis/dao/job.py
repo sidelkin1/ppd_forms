@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from redis.asyncio.client import Redis
 
-from app.api.models.responses import BaseResponse, JobResponse
+from app.core.models.dto import BaseResponse, JobResponse
 
 
 class ScheduledJobsDAO:

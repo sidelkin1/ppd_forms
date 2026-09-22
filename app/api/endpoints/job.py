@@ -6,7 +6,7 @@ from fastapi_pagination import Page, paginate
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.redis import RedisDep
 from app.api.dependencies.tracker import JobTrackerDep
-from app.api.models.responses import JobResponse
+from app.core.models.dto import JobResponse
 from app.core.models.enums.task_id import TaskId
 
 logger = logging.getLogger(__name__)

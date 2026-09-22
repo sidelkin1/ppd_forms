@@ -4,12 +4,12 @@ from typing import Any, cast
 import pytest
 from arq.worker import Function, func
 
-from app.api.models.responses import (
+from app.core.models.dto import (
     BaseResponse,
     FieldsResponse,
     ReservoirsResponse,
+    TaskBase,
 )
-from app.core.models.dto import TaskBase
 from app.core.services.uneft import uneft_fields, uneft_reservoirs
 from app.infrastructure.holder import HolderDAO
 

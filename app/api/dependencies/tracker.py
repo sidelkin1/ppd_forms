@@ -6,7 +6,7 @@ from fastapi import Depends, WebSocket
 
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import JobResponse
+from app.core.models.dto import JobResponse
 
 logger = logging.getLogger(__name__)
 

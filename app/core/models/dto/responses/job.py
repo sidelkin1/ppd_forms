@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import Any, Self
 
-from app.api.models.responses.base import BaseResponse
-from app.core.models.dto import JobStamp
+from app.core.models.dto.jobs.job_stamp import JobStamp
+from app.core.models.dto.responses.base import BaseResponse
 from app.core.models.enums import JobStatus
 
 

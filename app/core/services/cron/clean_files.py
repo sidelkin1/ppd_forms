@@ -5,7 +5,7 @@ import aioshutil
 import anyio
 from colorama import Fore
 
-from app.api.dependencies.path import PathProvider
+from app.common.paths import PathProvider
 
 logger = logging.getLogger(__name__)
 

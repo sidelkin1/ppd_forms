@@ -1,7 +1,9 @@
 from typing import Any, cast
 
-from app.api.dependencies.path import PathProvider
-from app.api.models.responses import (
+from app.common.paths import PathProvider
+from app.core.config.main import get_mmb_settings
+from app.core.config.models.app import AppSettings
+from app.core.models.dto import (
     CompensationResponse,
     DatabaseResponse,
     ExcelResponse,
@@ -17,13 +19,13 @@ from app.api.models.responses import (
     ProfileResponse,
     ProlongResponse,
     ReservoirsResponse,
+    UneftFieldDB,
+    UneftReservoirDB,
+    UneftWellDB,
     UtilsResponse,
     WellsResponse,
     WellTestResponse,
 )
-from app.core.config.main import get_mmb_settings
-from app.core.config.models.app import AppSettings
-from app.core.models.dto import UneftFieldDB, UneftReservoirDB, UneftWellDB
 from app.core.services.entrypoints.registry import WorkRegistry
 from app.core.services.reports import (
     compensation_report,

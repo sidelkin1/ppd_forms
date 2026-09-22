@@ -61,12 +61,12 @@ app/
 │   ├── dependencies/     # FastAPI dependency injection providers
 │   ├── endpoints/        # Route handlers (auth, database, excel, job, report, uneft, users)
 │   ├── middlewares/      # Middleware setup
-│   ├── models/           # Pydantic request/response schemas
+│   ├── models/           # API-specific models (auth: Token, User)
 │   └── utils/            # Validators
-├── common/               # Shared config (paths)
+├── common/               # Shared config and path helpers (Paths, PathProvider)
 ├── core/                 # Business logic
 │   ├── config/           # App-level settings (AppSettings, MmbSettings)
-│   ├── models/           # DTOs, enums, schemas
+│   ├── models/           # DTOs (incl. job/response envelopes), enums, schemas
 │   ├── services/         # Domain services
 │   │   ├── cron/         # Scheduled tasks (refresh tables, clean files)
 │   │   ├── entrypoints/  # Job dispatch: arq registry + DB/CSV data loading
@@ -104,7 +104,7 @@ app/
 
 - **Config pattern**: All settings use `pydantic_settings.BaseSettings` reading from `.env` file. Factory functions (`get_postgres_settings`, `get_redis_settings`, etc.) are `@lru_cache`d singletons.
 
-- **DTO/Schema split**: `app/core/models/dto/` contains internal data transfer objects used by workers. `app/core/models/schemas/` contains API request validation models. `app/api/models/responses.py` contains API response models.
+- **DTO/Schema split**: `app/core/models/dto/` contains internal data transfer objects used by workers, including the job envelope (`app/core/models/dto/responses/`: `BaseResponse`, `JobResponse`, `XxxResponse`) that is enqueued to arq and returned by the API. `app/core/models/schemas/` contains API request validation models. `app/api/models/` keeps only API-specific auth models.
 
 ### Data Flow
 

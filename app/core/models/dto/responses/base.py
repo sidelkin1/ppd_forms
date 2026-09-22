@@ -2,7 +2,7 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict
 
-from app.core.models.dto import JobStamp
+from app.core.models.dto.jobs.job_stamp import JobStamp
 
 T = TypeVar("T")
 

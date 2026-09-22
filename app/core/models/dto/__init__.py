@@ -12,6 +12,29 @@ from .db.well_test import WellTestDB
 from .jobs.job_stamp import JobStamp
 from .reports.prolong import ProlongExpected
 from .reports.well_test import WellTestResult
+from .responses.base import BaseResponse
+from .responses.job import JobResponse
+from .responses.task import (
+    CompensationResponse,
+    DatabaseResponse,
+    ExcelResponse,
+    FieldsResponse,
+    FnvResponse,
+    InjLossResponse,
+    MatbalResponse,
+    MatrixResponse,
+    MmbResponse,
+    OilLossResponse,
+    OppPerYearResponse,
+    OwcRespResponse,
+    ProfileResponse,
+    ProlongResponse,
+    ReportResponse,
+    ReservoirsResponse,
+    UtilsResponse,
+    WellsResponse,
+    WellTestResponse,
+)
 from .tasks.base import TaskBase
 from .tasks.compensation import TaskCompensation
 from .tasks.database import TaskDatabase

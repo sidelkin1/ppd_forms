@@ -34,7 +34,7 @@ async def test_field_list_success(
     expected_data: list | dict,
 ):
     worker_ = worker(functions=[work_uneft], burst=False)
-    asyncio.create_task(worker_.main())
+    asyncio.create_task(worker_.async_run())
     resp = await client.get(
         f"/uneft/fields"
         f"{'/' + str(field_id) if field_id else ''}"
@@ -61,7 +61,7 @@ async def test_reservoir_list_success(
     expected_data: list,
 ):
     worker_ = worker(functions=[work_uneft], burst=False)
-    asyncio.create_task(worker_.main())
+    asyncio.create_task(worker_.async_run())
     resp = await client.get(f"/uneft/fields/{field_id}/reservoirs")
     assert resp.is_success
     data = resp.json()
@@ -77,7 +77,7 @@ async def test_unknown_field(
     path: str,
 ):
     worker_ = worker(functions=[work_uneft], burst=False)
-    asyncio.create_task(worker_.main())
+    asyncio.create_task(worker_.async_run())
     resp = await client.get(f"/uneft/fields{path}")
     assert not resp.is_success
     assert resp.status_code == status.HTTP_404_NOT_FOUND

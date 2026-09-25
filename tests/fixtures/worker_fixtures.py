@@ -17,31 +17,37 @@ from app.infrastructure.holder import HolderDAO
 @pytest.fixture
 def work_ok() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: BaseResponse[TaskBase]
+        ctx: dict[str, Any],
+        response: BaseResponse[TaskBase],
+        log_ctx: dict[str, Any],
     ) -> str:
         return "OK!"
 
-    return func(perform_work, name="work_ok")
+    return func(perform_work, name="perform_work")
 
 
 @pytest.fixture
 def work_error() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: BaseResponse[TaskBase]
+        ctx: dict[str, Any],
+        response: BaseResponse[TaskBase],
+        log_ctx: dict[str, Any],
     ) -> None:
         raise ValueError("Error!")
 
-    return func(perform_work, name="work_error")
+    return func(perform_work, name="perform_work")
 
 
 @pytest.fixture
 def work_long() -> Function:
     async def perform_work(
-        ctx: dict[str, Any], response: BaseResponse[TaskBase]
+        ctx: dict[str, Any],
+        response: BaseResponse[TaskBase],
+        log_ctx: dict[str, Any],
     ) -> None:
         await asyncio.sleep(3600)
 
-    return func(perform_work, name="work_long")
+    return func(perform_work, name="perform_work")
 
 
 @pytest.fixture

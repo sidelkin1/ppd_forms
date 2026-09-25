@@ -29,6 +29,9 @@ class JobTracker:
     async def __aexit__(self, exc_type, exc_value, traceback):
         self.socket_task.cancel()
         self.job_task.cancel()
+        await asyncio.gather(
+            self.socket_task, self.job_task, return_exceptions=True
+        )
 
     async def _socket_listen(self) -> None:
         try:
@@ -41,6 +44,11 @@ class JobTracker:
         try:
             await self.redis.result(self.job_id, self.username)
         except asyncio.CancelledError:
+            # arq отдаёт CancelledError как результат отменённой задачи, но
+            # им же отменяют и сам трекер (закрылся websocket) — такую
+            # отмену нужно пропустить наверх, не проглатывая
+            if (task := asyncio.current_task()) and task.cancelling():
+                raise
             logger.info("Job %s was cancelled", self.job_id)
         except Exception as error:
             logger.error("Job error", exc_info=error)

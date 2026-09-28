@@ -4,8 +4,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function checkJobStatus(job) {
   const spinner = document.getElementById(`${job.job_id}Fetch`);
+  const resultURL = `/reports/${job.file_id}/zip`;
   try {
-    await checkStatus(job.job_id, job.job_id, `/reports/${job.file_id}/zip`);
+    const current = await fetchJobStatus(job.job_id);
+    if (current.job.status === "in_progress") {
+      await checkStatus(job.job_id, job.job_id, resultURL);
+    } else {
+      renderJobResponse(job.job_id, current, resultURL);
+    }
+  } catch (error) {
+    console.error(error);
+    showDefaultFormAlert(job.job_id);
   } finally {
     spinner.classList.add("d-none");
   }

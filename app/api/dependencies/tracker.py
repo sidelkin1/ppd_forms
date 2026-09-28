@@ -7,7 +7,6 @@ from fastapi import Depends, WebSocket
 from app.api.dependencies.auth import UserDep
 from app.api.dependencies.redis import RedisDep
 from app.core.models.dto import JobResponse
-from app.core.models.enums import JobStatus
 
 logger = logging.getLogger(__name__)
 
@@ -61,11 +60,6 @@ class JobTracker:
         )
 
     async def status(self) -> None:
-        """Отправить текущий статус, затем финальный при необходимости."""
-        current = await self.redis.response(self.job_id, self.username)
-        await self.send_response(current)
-        if current.job.status is not JobStatus.in_progress:
-            return
         await asyncio.wait(
             (self.socket_task, self.job_task),
             return_when=asyncio.FIRST_COMPLETED,

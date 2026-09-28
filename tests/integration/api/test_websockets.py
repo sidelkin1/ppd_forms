@@ -116,7 +116,7 @@ async def test_job_cancelled(
 
 
 @pytest.mark.asyncio(scope="session")
-async def test_websocket_status_then_cancel(
+async def test_websocket_waits_for_terminal(
     test_client: TestClient,
     user: User,
     arq_redis: ArqRedis,
@@ -133,14 +133,10 @@ async def test_websocket_status_then_cancel(
     await wait_for_job_start(arq_redis, job_id)
 
     with test_client.websocket_connect(f"/jobs/{job_id}/ws") as websocket:
-        # первым приходит текущий статус — задача ещё выполняется
-        first = websocket.receive_json()
-        assert first["job"]["status"] == JobStatus.in_progress.value
-
+        # пока задача выполняется, WS молчит — шлёт только терминальный статус
         cancel = await arq_dao.cancel_job(job_id, user.username)
         assert cancel.job.status is JobStatus.cancelled
 
-        # вторым — финальный статус отменённой задачи
-        second = websocket.receive_json()
-        assert second["job"]["status"] == JobStatus.cancelled.value
-        assert second["job"]["message"] == "Job is cancelled"
+        data = websocket.receive_json()
+        assert data["job"]["status"] == JobStatus.cancelled.value
+        assert data["job"]["message"] == "Job is cancelled"

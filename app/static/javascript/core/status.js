@@ -1,49 +1,68 @@
-async function checkStatus(name, jobID, resultURL = null) {
-  const cancelButton = document.getElementById(`${name}CancelButton`);
+async function fetchJobStatus(jobID) {
+  const response = await fetchWithAuth(buildUrl(`/jobs/${jobID}`));
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`);
+  }
+  return await response.json();
+}
 
-  let result = false;
+async function waitJobTerminal(jobID) {
   const webSocketClient = new WebSocketClient();
-  hideStatusAlerts(name);
   try {
-    const url = buildUrl(`/jobs/${jobID}/ws`);
-    await webSocketClient.connect(url);
-    while (true) {
-      const response = await webSocketClient.receive();
-      const data = JSON.parse(response);
-      if (data.job.status === "in_progress") {
-        if (cancelButton) {
-          cancelButton.classList.remove("d-none");
-          cancelButton.disabled = false;
-          cancelButton.onclick = () => cancelJob(name, jobID);
-        }
-        continue;
-      }
-      hideStatusAlerts(name);
-      if (data.job.status === "completed") {
-        document.getElementById(`${name}Success`).classList.remove("d-none");
-        const link = document.getElementById(`${name}Link`);
-        if (resultURL && link) {
-          link.href = buildUrl(resultURL);
-        }
-        result = true;
-      } else if (data.job.status === "cancelled") {
-        showFormWarning(name);
-      } else if (data.job.message) {
-        showFormAlert(name, data.job.message);
-      } else {
-        showDefaultFormAlert(name);
-      }
-      break;
+    await webSocketClient.connect(buildUrl(`/jobs/${jobID}/ws`));
+    return JSON.parse(await webSocketClient.receive());
+  } finally {
+    await webSocketClient.disconnect();
+  }
+}
+
+function showCancelButton(name, jobID) {
+  const button = document.getElementById(`${name}CancelButton`);
+  if (!button) {
+    return;
+  }
+  button.classList.remove("d-none");
+  button.disabled = false;
+  button.onclick = () => cancelJob(name, jobID);
+}
+
+function hideCancelButton(name) {
+  document.getElementById(`${name}CancelButton`)?.classList.add("d-none");
+}
+
+function renderJobResponse(name, data, resultURL) {
+  hideStatusAlerts(name);
+  if (data.job.status === "completed") {
+    document.getElementById(`${name}Success`).classList.remove("d-none");
+    const link = document.getElementById(`${name}Link`);
+    if (resultURL && link) {
+      link.href = buildUrl(resultURL);
     }
+    return true;
+  }
+  if (data.job.status === "cancelled") {
+    showFormWarning(name);
+  } else if (data.job.message) {
+    showFormAlert(name, data.job.message);
+  } else {
+    showDefaultFormAlert(name);
+  }
+  return false;
+}
+
+async function checkStatus(name, jobID, resultURL = null) {
+  hideStatusAlerts(name);
+  showCancelButton(name, jobID);
+  try {
+    const data = await waitJobTerminal(jobID);
+    return renderJobResponse(name, data, resultURL);
   } catch (error) {
     console.error(error);
     showDefaultFormAlert(name);
+    return false;
   } finally {
-    cancelButton?.classList.add("d-none");
-    await webSocketClient.disconnect();
+    hideCancelButton(name);
   }
-
-  return result;
 }
 
 async function cancelJob(name, jobID) {

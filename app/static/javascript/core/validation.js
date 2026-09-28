@@ -170,6 +170,27 @@ function showDefaultFormAlert(formName) {
   alert.classList.remove("d-none");
 }
 
+function showFormWarning(formName, message) {
+  const alert = document.getElementById(formName + "Warning");
+  if (!alert) {
+    return;
+  }
+  const msg = alert.querySelector(".alert-msg");
+  if (msg) {
+    msg.textContent = message ?? msg.dataset.defaultText ?? "";
+  }
+  alert.classList.remove("d-none");
+}
+
+function hideStatusAlerts(formName) {
+  ["Success", "Warning", "Danger"].forEach((suffix) => {
+    const alert = document.getElementById(formName + suffix);
+    if (alert) {
+      alert.classList.add("d-none");
+    }
+  });
+}
+
 const MESSAGE_TRANSLATIONS = {
   "`date_from` must be less than or equal to `date_to`":
     "Дата начала не может быть позже даты окончания",

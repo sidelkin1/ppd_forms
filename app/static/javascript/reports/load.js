@@ -18,15 +18,12 @@ async function sendReportFiles(name, files, url) {
 async function loadReport(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const dateFrom = document.getElementById(`${reportName}Start`).value;
   const dateTo = document.getElementById(`${reportName}End`).value;
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const url = `/reports/${reportName}`;
   const data = {
@@ -49,14 +46,11 @@ async function loadReport(reportName) {
 async function loadOnDate(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const onDate = document.getElementById(`${reportName}OnDate`).value;
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const url = `/reports/${reportName}`;
   const data = { on_date: onDate };
@@ -76,8 +70,6 @@ async function loadOnDate(reportName) {
 async function loadInjLoss(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const dateFrom = document.getElementById(`${reportName}Start`).value;
   const dateTo = document.getElementById(`${reportName}End`).value;
   const lossMode = document.getElementById(`${reportName}Select`).value;
@@ -85,8 +77,7 @@ async function loadInjLoss(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const url = `/reports/${reportName}/${lossMode}`;
   const data = {
@@ -110,16 +101,13 @@ async function loadInjLoss(reportName) {
 async function loadOilLoss(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const dateFrom = document.getElementById(`${reportName}Start`).value;
   const dateTo = document.getElementById(`${reportName}End`).value;
   const lossMode = document.getElementById(`${reportName}Select`).value;
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const url = `/reports/${reportName}/${lossMode}`;
   const data = {
@@ -142,8 +130,6 @@ async function loadOilLoss(reportName) {
 async function loadMatrix(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const dateFrom = document.getElementById(`${reportName}Start`).value;
   const dateTo = document.getElementById(`${reportName}End`).value;
   const basePeriod = document.getElementById(`${reportName}Base`).value;
@@ -158,8 +144,7 @@ async function loadMatrix(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const files = await sendReportFiles(reportName, [wells], "/excel/");
   if (files) {
@@ -190,8 +175,6 @@ async function loadMatrix(reportName) {
 async function loadFNV(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const minRadius = document.getElementById(`${reportName}MinRadius`).value;
   const allFields = [...document.getElementById(`${reportName}Fields`)]
     .filter((opt) => !["--", "0"].includes(opt.value))
@@ -205,8 +188,7 @@ async function loadFNV(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const url = `/reports/${reportName}`;
   const data = {
@@ -230,8 +212,6 @@ async function loadFNV(reportName) {
 async function loadMatbal(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const { value: fieldID, text: fieldName } = document.getElementById(
     `${reportName}Fields`,
   ).selectedOptions[0];
@@ -249,8 +229,7 @@ async function loadMatbal(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const files = await sendReportFiles(
     reportName,
@@ -283,8 +262,6 @@ async function loadMatbal(reportName) {
 async function loadProlong(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const expected = document.getElementById(`${reportName}Expected`).files[0];
   const actual = document.getElementById(`${reportName}Actual`).files[0];
   const allMethods = [...document.getElementById(`${reportName}Interpolation`)]
@@ -295,8 +272,7 @@ async function loadProlong(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const files = await sendReportFiles(
     reportName,
@@ -327,8 +303,6 @@ async function loadProlong(reportName) {
 async function loadMMB(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const tanks = document.getElementById(`${reportName}Tank`).files[0];
   const alternative = document.getElementById(
     `${reportName}Alternative`,
@@ -336,8 +310,7 @@ async function loadMMB(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const files = await sendReportFiles(reportName, [tanks], "/excel/");
   if (files) {
@@ -363,8 +336,6 @@ async function loadMMB(reportName) {
 async function loadWellTest(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const wellTest = document.getElementById(`${reportName}WellTest`).files[0];
   const gtmPeriod = document.getElementById(`${reportName}GtmPeriod`).value;
   const gdisPeriod = document.getElementById(`${reportName}GdisPeriod`).value;
@@ -372,8 +343,7 @@ async function loadWellTest(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const files = await sendReportFiles(reportName, [wellTest], "/excel/");
   if (files) {
@@ -401,8 +371,6 @@ async function loadWellTest(reportName) {
 async function loadOwcResp(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);
-  const alert = document.getElementById(`${reportName}Danger`);
-  const success = document.getElementById(`${reportName}Success`);
   const { value: fieldID, text: fieldName } = document.getElementById(
     `${reportName}Fields`,
   ).selectedOptions[0];
@@ -417,8 +385,7 @@ async function loadOwcResp(reportName) {
 
   loader.classList.remove("d-none");
   button.classList.add("disabled");
-  alert.classList.add("d-none");
-  success.classList.add("d-none");
+  hideStatusAlerts(reportName);
 
   const url = `/reports/${reportName}`;
   const data = {

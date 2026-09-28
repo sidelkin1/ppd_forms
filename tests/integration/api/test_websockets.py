@@ -9,7 +9,10 @@ from fastapi.testclient import TestClient
 from app.api.models.auth import User
 from app.core.models.enums import JobStatus
 from app.infrastructure.redis.dao.arq import ArqDAO
-from tests.integration.api.waiters import wait_for_abort_request
+from tests.integration.api.waiters import (
+    wait_for_abort_request,
+    wait_for_job_start,
+)
 from tests.mocks.responses import TaskTestResponse
 
 
@@ -110,3 +113,34 @@ async def test_job_cancelled(
         data = websocket.receive_json()
         assert data["job"]["status"] == JobStatus.cancelled.value
         assert data["job"]["message"] == "Job is cancelled"
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_websocket_status_then_cancel(
+    test_client: TestClient,
+    user: User,
+    arq_redis: ArqRedis,
+    arq_dao: ArqDAO,
+    worker: Callable[..., Worker],
+    work_long: Function,
+):
+    response = TaskTestResponse.test()
+    job_id = response.job.job_id
+    await arq_dao.enqueue_task(response, user.username)
+
+    worker_ = worker(functions=[work_long], burst=False, allow_abort_jobs=True)
+    asyncio.create_task(worker_.async_run())
+    await wait_for_job_start(arq_redis, job_id)
+
+    with test_client.websocket_connect(f"/jobs/{job_id}/ws") as websocket:
+        # первым приходит текущий статус — задача ещё выполняется
+        first = websocket.receive_json()
+        assert first["job"]["status"] == JobStatus.in_progress.value
+
+        cancel = await arq_dao.cancel_job(job_id, user.username)
+        assert cancel.job.status is JobStatus.cancelled
+
+        # вторым — финальный статус отменённой задачи
+        second = websocket.receive_json()
+        assert second["job"]["status"] == JobStatus.cancelled.value
+        assert second["job"]["message"] == "Job is cancelled"

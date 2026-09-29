@@ -23,6 +23,9 @@
                             <a href="#" class="alert-link" id="{{ item.path }}Link"><i class="bi bi-download"></i> Скачать</a>
                         {% endif %}
                     </div>
+                    <div class="alert alert-warning d-none" id="{{ item.path }}Warning" role="alert">
+                        <i class="bi bi-slash-circle-fill"></i> <span class="alert-msg" data-default-text="Задача отменена пользователем">Задача отменена пользователем</span>
+                    </div>
                     <div class="alert alert-danger d-none" id="{{ item.path }}Danger" role="alert">
                         <i class="bi bi-exclamation-triangle-fill"></i> <span class="alert-msg" data-default-text="{{ danger_text }}">{{ danger_text }}</span>
                     </div>

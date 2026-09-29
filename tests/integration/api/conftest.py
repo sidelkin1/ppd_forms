@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncGenerator, Callable, Generator
 
 import pytest
@@ -21,6 +22,7 @@ from app.infrastructure.db.factories.local import (
     create_pool as create_local_pool,
 )
 from app.infrastructure.redis.config.models.redis import RedisSettings
+from app.infrastructure.redis.dao.arq import ArqDAO
 from app.infrastructure.redis.factory import create_pool as create_redis_pool
 from tests.fixtures.task_fixtures import (  # noqa
     date_range,
@@ -143,7 +145,26 @@ async def worker(
 
     yield create
     if worker_:
+        # дать async_run() выставить main_task, иначе ассерт ниже ложный
+        await asyncio.sleep(0)
+        assert worker_.burst or worker_.main_task is not None, (
+            "фоновый воркер запускайте через async_run()"
+        )
+        # close() не отменяет main_task при handle_signals=True (по умолчанию),
+        # а handle_signals=False на Windows падает: arq дёргает signal.SIGUSR1,
+        # которого на Windows нет. Отменяем фоновый цикл явно.
+        if worker_.main_task and not worker_.main_task.done():
+            worker_.main_task.cancel()
+            try:
+                await worker_.main_task
+            except asyncio.CancelledError:
+                pass
         await worker_.close()
+
+
+@pytest.fixture
+def arq_dao(arq_redis: ArqRedis, app_config: AppSettings):
+    return ArqDAO(arq_redis, app_config.keep_result, app_config.abort_timeout)
 
 
 @pytest.fixture(scope="session")

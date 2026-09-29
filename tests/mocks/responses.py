@@ -1,7 +1,6 @@
 from typing import Self
 
-from app.api.models.responses import BaseResponse
-from app.core.models.dto import JobStamp, TaskBase
+from app.core.models.dto import BaseResponse, JobStamp, TaskBase
 from app.core.models.enums import TaskId
 
 

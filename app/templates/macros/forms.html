@@ -1,5 +1,5 @@
 {% macro spinner_button(name, text, func) -%}
-    <div class="input-group mb-1">
+    <div class="d-flex gap-2 mb-1">
         <button
             type="button"
             class="btn btn-primary"
@@ -13,6 +13,13 @@
             >
             </span>
             <i class="bi bi-download"></i> {{ text }}
+        </button>
+        <button
+            type="button"
+            class="btn btn-danger d-none"
+            id="{{ name }}CancelButton"
+        >
+            <i class="bi bi-x-circle"></i> Отменить
         </button>
     </div>
 {%- endmacro %}

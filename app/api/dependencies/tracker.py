@@ -4,24 +4,21 @@ from typing import Annotated, Self
 
 from fastapi import Depends, WebSocket
 
-from app.api.dependencies.job import CurrentJobDep, JobResponseDep
-from app.core.models.enums import JobStatus
+from app.api.dependencies.auth import UserDep
+from app.api.dependencies.redis import RedisDep
+from app.core.models.dto import JobResponse
 
 logger = logging.getLogger(__name__)
 
 
 class JobTracker:
     def __init__(
-        self,
-        websocket: WebSocket,
-        job: CurrentJobDep,
-        response: JobResponseDep,
-        abort_on_disconnect: bool = False,
+        self, job_id: str, user: UserDep, websocket: WebSocket, redis: RedisDep
     ) -> None:
+        self.job_id = job_id
+        self.username = user.username
         self.websocket = websocket
-        self.job = job
-        self.response = response
-        self.abort_on_disconnect = abort_on_disconnect
+        self.redis = redis
 
     async def __aenter__(self) -> Self:
         await self.websocket.accept()
@@ -32,31 +29,36 @@ class JobTracker:
     async def __aexit__(self, exc_type, exc_value, traceback):
         self.socket_task.cancel()
         self.job_task.cancel()
+        await asyncio.gather(
+            self.socket_task, self.job_task, return_exceptions=True
+        )
 
     async def _socket_listen(self) -> None:
         try:
             while True:
-                await self.websocket.receive()
+                message = await self.websocket.receive()
+                if message["type"] == "websocket.disconnect":
+                    break
         except Exception as error:
             logger.error("Websocket error", exc_info=error)
 
-    async def _job_result(self) -> None:
-        if self.response.job.status is JobStatus.not_found:
-            self.response.job.message = "Job is not found"
-            return
+    async def _job_result(self) -> JobResponse:
         try:
-            await self.job.result()
+            await self.redis.result(self.job_id, self.username)
+        except asyncio.CancelledError:
+            # arq отдаёт CancelledError как результат отменённой задачи, но
+            # им же отменяют и сам трекер (закрылся websocket) — такую
+            # отмену нужно пропустить наверх, не проглатывая
+            if (task := asyncio.current_task()) and task.cancelling():
+                raise
+            logger.info("Job %s was cancelled", self.job_id)
         except Exception as error:
-            self.response.job.status = JobStatus.error
-            self.response.job.message = str(error)
             logger.error("Job error", exc_info=error)
-        else:
-            self.response.job.status = JobStatus.completed
-            self.response.job.message = "Job is completed"
+        return await self.redis.response(self.job_id, self.username)
 
-    async def send_response(self) -> None:
+    async def send_response(self, response: JobResponse) -> None:
         await self.websocket.send_json(
-            self.response.model_dump(mode="json", exclude_none=True)
+            response.model_dump(mode="json", exclude_none=True)
         )
 
     async def status(self) -> None:
@@ -65,23 +67,11 @@ class JobTracker:
             return_when=asyncio.FIRST_COMPLETED,
         )
         if self.socket_task.done():
-            if self.abort_on_disconnect:
-                logger.info(
-                    "Websocket was closed, the job %s will be aborted",
-                    self.response.job.job_id,
-                )
-                try:
-                    await self.job.abort()
-                except Exception as error:
-                    logger.error(
-                        "Exception while aborting job", exc_info=error
-                    )
-            else:
-                logger.info(
-                    "Websocket was closed, but the job will continue to run"
-                )
+            logger.info(
+                "Websocket was closed, but the job will continue to run"
+            )
         else:
-            await self.send_response()
+            await self.send_response(self.job_task.result())
 
 
 def get_job_tracker() -> JobTracker:

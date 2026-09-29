@@ -14,13 +14,7 @@ from .auth import (
     get_current_user_or_none,
 )
 from .db import DbProvider, dao_provider
-from .job import (
-    JobProvider,
-    get_current_job,
-    get_job_provider,
-    get_job_reponse,
-    get_new_job,
-)
+from .job import create_job_stamp, get_new_job
 from .pagination import PageSize, get_pagination_params
 from .path import PathProvider, get_path_provider
 from .redis import RedisProvider, redis_provider
@@ -37,7 +31,9 @@ def setup(
 ) -> None:
     app.dependency_overrides[dao_provider] = DbProvider(pool).dao
     app.dependency_overrides[redis_provider] = RedisProvider(
-        pool=redis, expires=app_config.keep_result
+        pool=redis,
+        expires=app_config.keep_result,
+        abort_timeout=app_config.abort_timeout,
     ).dao
 
     path_provider = PathProvider(paths)
@@ -50,11 +46,7 @@ def setup(
     )
     app.dependency_overrides[get_auth_provider] = lambda: auth_provider
 
-    job_provider = JobProvider()
-    app.dependency_overrides[get_new_job] = job_provider.create
-    app.dependency_overrides[get_current_job] = job_provider.current
-    app.dependency_overrides[get_job_reponse] = job_provider.response
-    app.dependency_overrides[get_job_provider] = lambda: job_provider
+    app.dependency_overrides[get_new_job] = create_job_stamp
     app.dependency_overrides[get_job_tracker] = JobTracker
 
     app.dependency_overrides[get_pagination_params] = PageSize(

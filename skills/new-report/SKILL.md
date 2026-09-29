@@ -98,15 +98,17 @@ Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` 
   from .xxx_params import XxxParams
   ```
 
-- **`app/api/models/responses/task.py`** — add Response type:
+- **`app/core/models/dto/responses/task.py`** — add Response type (import `TaskXxx` from its own module at the top of the file):
   ```python
-  XxxResponse = ReportResponse[dto.TaskXxx]
+  XxxResponse = ReportResponse[TaskXxx]
   ```
 
-- **`app/api/models/responses/__init__.py`** — add export:
+- **`app/core/models/dto/responses/__init__.py`** — add export:
   ```python
   from .task import XxxResponse
   ```
+
+- **`app/core/models/dto/__init__.py`** — add `XxxResponse` to the `from .responses.task import (...)` block; endpoints import the envelope from this flat path.
 
 - **`app/api/endpoints/report.py`** — add endpoint.
 
@@ -114,8 +116,7 @@ Key contract: `route_fields=["task_id", "name"]` → `route_url = "report:xxx"` 
 
     Add imports at top:
     ```python
-    from app.api.models.responses import XxxResponse
-    from app.core.models.dto import TaskXxx
+    from app.core.models.dto import TaskXxx, XxxResponse
     from app.core.models.enums import ReportName
     from app.core.models.schemas import XxxParams
     ```
@@ -328,9 +329,9 @@ make_archive(str(path), "zip", root_dir=path)
   ```
 
 - **`app/core/services/entrypoints/arq.py`** — register handler.
-  Add imports:
+  Add imports (`XxxResponse` goes into the existing `from app.core.models.dto import (...)` block):
   ```python
-  from app.api.models.responses import XxxResponse
+  from app.core.models.dto import XxxResponse
   from app.core.services.reports import xxx_report
   ```
 
@@ -694,14 +695,14 @@ Legend: ✚ create, ✎ edit.
 app/
 ├── api/
 │   ├── config/yaml/reports.yaml              ✎
-│   ├── endpoints/report.py                   ✎
-│   └── models/responses/
-│       ├── __init__.py                       ✎
-│       └── task.py                           ✎
+│   └── endpoints/report.py                   ✎
 ├── core/
 │   ├── models/
 │   │   ├── dto/
 │   │   │   ├── __init__.py                   ✎
+│   │   │   ├── responses/
+│   │   │   │   ├── __init__.py               ✎
+│   │   │   │   └── task.py                   ✎
 │   │   │   └── tasks/<report>.py             ✚
 │   │   ├── enums/
 │   │   │   └── report_name.py                ✎

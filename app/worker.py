@@ -8,10 +8,10 @@ from arq import cron
 from arq.connections import RedisSettings
 from dotenv import load_dotenv
 
-from app.api.dependencies.path import PathProvider
-from app.api.models.responses import BaseResponse
 from app.common.config.models.paths import Paths
+from app.common.paths import PathProvider
 from app.core.config.main import get_app_settings
+from app.core.models.dto import BaseResponse
 from app.core.services.cron.clean_files import cron_clean_files
 from app.core.services.cron.refresh_table import (
     cron_refresh_mer,

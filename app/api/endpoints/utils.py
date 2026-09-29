@@ -4,9 +4,8 @@ from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
-from app.api.models.responses import UtilsResponse
 from app.api.utils.upload_file import save_upload_file
-from app.core.models.dto import TaskUtils
+from app.core.models.dto import TaskUtils, UtilsResponse
 from app.core.models.enums import LoadMode, UtilsTableName
 from app.core.models.schemas import CsvPath
 

@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from collections.abc import Callable
 
 import pytest
@@ -14,6 +15,8 @@ from tests.integration.api.waiters import (
     wait_for_job_start,
 )
 from tests.mocks.responses import TaskTestResponse
+
+TRACKER_LOGGER = "app.api.dependencies.tracker"
 
 
 @pytest.mark.asyncio(scope="session")
@@ -140,3 +143,38 @@ async def test_websocket_waits_for_terminal(
         data = websocket.receive_json()
         assert data["job"]["status"] == JobStatus.cancelled.value
         assert data["job"]["message"] == "Job is cancelled"
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_websocket_disconnect_while_running_is_silent(
+    test_client: TestClient,
+    user: User,
+    arq_redis: ArqRedis,
+    arq_dao: ArqDAO,
+    worker: Callable[..., Worker],
+    work_long: Function,
+    caplog: pytest.LogCaptureFixture,
+):
+    response = TaskTestResponse.test()
+    job_id = response.job.job_id
+    await arq_dao.enqueue_task(response, user.username)
+
+    worker_ = worker(functions=[work_long], burst=False, allow_abort_jobs=True)
+    asyncio.create_task(worker_.async_run())
+    await wait_for_job_start(arq_redis, job_id)
+
+    # alembic при накатывании миграций зовёт fileConfig, а он по умолчанию
+    # с disable_existing_loggers=True глушит уже созданные логгеры
+    tracker_logger = logging.getLogger(TRACKER_LOGGER)
+    tracker_logger.disabled = False
+
+    with caplog.at_level(logging.ERROR, logger=TRACKER_LOGGER):
+        # клиент закрывает сокет, пока задача ещё выполняется
+        with test_client.websocket_connect(f"/jobs/{job_id}/ws"):
+            pass
+        await asyncio.sleep(0.5)
+
+    # иначе teardown воркера будет ждать задачу до её таймаута
+    await arq_dao.cancel_job(job_id, user.username)
+
+    assert "Websocket error" not in caplog.text

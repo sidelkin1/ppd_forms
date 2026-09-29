@@ -36,7 +36,9 @@ class JobTracker:
     async def _socket_listen(self) -> None:
         try:
             while True:
-                await self.websocket.receive()
+                message = await self.websocket.receive()
+                if message["type"] == "websocket.disconnect":
+                    break
         except Exception as error:
             logger.error("Websocket error", exc_info=error)
 

@@ -62,3 +62,24 @@ async def test_delete_unknown_report(client: AsyncClient):
     resp = await client.delete("/reports/unknown/csv")
     assert not resp.is_success
     assert resp.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_check_report_exists(client: AsyncClient, paths: Paths):
+    results_dir = paths.file_dir / "test_user" / "results"
+    with open(paths.data_dir / "test.csv", "rb") as source:
+        await save_upload_file(
+            UploadFile(source, filename="exists.csv"), results_dir
+        )
+    resp = await client.get("/reports/exists/csv/exists")
+    assert resp.is_success
+    assert resp.json() == {"exists": True}
+    (results_dir / "exists.csv").unlink(missing_ok=True)
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_check_missing_report(client: AsyncClient):
+    """Отсутствие файла - это ответ, а не ошибка запроса."""
+    resp = await client.get("/reports/missing/csv/exists")
+    assert resp.is_success
+    assert resp.json() == {"exists": False}

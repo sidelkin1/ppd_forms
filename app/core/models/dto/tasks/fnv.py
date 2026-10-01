@@ -8,7 +8,6 @@ from app.core.models.enums import TaskId
 class TaskFNV(
     TaskReport, task_id=TaskId.report, route_fields=["task_id", "name"]
 ):
-    fields: list[UneftFieldDB]
+    field: UneftFieldDB
     min_radius: NonNegativeFloat
     alternative: bool
-    max_fields: int

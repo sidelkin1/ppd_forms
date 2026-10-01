@@ -136,16 +136,14 @@ async def test_fnv_report(
         request_id="1234567890", user_id="test_user"
     )
     fnv_dir = result_dir / "fnv"
-    fields = [UneftFieldDB(id=1, name="F1")]
+    field = UneftFieldDB(id=1, name="F1")
     min_radius = 0
     alternative = False
-    max_fields = 1
     await fnv_report(
         tmp_path,
-        fields,
+        field,
         min_radius,
         alternative,
-        max_fields,
         pool_holder.fnv_reporter,
     )
     parts = ["/".join(file.parts[-2:]) for file in fnv_dir.glob("*/*.txt")]

@@ -42,6 +42,7 @@ from app.core.services.reports import (
     well_test_report,
 )
 from app.core.services.uneft import uneft_fields, uneft_reservoirs, uneft_wells
+from app.core.utils.concurrency_limit import concurrency_limit
 from app.infrastructure.files.config.models.csv import CsvSettings
 from app.infrastructure.holder import HolderDAO
 from app.infrastructure.provider import DbProvider
@@ -335,17 +336,20 @@ async def create_matrix_report(
 async def create_fnv_report(
     response: FnvResponse, ctx: dict[str, Any]
 ) -> None:
+    app_config: AppSettings = ctx["app_config"]
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     file_id = cast(str, response.job.file_id)
-    async with ctx["ofm_dao"]() as holder:
+    # лимит держим до открытия сессии OFM: arq тянет до 10 задач сразу,
+    # ждущие лимит не должны занимать соединения с Oracle
+    limit = concurrency_limit("fnv", app_config.fnv_concurrency)
+    async with limit, ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await fnv_report(
             path_provider.dir_path(user_id, file_id),
-            response.task.fields,
+            response.task.field,
             response.task.min_radius,
             response.task.alternative,
-            response.task.max_fields,
             holder.fnv_reporter,
         )
 

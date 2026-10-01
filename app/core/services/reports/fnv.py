@@ -1,4 +1,3 @@
-import asyncio
 from datetime import date
 from pathlib import Path
 from shutil import make_archive
@@ -385,18 +384,18 @@ async def _save_countours(
     await logger.awarning("Сохранено в %s", path)
 
 
-async def _process_field(
+async def fnv_report(
     path: Path,
     field: UneftFieldDB,
     min_radius: float,
     alternative: bool,
     fnv: FnvReporter,
-    sem: asyncio.Semaphore,
-    failures: asyncio.Queue[UneftFieldDB],
 ) -> None:
-    async with sem:
-        result_path = path / field.name
-        result_path.mkdir(parents=True, exist_ok=True)
+    result_path = path / field.name
+    # каталог создаём до try: иначе ошибка mkdir уйдёт в finally и
+    # make_archive упадёт с FileNotFoundError, затерев исходный traceback
+    result_path.mkdir(parents=True, exist_ok=True)
+    try:
         with LogContext(str(result_path), result_path / "fnv.log") as logger:
             try:
                 await logger.awarning("Start")
@@ -408,45 +407,12 @@ async def _process_field(
                 )
                 await _save_countours(result_path, contours, logger)
                 await logger.awarning("Finish")
-            except Exception:  # noqa: BLE001
-                await logger.aexception("Ошибка во время обработки")
-                await failures.put(field)
-
-
-async def _handle_failures(
-    path: Path,
-    failures: asyncio.Queue[UneftFieldDB],
-    tasks: list[asyncio.Task],
-) -> None:
-    with LogContext(str(path), path / "errors.log") as logger:
-        while not (all(task.done() for task in tasks) and failures.empty()):
-            if failures.empty():
-                await asyncio.sleep(0)
-                continue
-            field = await failures.get()
-            await logger.aerror(
-                "Не удалось обработать месторождение: %s", field.name
-            )
-
-
-async def fnv_report(
-    path: Path,
-    fields: list[UneftFieldDB],
-    min_radius: float,
-    alternative: bool,
-    max_fields: int,
-    fnv: FnvReporter,
-) -> None:
-    sem = asyncio.Semaphore(max_fields)
-    failures: asyncio.Queue[UneftFieldDB] = asyncio.Queue(maxsize=100)
-    async with asyncio.TaskGroup() as tg:
-        tasks = [
-            tg.create_task(
-                _process_field(
-                    path, field, min_radius, alternative, fnv, sem, failures
+            except Exception:
+                # лог с трейсбеком остаётся в архиве, но задача должна
+                # упасть - иначе ошибка не видна в интерфейсе
+                await logger.aexception(
+                    "Ошибка во время обработки месторождения %s", field.name
                 )
-            )
-            for field in fields
-        ]
-        tg.create_task(_handle_failures(path, failures, tasks))
-    make_archive(str(path), "zip", root_dir=path)
+                raise
+    finally:
+        make_archive(str(path), "zip", root_dir=path)

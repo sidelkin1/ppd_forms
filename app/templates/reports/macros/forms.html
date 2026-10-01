@@ -157,14 +157,15 @@
         class="form-select mb-3"
         id="{{ report.path }}Fields"
         data-form="{{ report.path }}"
-        data-field="fields"
+        data-field="field"
         data-label="{{ report.fields.label }}"
         {% if report.fields.required %}data-required{% endif %}
+        multiple size="6"
     >
         {% for option in report.fields.options %}
             <option
                 value="{{ option.value }}"
-                {% if option.selected %}selected{% endif %}
+                {% if option.value == "--" %}disabled{% endif %}
             >
                 {{ option.text }}
             </option>
@@ -184,6 +185,28 @@
         <label class="form-check-label" for="{{ report.path }}Alternative">{{ report.alternative.label }}</label>
     </div>
     {{ spinner_button(report.path, button_text, button_func) }}
+    <div id="{{ report.path }}Progress" class="d-none mt-2">
+        <div class="small text-muted mb-1">
+            <span id="{{ report.path }}ProgressLabel">Обработано 0 из 0</span>
+        </div>
+        <div class="progress mb-2" style="height: 6px;">
+            <div
+                id="{{ report.path }}ProgressBar"
+                class="progress-bar"
+                style="width: 0%;"
+            >
+            </div>
+        </div>
+        <a
+            id="{{ report.path }}Bundle"
+            class="d-none btn btn-ppd btn-sm mb-2"
+            href="#"
+        >
+            <i class="bi bi-file-earmark-zip"></i>
+            <span class="fnv-bundle-label">Скачать все результаты</span>
+        </a>
+        <ul id="{{ report.path }}FieldList" class="list-group list-group-flush"></ul>
+    </div>
 {%- endmacro %}
 
 {% macro form_matbal(report, button_text, button_func) -%}

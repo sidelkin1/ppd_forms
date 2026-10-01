@@ -123,5 +123,5 @@ class WorkerSettings:
         port=cast(int, os.getenv("REDIS_PORT")),
     )
     allow_abort_jobs = True
-    job_timeout = 2500
+    job_timeout = 1000
     keep_result = int(os.getenv("APP_KEEP_RESULT", "86400"))

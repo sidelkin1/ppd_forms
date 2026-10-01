@@ -60,7 +60,7 @@
                     "Параметры для выгрузки",
                     "Отчет успешно сформирован!",
                     "Ошибка при формировании отчета!",
-                    need_link=True
+                    need_link=report.path != "fnv"
                 ) %}
                     {% if report.path == "inj_loss" %}
                         {{ form_inj_loss(report, "Выгрузить", "loadInjLoss") }}

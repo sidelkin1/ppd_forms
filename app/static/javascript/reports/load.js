@@ -172,43 +172,6 @@ async function loadMatrix(reportName) {
   button.classList.remove("disabled");
 }
 
-async function loadFNV(reportName) {
-  const loader = document.getElementById(`${reportName}Status`);
-  const button = document.getElementById(`${reportName}Button`);
-  const minRadius = document.getElementById(`${reportName}MinRadius`).value;
-  const allFields = [...document.getElementById(`${reportName}Fields`)]
-    .filter((opt) => !["--", "0"].includes(opt.value))
-    .map((opt) => ({ id: opt.value, name: opt.text }));
-  const { value: fieldID, text: fieldName } = document.getElementById(
-    `${reportName}Fields`,
-  ).selectedOptions[0];
-  const alternative = document.getElementById(
-    `${reportName}Alternative`,
-  ).checked;
-
-  loader.classList.remove("d-none");
-  button.classList.add("disabled");
-  hideStatusAlerts(reportName);
-
-  const url = `/reports/${reportName}`;
-  const data = {
-    fields: fieldID === "0" ? allFields : [{ id: fieldID, name: fieldName }],
-    min_radius: minRadius,
-    alternative: alternative,
-  };
-  const result = await assignWork(reportName, url, data);
-  if (result) {
-    await checkStatus(
-      reportName,
-      result.job.job_id,
-      `/reports/${result.job.file_id}/zip`,
-    );
-  }
-
-  loader.classList.add("d-none");
-  button.classList.remove("disabled");
-}
-
 async function loadMatbal(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);

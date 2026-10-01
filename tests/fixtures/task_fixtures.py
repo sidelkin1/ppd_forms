@@ -129,10 +129,9 @@ def task_matrix(matrix_effect: MatrixEffect) -> TaskMatrix:
 @pytest.fixture
 def fnv() -> FnvParams:
     return FnvParams(
-        fields=[FIELD],
+        field=FIELD,
         min_radius=0,
         alternative=False,
-        max_fields=1,
     )
 
 
@@ -140,10 +139,9 @@ def fnv() -> FnvParams:
 def task_fnv() -> TaskFNV:
     return TaskFNV(
         name=ReportName.fnv,
-        fields=[FIELD],
+        field=FIELD,
         min_radius=0,
         alternative=False,
-        max_fields=1,
     )
 
 

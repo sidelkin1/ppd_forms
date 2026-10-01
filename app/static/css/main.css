@@ -111,3 +111,58 @@ body {
 .alert .alert-msg {
   margin-left: 0.25rem;
 }
+
+/* Статусы месторождений в прогрессе выгрузки ФНВ */
+.ppd-badge-queued {
+  background-color: var(--ppd-gray-lightest);
+  color: var(--ppd-charcoal);
+}
+.ppd-badge-done {
+  background-color: var(--ppd-blue-dark);
+  color: #FFFFFF;
+}
+.ppd-badge-cancelled {
+  background-color: var(--ppd-gold);
+  color: var(--ppd-charcoal);
+}
+.ppd-badge-error {
+  background-color: var(--ppd-crimson);
+  color: #FFFFFF;
+}
+
+.ppd-icon-queued { color: var(--ppd-gray); }
+.ppd-icon-done { color: var(--ppd-blue-dark); }
+.ppd-icon-cancelled { color: var(--ppd-amber); }
+.ppd-icon-error { color: var(--ppd-crimson); }
+
+.ppd-bar-run {
+  background-color: var(--ppd-blue);
+}
+.ppd-bar-done {
+  background-color: var(--ppd-blue-dark);
+}
+.ppd-bar-error {
+  background-color: var(--ppd-crimson);
+}
+
+/* Кнопка «Скачать все результаты» */
+.btn-ppd {
+  --bs-btn-color: #FFFFFF;
+  --bs-btn-border-color: var(--ppd-blue-dark);
+  --bs-btn-hover-color: #FFFFFF;
+  --bs-btn-hover-bg: var(--ppd-charcoal);
+  --bs-btn-hover-border-color: var(--ppd-charcoal);
+  --bs-btn-active-bg: var(--ppd-charcoal);
+  --bs-btn-active-border-color: var(--ppd-charcoal);
+  --bs-btn-disabled-color: #FFFFFF;
+  --bs-btn-disabled-bg: var(--ppd-blue-light);
+  --bs-btn-disabled-border-color: var(--ppd-blue-light);
+  background-color: var(--ppd-blue-dark);
+  border-color: var(--ppd-blue-dark);
+  color: #FFFFFF;
+}
+.btn-ppd:hover {
+  background-color: var(--ppd-charcoal);
+  border-color: var(--ppd-charcoal);
+  color: #FFFFFF;
+}

@@ -162,13 +162,10 @@ items:
   min_radius: {required: true, label: "Минимальный радиус", value: 30}
   fields:
     required: true
-    label: "Месторождение"
+    label: "Месторождения"
     options:
     - text: "--Выберите месторождение--"
       value: --
-      selected: true
-    - text: "--Все месторождения--"
-      value: 0
       selected: false
   alternative: {label: "Альтернативная БД", checked: true}
   description: Фронт нагнетаемой воды для загрузки в РН-КИН

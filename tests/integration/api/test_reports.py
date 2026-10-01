@@ -6,8 +6,8 @@ from arq.jobs import Job, JobStatus
 from fastapi import status
 from httpx import AsyncClient
 
-from app.core.models.dto import TaskInjLoss, TaskReport
-from app.core.models.schemas import DateRange
+from app.core.models.dto import TaskFNV, TaskInjLoss, TaskReport
+from app.core.models.schemas import DateRange, FnvParams
 
 
 def get_correct_url(task: TaskReport) -> str:
@@ -183,5 +183,32 @@ async def test_generate_owc_resp_report_extra_fields(
     payload = owc_resp_static.model_dump(mode="json")
     payload["unexpected"] = True
     resp = await client.post("/reports/owc_resp", json=payload)
+    assert not resp.is_success
+    assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_generate_fnv_report_success(
+    client: AsyncClient,
+    arq_redis: ArqRedis,
+    task_fnv: TaskFNV,
+    fnv: FnvParams,
+):
+    resp = await client.post("/reports/fnv", json=fnv.model_dump(mode="json"))
+    assert resp.is_success
+    data = resp.json()
+    assert data["task"] == task_fnv.model_dump(mode="json", exclude_none=True)
+    job = Job(job_id=data["job"]["job_id"], redis=arq_redis)
+    assert JobStatus.queued is await job.status()
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_generate_fnv_report_rejects_multiple_fields(
+    client: AsyncClient, fnv: FnvParams
+):
+    """Старый контракт со списком месторождений больше не принимается."""
+    payload = fnv.model_dump(mode="json")
+    payload["fields"] = [payload.pop("field")]
+    resp = await client.post("/reports/fnv", json=payload)
     assert not resp.is_success
     assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

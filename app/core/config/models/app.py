@@ -16,6 +16,9 @@ class AppSettings(BaseSettings):
     )
     delimiter: str = Field(default=",", validation_alias="app_delimiter")
     max_workers: int = Field(default=4, validation_alias="app_max_workers")
+    fnv_concurrency: int = Field(
+        default=3, gt=0, validation_alias="app_fnv_concurrency"
+    )
     root_path: str = Field(default="", validation_alias="app_root_path")
     keep_result: Annotated[timedelta, BeforeValidator(int)] = Field(
         default=86400, validation_alias="app_keep_result"

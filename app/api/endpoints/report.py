@@ -5,6 +5,7 @@ from app.api.dependencies.auth import UserDep
 from app.api.dependencies.job import NewJobDep
 from app.api.dependencies.path import PathDep
 from app.api.dependencies.redis import RedisDep
+from app.api.models.files import FileExists
 from app.api.utils.validators import check_file_exists
 from app.core.models.dto import (
     CompensationResponse,
@@ -141,10 +142,9 @@ async def generate_fnv_report(
 ):
     task = TaskFNV(
         name=ReportName.fnv,
-        fields=params.fields,
+        field=params.field,
         min_radius=params.min_radius,
         alternative=params.alternative,
-        max_fields=params.max_fields,
     )
     response = FnvResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)
@@ -353,6 +353,21 @@ async def generate_report(
     response = ReportResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)
     return response
+
+
+@router.get("/{file_id}/{ext}/exists", response_model=FileExists)
+async def check_report(
+    file_id: str, ext: FileExtension, user: UserDep, path: PathDep
+) -> FileExists:
+    """Проверить наличие файла отчёта без скачивания.
+
+    Отсутствие файла - не ошибка запроса, поэтому всегда 200 с признаком.
+    Нужна там, где ссылку на скачивание показывают заранее: например, при
+    групповой выгрузке ФНВ задача может упасть раньше отчёта, и архива с
+    логом тогда нет.
+    """
+    file_path = path.file_path(user.username, file_id, ext=ext.value)
+    return FileExists(exists=file_path.exists())
 
 
 @router.get("/{file_id}/{ext}")

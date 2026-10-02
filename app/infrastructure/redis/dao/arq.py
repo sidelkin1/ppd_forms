@@ -48,6 +48,11 @@ class ArqDAO:
             elif isinstance(info.result, asyncio.CancelledError):
                 response.job.status = JobStatus.cancelled
                 response.job.message = "Job is cancelled"
+            elif isinstance(info.result, TimeoutError):
+                # str(TimeoutError()) пустой - без явного текста в интерфейсе
+                # падение по таймауту неотличимо от любой другой ошибки
+                response.job.status = JobStatus.error
+                response.job.message = "Job timeout exceeded"
             else:
                 response.job.status = JobStatus.error
                 response.job.message = str(info.result)

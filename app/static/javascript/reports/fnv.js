@@ -89,6 +89,8 @@ function fnvRenderState(job) {
   badge.className = `badge ${state.badge} me-2`;
   // текст ошибки не показываем: он длинный, ломает строку и дублирует лог
   badge.textContent = state.label;
+  // причину (например, превышение времени) прячем в подсказку
+  badge.title = job.state === "error" ? job.message || "" : "";
   job.statusNode.replaceChildren(badge);
   if (view !== job.state) {
     return;
@@ -180,19 +182,22 @@ async function cancelFnvJobs(name, jobs) {
 async function fnvWatchJob(name, job, jobs) {
   try {
     const data = await waitJobTerminal(job.jobId);
-    const status = data && data.job ? data.job.status : null;
+    const status = data?.job?.status ?? null;
     if (status === "completed") {
       job.state = "completed";
     } else if (status === "cancelled") {
       job.state = "cancelled";
     } else {
-      // текст ошибки смотрим только в консоли и в fnv.log архива
-      console.error(`Job ${job.jobId} failed:`, data && data.job);
+      // текст ошибки целиком лежит в fnv.log, здесь только причина
+      console.error(`Job ${job.jobId} failed:`, data?.job);
       job.state = "error";
+      job.message = data?.job?.message || null;
     }
   } catch (error) {
+    // канал до статуса не довёл - это не ошибка задачи, а обрыв связи
     console.error(error);
     job.state = "error";
+    job.message = "Статус задачи недоступен";
   }
   job.stopping = false;
   fnvRenderState(job);
@@ -211,13 +216,19 @@ function renderFnvSummary(name, jobs) {
     showFormAlert(
       name,
       `Ошибка при обработке ${failed.length} из ${jobs.length} ` +
-        "месторождений — логи можно скачать в списке выше",
+        `месторождений${fnvFailureReason(failed)} — логи можно скачать в списке выше`,
     );
   } else if (cancelled.length) {
     showFormWarning(name, `Отменено: ${cancelled.length} из ${jobs.length}`);
   } else {
     document.getElementById(`${name}Success`).classList.remove("d-none");
   }
+}
+
+/* Причина, если она одна на все падения (таймаут, недоступность БД). */
+function fnvFailureReason(failed) {
+  const reasons = new Set(failed.map((job) => job.message).filter(Boolean));
+  return reasons.size === 1 ? `: ${[...reasons][0]}` : "";
 }
 
 function renderFnvBundle(name, jobs) {

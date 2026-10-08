@@ -187,8 +187,9 @@ items:
     - text: "--Выберите объект(ы)--"
       value: --
       selected: false
-  wells: {label: "Список скважин"}
-  measurements: {label: "Замеры Рпл"}
+  wells:
+    label: "Список скважин"
+    placeholder: "Вставьте номера скважин"
   alternative: {label: "Альтернативная БД", checked: false}
   description: Шаблон для автоадаптации параметров матбаланса
 - title: Пролонгация эффекта ППД по ХВ

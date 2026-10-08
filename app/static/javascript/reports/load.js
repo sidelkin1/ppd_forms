@@ -183,9 +183,10 @@ async function loadMatbal(reportName) {
   ]
     .filter((opt) => opt.value !== "--")
     .map((opt) => ({ id: opt.value, name: opt.text }));
-  const wells = document.getElementById(`${reportName}Wells`).files[0];
-  const measurements = document.getElementById(`${reportName}Measurements`)
-    .files[0];
+  const wells = document
+    .getElementById(`${reportName}Wells`)
+    .value.split(/[,;\s]+/)
+    .filter((well) => well);
   const alternative = document.getElementById(
     `${reportName}Alternative`,
   ).checked;
@@ -194,28 +195,20 @@ async function loadMatbal(reportName) {
   button.classList.add("disabled");
   hideStatusAlerts(reportName);
 
-  const files = await sendReportFiles(
-    reportName,
-    [wells, measurements],
-    "/excel/",
-  );
-  if (files) {
-    const url = `/reports/${reportName}`;
-    const data = {
-      field: { id: fieldID, name: fieldName },
-      reservoirs: reservoirs,
-      wells: files[0]?.filename || null,
-      measurements: files[1]?.filename || null,
-      alternative: alternative,
-    };
-    const result = await assignWork(reportName, url, data);
-    if (result) {
-      await checkStatus(
-        reportName,
-        result.job.job_id,
-        `/reports/${result.job.file_id}/zip`,
-      );
-    }
+  const url = `/reports/${reportName}`;
+  const data = {
+    field: { id: fieldID, name: fieldName },
+    reservoirs: reservoirs,
+    wells: wells,
+    alternative: alternative,
+  };
+  const result = await assignWork(reportName, url, data);
+  if (result) {
+    await checkStatus(
+      reportName,
+      result.job.job_id,
+      `/reports/${result.job.file_id}/zip`,
+    );
   }
 
   loader.classList.add("d-none");

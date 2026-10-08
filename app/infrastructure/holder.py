@@ -306,8 +306,17 @@ class HolderDAO:
         return db_reporters.FnvReporter(self.kwargs["ofm_pool"])
 
     @property
-    def db_matbal_reporter(self) -> db_reporters.MatbalReporter:
-        return db_reporters.MatbalReporter(self.kwargs["ofm_pool"])
+    def matbal_reporter(self) -> complex_reporters.MatbalReporter:
+        return complex_reporters.MatbalReporter(
+            field=db_reporters.FieldMatbalReporter(self.kwargs["ofm_pool"]),
+            field_alt=db_reporters.AltFieldMatbalReporter(
+                self.kwargs["ofm_pool"]
+            ),
+            wells=db_reporters.WellMatbalReporter(self.kwargs["ofm_pool"]),
+            wells_alt=db_reporters.AltWellMatbalReporter(
+                self.kwargs["ofm_pool"]
+            ),
+        )
 
     @property
     def db_mmb_reporter(self) -> db_reporters.MmbReporter:
@@ -332,14 +341,6 @@ class HolderDAO:
         return db_reporters.OwcRespReporter(self.kwargs["ofm_pool"])
 
     @property
-    def file_matbal_reporter(self) -> file_reporters.MatbalReporter:
-        return file_reporters.MatbalReporter(
-            self.kwargs["path"],
-            self.kwargs["wells"],
-            self.kwargs["measurements"],
-        )
-
-    @property
     def file_mmb_reporter(self) -> file_reporters.MmbReporter:
         return file_reporters.MmbReporter(self.kwargs["path"])
 
@@ -353,12 +354,6 @@ class HolderDAO:
     def file_matrix_reporter(self) -> file_reporters.MatrixReporter:
         return file_reporters.MatrixReporter(
             self.kwargs["path"], self.kwargs["wells"]
-        )
-
-    @property
-    def matbal_reporter(self) -> complex_reporters.MatbalReporter:
-        return complex_reporters.MatbalReporter(
-            self.db_matbal_reporter, self.file_matbal_reporter
         )
 
     @property

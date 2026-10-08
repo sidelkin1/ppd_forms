@@ -17,6 +17,8 @@ from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.complex.reporters import MatbalReporter
 
+_CELL_OIL_FVF = "C4"
+_CELL_INIT_RESP = "C5"
 _CELL_ROW_NUM = "A15"
 _CELL_DATE = "B15"
 _CELL_OIL_RATE = "C15"
@@ -76,17 +78,19 @@ def _expand_date_range(
     return df
 
 
-def _shift_to_month_start(s: pd.Series) -> pd.Series:
-    s = pd.to_datetime(s, errors="coerce")
-    crit = s.dt.is_month_start
-    s[~crit] -= pd.offsets.MonthBegin(n=1)  # type: ignore[operator]
-    return s.dt.date
+def _last_measurement(df: pd.DataFrame, column: str) -> float | None:
+    values = df.dropna(subset=[column]).sort_values("date")
+    return None if values.empty else float(values[column].iloc[-1])
 
 
-def _prepare_measurements(df: pd.DataFrame) -> pd.DataFrame:
-    df["date"] = _shift_to_month_start(df["date"])
-    df = df.groupby("date", as_index=False).mean()
-    return df
+def _split_resp(
+    resp: pd.DataFrame,
+) -> tuple[pd.DataFrame | None, float | None, float | None]:
+    """Split raw pressures into the per-month series and template params."""
+    Pi = _last_measurement(resp, "Pi")
+    Boi = _last_measurement(resp, "Boi")
+    Pres = resp[["date", "Pres"]]
+    return None if Pres.empty else Pres, Pi, Boi
 
 
 def _join_rates_and_measurements(
@@ -94,11 +98,31 @@ def _join_rates_and_measurements(
 ) -> pd.DataFrame:
     df = pd.merge(df, rates, how="left", on="date").fillna(0)
     if measurements is not None:
-        measurements = _prepare_measurements(measurements)
         df = pd.merge(df, measurements, how="left", on="date")
     else:
         df = df.assign(Pres=None)
     return df
+
+
+def _save_measurements(df: pd.DataFrame, path: Path) -> None:
+    measured = df.dropna(subset=["Pres"])[["date", "Pres"]]
+    measured["date"] = pd.to_datetime(measured["date"])
+    measured.to_csv(
+        path / "resp.txt",
+        sep=" ",
+        index=False,
+        header=False,
+        date_format="%d.%m.%Y",
+    )
+
+
+def _fill_parameters(
+    ws: Worksheet, init_resp: float | None, oil_fvf: float | None
+) -> None:
+    if init_resp is not None:
+        ws[_CELL_INIT_RESP].value = init_resp
+    if oil_fvf is not None:
+        ws[_CELL_OIL_FVF].value = oil_fvf
 
 
 def _fill_rates_and_measurements(
@@ -151,11 +175,18 @@ def _edit_charts(ws: Worksheet, nrow: int) -> None:
         chart.set_categories(dates)
 
 
-def _fill_template(df: pd.DataFrame, path: Path, template: Path) -> None:
+def _fill_template(
+    df: pd.DataFrame,
+    path: Path,
+    template: Path,
+    init_resp: float | None,
+    oil_fvf: float | None,
+) -> None:
     result = path / template.name
     try:
         wb = openpyxl.load_workbook(template, keep_vba=True)
         ws = wb["MB_simple"]
+        _fill_parameters(ws, init_resp, oil_fvf)
         calc_range = CellRange(_RANGE_CALC_RESP)
         for row_num, df_row in enumerate(df.itertuples(index=False)):
             _fill_rates_and_measurements(
@@ -170,18 +201,19 @@ def _fill_template(df: pd.DataFrame, path: Path, template: Path) -> None:
 
 
 def _process_data(
-    rates: pd.DataFrame,
-    measurements: pd.DataFrame | None,
+    dfs: dict[str, pd.DataFrame],
     path: Path,
     template: Path,
 ) -> pd.DataFrame:
+    rates = dfs["rates"]
+    measurements, init_resp, oil_fvf = _split_resp(dfs["resp"])
     df = pd.DataFrame(columns=["date"])
     df = _expand_date_range(
         df, rates["date"].min(), rates["date"].max(), "date"
     )
     df = _join_rates_and_measurements(df, rates, measurements)
-    _fill_template(df, path, template)
-    df.to_csv(path / "matbal.csv", sep=";", date_format="%d.%m.%Y")
+    _fill_template(df, path, template, init_resp, oil_fvf)
+    _save_measurements(df, path)
     return df
 
 
@@ -190,12 +222,16 @@ async def matbal_report(
     template: Path,
     field: UneftFieldDB,
     reservoirs: list[UneftReservoirDB],
+    wells: list[str],
     alternative: bool,
     dao: MatbalReporter,
     pool: ProcessPoolManager,
 ) -> None:
-    reservoir_names = [reservoir.name for reservoir in reservoirs]
-    rates = await dao.get_rates(field.id, reservoir_names, alternative)
-    measurements = await dao.get_measurements()
-    await pool.run(_process_data, rates, measurements, path, template)
+    dfs = await dao.read_all(
+        field_id=field.id,
+        reservoirs=reservoirs,
+        wells=wells,
+        alternative=alternative,
+    )
+    await pool.run(_process_data, dfs, path, template)
     make_archive(str(path), "zip", root_dir=path)

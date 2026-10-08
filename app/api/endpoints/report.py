@@ -168,7 +168,6 @@ async def generate_matbal_report(
         field=params.field,
         reservoirs=params.reservoirs,
         wells=params.wells,
-        measurements=params.measurements,
         alternative=params.alternative,
     )
     response = MatbalResponse(task=task, job=job)

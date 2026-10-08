@@ -18,6 +18,13 @@ from app.infrastructure.redis.dao.job import ScheduledJobsDAO
 logger = logging.getLogger(__name__)
 
 
+def _error_message(error: BaseException) -> str:
+    # str() у ExceptionGroup не содержит текст самой ошибки
+    if isinstance(error, BaseExceptionGroup):
+        return "; ".join(str(e) for e in error.exceptions)
+    return str(error)
+
+
 class ArqDAO:
     def __init__(
         self, redis: ArqRedis, expires: timedelta, abort_timeout: float
@@ -55,7 +62,7 @@ class ArqDAO:
                 response.job.message = "Job timeout exceeded"
             else:
                 response.job.status = JobStatus.error
-                response.job.message = str(info.result)
+                response.job.message = _error_message(info.result)
         else:
             response.job.status = status
         return response

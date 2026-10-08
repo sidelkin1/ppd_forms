@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Date, Integer, String
 from sqlalchemy.orm import synonym
 
 from app.infrastructure.db.models.ofm.base import Base, Reflected
@@ -77,4 +77,24 @@ class WellStockHist(Reflected, Base):
 
 class WellMonthHistPty(Reflected, Base):
     __tablename__ = "well_month_hist_pty"
+    __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class TmpWellOpOis2(Reflected, Base):
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key
+    uwi = Column(String, primary_key=True)
+    official_date = Column(Date, primary_key=True)
+    layer_id = Column(String, primary_key=True)
+
+    __tablename__ = "tmp_wellop_ois2"
+    __table_args__ = {"schema": "udmurtneft_n"}
+
+
+class TmpWellNgOis2(Reflected, Base):
+    # https://docs.sqlalchemy.org/en/20/faq/ormconfiguration.html#how-do-i-map-a-table-that-has-no-primary-key
+    uwi = Column(String, primary_key=True)
+    official_date = Column(Date, primary_key=True)
+    layer_id = Column(String, primary_key=True)
+
+    __tablename__ = "tmp_wellng_ois2"
     __table_args__ = {"schema": "udmurtneft_n"}

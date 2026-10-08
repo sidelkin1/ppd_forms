@@ -361,18 +361,14 @@ async def create_matbal_report(
     path_provider: PathProvider = ctx["path_provider"]
     user_id = cast(str, response.job.user_id)
     file_id = cast(str, response.job.file_id)
-    path = path_provider.upload_dir(user_id)
-    async with ctx["ofm_dao"](
-        path=path,
-        wells=response.task.wells,
-        measurements=response.task.measurements,
-    ) as holder:
+    async with ctx["ofm_dao"]() as holder:
         holder = cast(HolderDAO, holder)
         await matbal_report(
             path_provider.dir_path(user_id, file_id),
             path_provider.data_dir / "matbal_template.xlsm",
             response.task.field,
             response.task.reservoirs,
+            response.task.wells,
             response.task.alternative,
             holder.matbal_reporter,
             ctx["pool"],

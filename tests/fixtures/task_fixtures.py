@@ -150,8 +150,7 @@ def matbal() -> MatbalParams:
     return MatbalParams(
         field=FIELD,
         reservoirs=[RESERVOIR],
-        wells=None,
-        measurements=None,
+        wells=[],
         alternative=False,
     )
 
@@ -162,8 +161,7 @@ def task_matbal() -> TaskMatbal:
         name=ReportName.matbal,
         field=FIELD,
         reservoirs=[RESERVOIR],
-        wells=None,
-        measurements=None,
+        wells=[],
         alternative=False,
     )
 

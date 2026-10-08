@@ -252,7 +252,7 @@ class XxxReporter(LocalBaseDAO):
       return db_reporters.XxxReporter(self.kwargs["local_pool"])
   ```
 
-    > Some reporters compose multiple DAOs (e.g. `matbal_reporter` combines `db_matbal_reporter` + `file_matbal_reporter`). Study existing properties in `holder.py` for complex patterns.
+    > Some reporters compose multiple DAOs (e.g. `mmb_reporter` combines `db_mmb_reporter` + `file_mmb_reporter`). Study existing properties in `holder.py` for complex patterns.
 
 ---
 

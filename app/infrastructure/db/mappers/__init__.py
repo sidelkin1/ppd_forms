@@ -33,6 +33,9 @@ well_mapper = WellMapper(split=False, delimiter=settings.delimiter)
 well_no_branch_mapper = WellMapper(
     del_branch=True, split=False, delimiter=settings.delimiter
 )
+well_no_cache_mapper = WellMapper(
+    split=False, cached=False, delimiter=settings.delimiter
+)
 
 # Список скважин
 multi_well_mapper = WellMapper(unique=True, delimiter=settings.delimiter)

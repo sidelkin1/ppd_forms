@@ -4,7 +4,12 @@ from .fnv import FnvReporter
 from .inj_loss import FirstRateInjLossReporter, MaxRateInjLossReporter
 from .local import LocalBaseDAO
 from .local_well_test import LocalWellTestReporter
-from .matbal import MatbalReporter
+from .matbal import (
+    AltFieldMatbalReporter,
+    AltWellMatbalReporter,
+    FieldMatbalReporter,
+    WellMatbalReporter,
+)
 from .matrix import MatrixReporter
 from .mmb import MmbAltReporter, MmbReporter
 from .ofm import OfmBaseDAO

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 
@@ -6,8 +6,7 @@ from app.core.models.dto import UneftFieldDB, UneftReservoirDB
 class MatbalParams(BaseModel):
     field: UneftFieldDB
     reservoirs: list[UneftReservoirDB]
-    wells: str | None = None
-    measurements: str | None = None
+    wells: list[str] = Field(default_factory=list)
     alternative: bool
     stoiip: float = 10000
     wat_fvf: float = 1

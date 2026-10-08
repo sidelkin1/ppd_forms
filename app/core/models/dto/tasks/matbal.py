@@ -9,6 +9,5 @@ class TaskMatbal(
 ):
     field: UneftFieldDB
     reservoirs: list[UneftReservoirDB]
-    wells: str | None
-    measurements: str | None
+    wells: list[str]
     alternative: bool

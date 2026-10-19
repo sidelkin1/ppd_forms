@@ -6,13 +6,28 @@ async function fetchJobStatus(jobID) {
   return await response.json();
 }
 
+const TERMINAL_JOB_STATUSES = ["completed", "cancelled", "error", "not_found"];
+
 async function waitJobTerminal(jobID) {
   const webSocketClient = new WebSocketClient();
   try {
-    await webSocketClient.connect(buildUrl(`/jobs/${jobID}/ws`));
+    await webSocketClient.connect(buildWebSocketUrl(`/jobs/${jobID}/ws`));
     return JSON.parse(await webSocketClient.receive());
+  } catch (error) {
+    console.warn("WebSocket closed unexpectedly; polling job status.", error);
+    return await pollJobTerminal(jobID);
   } finally {
     await webSocketClient.disconnect();
+  }
+}
+
+async function pollJobTerminal(jobID) {
+  while (true) {
+    const data = await fetchJobStatus(jobID);
+    if (TERMINAL_JOB_STATUSES.includes(data.job.status)) {
+      return data;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 

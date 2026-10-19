@@ -26,6 +26,11 @@ function buildUrl(endpoint) {
   return `${ROOT_PATH}${endpoint}`;
 }
 
+function buildWebSocketUrl(endpoint) {
+  const scheme = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${scheme}//${window.location.host}${buildUrl(endpoint)}`;
+}
+
 let requestIds = {};
 
 function setRequestId(uniqueKey) {

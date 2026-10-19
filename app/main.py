@@ -67,6 +67,8 @@ async def run_api(app: FastAPI, log_level: str) -> None:
         port=api_config.port,
         log_level=logging.getLevelName(log_level),
         log_config=None,
+        ws_ping_interval=5.0,
+        ws_ping_timeout=20.0,
     )
     server = uvicorn.Server(config)
     logger.info("Running API")

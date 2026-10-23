@@ -24,5 +24,6 @@ class WellTestDB(BaseModel):
     frac_length: EmptyStrOrNanToNone[float]
     reliability: EmptyStrOrNanToNone[str]
     curator: EmptyStrOrNanToNone[str]
+    well_status: EmptyStrOrNanToNone[str]
 
     model_config = ConfigDict(extra="forbid", from_attributes=True)

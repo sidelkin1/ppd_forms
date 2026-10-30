@@ -10,6 +10,7 @@ from app.core.models.dto import (
     FieldsResponse,
     FnvResponse,
     InjLossResponse,
+    IsobarResponse,
     MatbalResponse,
     MatrixResponse,
     MmbResponse,
@@ -31,6 +32,7 @@ from app.core.services.reports import (
     compensation_report,
     fnv_report,
     inj_loss_report,
+    isobar_report,
     matbal_report,
     matrix_report,
     mmb_report,
@@ -329,6 +331,29 @@ async def create_matrix_report(
             holder.matrix_reporter,
             ctx["pool"],
             app_config.delimiter,
+        )
+
+
+@registry.add("report:isobar")
+async def create_isobar_report(
+    response: IsobarResponse, ctx: dict[str, Any]
+) -> None:
+    path_provider: PathProvider = ctx["path_provider"]
+    user_id = cast(str, response.job.user_id)
+    file_id = cast(str, response.job.file_id)
+    template = path_provider.upload_dir(user_id) / response.task.file
+    if not template.exists():
+        raise FileNotFoundError(f"Файл {response.task.file} не найден")
+    async with ctx["ofm_local_dao"](path=template) as holder:
+        holder = cast(HolderDAO, holder)
+        await isobar_report(
+            path_provider.dir_path(user_id, file_id),
+            template,
+            response.task.previous_date,
+            response.task.on_date,
+            response.task.stock_date,
+            holder.isobar_reporter,
+            ctx["pool"],
         )
 
 

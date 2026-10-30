@@ -11,6 +11,7 @@ from app.core.models.dto import (
     CompensationResponse,
     FnvResponse,
     InjLossResponse,
+    IsobarResponse,
     MatbalResponse,
     MatrixResponse,
     MmbResponse,
@@ -23,6 +24,7 @@ from app.core.models.dto import (
     TaskCompensation,
     TaskFNV,
     TaskInjLoss,
+    TaskIsobar,
     TaskMatbal,
     TaskMatrix,
     TaskMmb,
@@ -40,6 +42,7 @@ from app.core.models.schemas import (
     DateRange,
     FnvParams,
     InjLoss,
+    IsobarParams,
     MatbalParams,
     MatrixEffect,
     MmbParams,
@@ -288,6 +291,30 @@ async def generate_owc_resp_report(
         on_date=params.on_date,
     )
     response = OwcRespResponse(task=task, job=job)
+    await redis.enqueue_task(response, user.username)
+    return response
+
+
+@router.post(
+    "/isobar",
+    status_code=status.HTTP_201_CREATED,
+    response_model=IsobarResponse,
+    response_model_exclude_none=True,
+)
+async def generate_isobar_report(
+    params: IsobarParams,
+    user: UserDep,
+    redis: RedisDep,
+    job: NewJobDep,
+):
+    task = TaskIsobar(
+        name=ReportName.isobar,
+        file=params.file,
+        previous_date=params.previous_date,
+        on_date=params.on_date,
+        stock_date=params.stock_date,
+    )
+    response = IsobarResponse(task=task, job=job)
     await redis.enqueue_task(response, user.username)
     return response
 

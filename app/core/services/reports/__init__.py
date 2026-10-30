@@ -1,6 +1,7 @@
 from .compensation import compensation_report
 from .fnv import fnv_report
 from .inj_loss import inj_loss_report
+from .isobar import isobar_report
 from .matbal import matbal_report
 from .matrix import matrix_report
 from .mmb import mmb_report

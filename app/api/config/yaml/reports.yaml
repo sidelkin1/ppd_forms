@@ -279,3 +279,12 @@ items:
       selected: false
   on_date: {required: true, label: "На дату"}
   description: Пересчет давления на глубину с учетом инклинометрии скважины
+- title: Сводная таблица для карт изобар
+  path: isobar
+  group: ГДИС
+  icon: bi-map-fill
+  file: {required: true, label: "Сводная за предыдущий период (.xlsm)"}
+  description: Сводная таблица для карт изобар (фонд, предыдущие и текущие замеры Рпл)
+  tables:
+    required:
+    - gdis

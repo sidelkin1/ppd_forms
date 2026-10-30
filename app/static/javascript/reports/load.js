@@ -324,6 +324,33 @@ async function loadWellTest(reportName) {
   button.classList.remove("disabled");
 }
 
+async function loadIsobar(reportName) {
+  const loader = document.getElementById(`${reportName}Status`);
+  const button = document.getElementById(`${reportName}Button`);
+  const file = document.getElementById(`${reportName}File`).files[0];
+
+  loader.classList.remove("d-none");
+  button.classList.add("disabled");
+  hideStatusAlerts(reportName);
+
+  const files = await sendReportFiles(reportName, [file], "/excel/");
+  if (files && files[0]) {
+    const url = `/reports/${reportName}`;
+    const data = { file: files[0].filename };
+    const result = await assignWork(reportName, url, data);
+    if (result) {
+      await checkStatus(
+        reportName,
+        result.job.job_id,
+        `/reports/${result.job.file_id}/zip`,
+      );
+    }
+  }
+
+  loader.classList.add("d-none");
+  button.classList.remove("disabled");
+}
+
 async function loadOwcResp(reportName) {
   const loader = document.getElementById(`${reportName}Status`);
   const button = document.getElementById(`${reportName}Button`);

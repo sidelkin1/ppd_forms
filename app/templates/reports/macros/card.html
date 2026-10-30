@@ -8,7 +8,8 @@
     form_prolong,
     form_mmb,
     form_well_test,
-    form_owc_resp
+    form_owc_resp,
+    form_isobar
 %}
 {% from '/macros/accordion.html' import accordion_form %}
 
@@ -82,6 +83,8 @@
                         {{ form_well_test(report, "Выгрузить", "loadWellTest") }}
                     {% elif report.path == "owc_resp" %}
                         {{ form_owc_resp(report, "Выгрузить", "loadOwcResp") }}
+                    {% elif report.path == "isobar" %}
+                        {{ form_isobar(report, "Выгрузить", "loadIsobar") }}
                     {% else %}
                         {{ form_date_range(report, "Выгрузить", "loadReport") }}
                     {% endif %}

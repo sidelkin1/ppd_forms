@@ -1,3 +1,4 @@
+from .isobar import IsobarReporter
 from .matbal import MatbalReporter
 from .matrix import MatrixReporter
 from .mmb import MmbReporter

@@ -8,6 +8,7 @@ from app.core.models.dto.tasks.database import TaskDatabase
 from app.core.models.dto.tasks.excel import TaskExcel
 from app.core.models.dto.tasks.fnv import TaskFNV
 from app.core.models.dto.tasks.inj_loss import TaskInjLoss
+from app.core.models.dto.tasks.isobar import TaskIsobar
 from app.core.models.dto.tasks.matbal import TaskMatbal
 from app.core.models.dto.tasks.matrix import TaskMatrix
 from app.core.models.dto.tasks.mmb import TaskMmb
@@ -47,6 +48,7 @@ MmbResponse = ReportResponse[TaskMmb]
 CompensationResponse = ReportResponse[TaskCompensation]
 WellTestResponse = ReportResponse[TaskWellTest]
 OwcRespResponse = ReportResponse[TaskOwcResp]
+IsobarResponse = ReportResponse[TaskIsobar]
 
 DatabaseResponse = BaseResponse[TaskDatabase]
 ExcelResponse = BaseResponse[TaskExcel]

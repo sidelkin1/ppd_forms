@@ -1,4 +1,7 @@
+import csv
 import re
+from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 
@@ -10,6 +13,8 @@ from app.infrastructure.db.mappers import (
     SimpleMapper,
     WellMapper,
 )
+
+RESOURCES = Path(__file__).parent / "resources" / "data"
 
 
 class BaseMapperMock(BaseMapper):
@@ -68,3 +73,34 @@ def well_mapper_del_zero() -> WellMapper:
 @pytest.fixture
 def well_mapper_del_orzid() -> WellMapper:
     return WellMapper(del_orzid=True)
+
+
+@pytest.fixture
+def replace_mapper() -> Callable[[str], RegexMapper]:
+    """Собирает RegexMapper из правил замен в tests/fixtures/resources/data."""
+
+    def build(name: str) -> RegexMapper:
+        with (RESOURCES / f"{name}_replace.csv").open(
+            encoding="utf-8"
+        ) as file:
+            rows = list(csv.DictReader(file))
+        groups: dict[str, list[str]] = {}
+        replace: dict[str, tuple[str, int]] = {}
+        for row in rows:
+            groups.setdefault(row["group"], []).append(row["pattern"])
+            replace[row["group"]] = (
+                row["replace"],
+                int(row["order"])
+                if row.get("order")
+                else BaseMapper.NULL_ORDER,
+            )
+        pattern = re.compile(
+            "|".join(
+                f"(?P<{group}>{'|'.join(patterns)})"
+                for group, patterns in groups.items()
+            ),
+            flags=re.IGNORECASE,
+        )
+        return RegexMapper(split=False, pattern=pattern, replace=replace)
+
+    return build

@@ -3,6 +3,7 @@ from tests.fixtures.mappers import (  # noqa
     layer_mapper,
     regex_mapper,
     regex_mapper_no_pattern,
+    replace_mapper,
     simple_mapper,
     well_mapper_default,
     well_mapper_del_branch,

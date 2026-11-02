@@ -1,6 +1,6 @@
 import logging
 import os
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Callable, Generator
 
 import pytest
 import pytest_asyncio
@@ -57,6 +57,14 @@ async def pool_holder(pool: sessionmaker) -> HolderDAO:
         path=None,
         wells=None,
     )
+
+
+@pytest.fixture
+def holder_factory(pool_holder: HolderDAO) -> Callable[..., HolderDAO]:
+    def build(**kwargs) -> HolderDAO:
+        return HolderMock(**{**pool_holder.kwargs, **kwargs})
+
+    return build
 
 
 @pytest.fixture(scope="session")

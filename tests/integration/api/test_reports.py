@@ -28,6 +28,7 @@ def get_unknown_name_url(task: TaskReport) -> str:
         ("task_opp_per_year", "date_range"),
         ("task_inj_loss", "inj_loss"),
         ("task_matrix", "matrix_effect"),
+        ("task_isobar", "isobar"),
     ],
 )
 @pytest.mark.asyncio(scope="session")
@@ -183,6 +184,15 @@ async def test_generate_owc_resp_report_extra_fields(
     payload = owc_resp_static.model_dump(mode="json")
     payload["unexpected"] = True
     resp = await client.post("/reports/owc_resp", json=payload)
+    assert not resp.is_success
+    assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_generate_isobar_report_bad_file_name(client: AsyncClient):
+    resp = await client.post(
+        "/reports/isobar", json={"file": "СВОДНЫЙ_ИЗОБАРЫ.xlsm"}
+    )
     assert not resp.is_success
     assert resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 

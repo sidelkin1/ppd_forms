@@ -8,6 +8,7 @@ from app.core.models.dto import (
     TaskExcel,
     TaskFNV,
     TaskInjLoss,
+    TaskIsobar,
     TaskMatbal,
     TaskMatrix,
     TaskMmb,
@@ -31,6 +32,7 @@ from app.core.models.schemas import (
     DateRange,
     FnvParams,
     InjLoss,
+    IsobarParams,
     MatbalParams,
     MatrixEffect,
     MmbParams,
@@ -280,4 +282,20 @@ def task_owc_resp_pressure() -> TaskOwcResp:
         depth=75,
         well_test=WellTest.pressure,
         on_date=date(2025, 10, 20),
+    )
+
+
+@pytest.fixture
+def isobar() -> IsobarParams:
+    return IsobarParams(file="СВОДНЫЙ_ИЗОБАРЫ_01.07.2026.xlsm")
+
+
+@pytest.fixture
+def task_isobar() -> TaskIsobar:
+    return TaskIsobar(
+        name=ReportName.isobar,
+        file="СВОДНЫЙ_ИЗОБАРЫ_01.07.2026.xlsm",
+        previous_date=date(2026, 7, 1),
+        on_date=date(2026, 10, 1),
+        stock_date=date(2026, 9, 1),
     )

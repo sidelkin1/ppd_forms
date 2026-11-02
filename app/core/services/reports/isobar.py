@@ -467,7 +467,9 @@ async def isobar_report(
         "нет_в_фонде_welltest",
         "текущих замеров",
     )
-    target = path / f"{_OUTPUT_PREFIX}_{on_date:%d.%m.%Y}.xlsm"
+    # отчёт — копия загруженной книги, поэтому расширение берём у шаблона
+    suffix = template.suffix or ".xlsm"
+    target = path / f"{_OUTPUT_PREFIX}_{on_date:%d.%m.%Y}{suffix}"
     start = time.perf_counter()
     result = await pool.run(_process_workbook, dfs, template, target)
     worker = time.perf_counter() - start

@@ -306,7 +306,7 @@ async def test_isobar_report(
     templates_dir: Path,
     holder_factory: Callable[..., HolderDAO],
 ):
-    template = templates_dir / "isobar_template.xlsm"
+    template = templates_dir / "isobar_template.xlsx"
     holder = holder_factory(path=template)
     result = tmp_path / "result"
     result.mkdir()
@@ -321,7 +321,7 @@ async def test_isobar_report(
     )
 
     assert Path(str(result) + ".zip").exists()
-    book = result / "СВОДНЫЙ_ИЗОБАРЫ_01.10.2026.xlsm"
+    book = result / "СВОДНЫЙ_ИЗОБАРЫ_01.10.2026.xlsx"
     assert book.exists()
     wb = load_workbook(book)
     ws = wb[ISOBAR_SHEET]
@@ -413,7 +413,7 @@ async def test_isobar_previous_reservoir_mapping(
     holder_factory: Callable[..., HolderDAO],
 ):
     """D файла после reservoir_mapper совпадает с cid (в т.ч. «(Руд)»)."""
-    template = templates_dir / "isobar_previous.xlsm"
+    template = templates_dir / "isobar_previous.xlsx"
     holder = holder_factory(path=template)
     previous = await holder.file_isobar_reporter.read_previous()
     assert previous["reservoir"].tolist() == ["Тур"]

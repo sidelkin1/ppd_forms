@@ -53,6 +53,7 @@ def _select_last_tests(
             WellTest.well_test,
             WellTest.end_date,
             WellTest.resp_owc,
+            WellTest.curator,
             row_number,
         )
         .where(
@@ -69,6 +70,7 @@ def _select_last_tests(
         subq.c.well_test,
         subq.c.end_date,
         subq.c.resp_owc,
+        subq.c.curator,
     ).where(subq.c.rn == 1)
 
 

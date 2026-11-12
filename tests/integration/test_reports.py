@@ -21,7 +21,8 @@ from app.core.services.reports import (
     owc_resp_report,
     profile_report,
 )
-from app.core.services.reports.isobar import _prepare_dataframe
+from app.core.services.reports.isobar.columns import SHEET as ISOBAR_SHEET
+from app.core.services.reports.isobar.preparation import prepare_dataframe
 from app.core.utils.process_pool import ProcessPoolManager
 from app.infrastructure.db.dao.sql.reporters import LocalBaseDAO
 from app.infrastructure.db.dao.sql.reporters.querysets import (
@@ -296,9 +297,6 @@ async def test_owc_resp_report(
     assert calc_ws["B15"].value == pytest.approx(1.0)
 
 
-ISOBAR_SHEET = "текущие отборы"
-
-
 @pytest.mark.asyncio(scope="session")
 async def test_isobar_report(
     tmp_path: Path,
@@ -325,7 +323,7 @@ async def test_isobar_report(
     assert book.exists()
     wb = load_workbook(book)
     ws = wb[ISOBAR_SHEET]
-    assert ws.max_row == 4
+    assert ws.max_row == 5
 
     # W1: старые значения в J-N, квартальный замер обновил O-Q и AC-AE
     assert ws["C2"].value == "F1"
@@ -350,7 +348,7 @@ async def test_isobar_report(
     assert ws["AH2"].value == pytest.approx(60.0)
     assert ws["R2"].value is None
 
-    # W2: в сводной его не было — добавлен новый замер из БД
+    # W2: замер сделан на стволе W2B1, поэтому в строке W2 его нет
     assert ws["E3"].value == "W2"
     assert ws["H3"].value == "=IF(O3>0,O3,AN3)"
     assert ws["I3"].value is None
@@ -358,27 +356,42 @@ async def test_isobar_report(
     assert ws["K3"].value is None
     assert ws["M3"].value is None
     assert ws["N3"].value is None
-    assert ws["O3"].value == pytest.approx(111.0)
-    assert ws["P3"].value.date() == date(2026, 8, 1)
-    assert ws["Q3"].value == "КВД"
-    assert ws["AC3"].value == pytest.approx(80.0)
-    assert ws["AD3"].value.date() == date(2026, 8, 1)
+    assert ws["O3"].value is None
+    assert ws["P3"].value is None
+    assert ws["Q3"].value is None
+    assert ws["AC3"].value is None
+    assert ws["AD3"].value is None
     assert ws["AH3"].value == pytest.approx(70.0)
+
+    # W2B1: квартальный замер привязался к стволу, работавшему на его дату
+    assert ws["E4"].value == "W2B1"
+    assert ws["G4"].value == "[стар. ствол]"
+    assert ws["H4"].value == "=IF(O4>0,O4,AN4)"
+    assert ws["AF4"].value == '=IF(AND(J4>0,O4>0),O4-J4,"-")'
+    assert ws["I4"].value is None
+    assert ws["J4"].value is None
+    assert ws["O4"].value == pytest.approx(111.0)
+    assert ws["P4"].value.date() == date(2026, 8, 1)
+    assert ws["Q4"].value == "КВД"
+    assert ws["AC4"].value == pytest.approx(80.0)
+    assert ws["AD4"].value.date() == date(2026, 8, 1)
+    assert ws["AE4"].value == "КВУ"
+    assert ws["AH4"].value == pytest.approx(70.0)
 
     # W3: квартальных замеров нет — старые значения перенесены в O-Q;
     # AC-AE из сводной не переносятся (только новые квартальные замеры)
-    assert ws["E4"].value == "W3"
-    assert ws["J4"].value == pytest.approx(98.0)
-    assert ws["K4"].value.date() == date(2026, 4, 1)
-    assert ws["M4"].value == "НЕФ"
-    assert ws["N4"].value == "РАБ"
-    assert ws["O4"].value == pytest.approx(98.0)
-    assert ws["P4"].value.date() == date(2026, 4, 1)
-    assert ws["Q4"].value == "КВД"
-    assert ws["AC4"].value is None
-    assert ws["AD4"].value is None
-    assert ws["AE4"].value is None
-    assert ws["AH4"].value == pytest.approx(80.0)
+    assert ws["E5"].value == "W3"
+    assert ws["J5"].value == pytest.approx(98.0)
+    assert ws["K5"].value.date() == date(2026, 4, 1)
+    assert ws["M5"].value == "НЕФ"
+    assert ws["N5"].value == "РАБ"
+    assert ws["O5"].value == pytest.approx(98.0)
+    assert ws["P5"].value.date() == date(2026, 4, 1)
+    assert ws["Q5"].value == "КВД"
+    assert ws["AC5"].value is None
+    assert ws["AD5"].value is None
+    assert ws["AE5"].value is None
+    assert ws["AH5"].value == pytest.approx(80.0)
     wb.close()
 
     state_misses = result / "СВОДНЫЙ_ИЗОБАРЫ_01.10.2026_нет_данных_гдис.csv"
@@ -422,9 +435,11 @@ async def test_isobar_previous_reservoir_mapping(
         "field",
         "well",
         "reservoir",
+        "branch",
         "well_test",
         "end_date",
         "resp_owc",
+        "curator",
     ]
     dfs = {
         "stock": pd.DataFrame(
@@ -442,18 +457,29 @@ async def test_isobar_previous_reservoir_mapping(
         ),
         "succeeded": pd.DataFrame(columns=tests_columns),
         "failed": pd.DataFrame(columns=tests_columns),
+        "perfs": pd.DataFrame(
+            columns=[
+                "field",
+                "well",
+                "reservoir",
+                "branch",
+                "comp_date",
+                "close_date",
+            ]
+        ),
         "prev_values": previous,
         "prev_state": pd.DataFrame(
             columns=[
                 "field",
                 "well",
                 "end_date",
+                "reservoir",
                 "well_type",
                 "well_status",
             ]
         ),
     }
-    df = _prepare_dataframe(dfs)
+    df = prepare_dataframe(dfs)
     assert df.loc[0, "prev_date"] == date(2026, 6, 1)
     assert df.loc[0, "prev_resp"] == pytest.approx(150.0)
     assert df.loc[0, "prev_well_test"] == "КВД"

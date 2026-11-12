@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
+_PREV_KEY_COLUMNS = ("prev_date", "well_nb", "reservoir")
+
 
 async def _timed(
     name: str, coro: Awaitable[T], timings: dict[str, float]
@@ -34,30 +36,24 @@ class IsobarReporter:
     async def read_all(
         self, *, stock_date: date, on_date: date, previous_date: date
     ) -> dict[str, pd.DataFrame]:
+        """Читает фонд, замеры, предыдущую сводную, M/N и перфорации."""
         start = time.perf_counter()
-        prev_values = await self.previous.read_previous()
-        timings: dict[str, float] = {
-            "time_previous_file": round(time.perf_counter() - start, 1)
-        }
-        rows: list[tuple[str, str, date, str]] = sorted(
-            {
-                (
-                    str(row.field),
-                    str(row.well_nb),
-                    cast(date, row.prev_date),
-                    str(row.reservoir),
-                )
-                for row in prev_values.dropna(
-                    subset=["prev_date", "well_nb", "reservoir"]
-                ).itertuples()
-            }
-        )
+        timings: dict[str, float] = {}
         async with asyncio.TaskGroup() as tg:
+            previous = tg.create_task(
+                _timed(
+                    "previous_file",
+                    self.previous.read_previous(),
+                    timings,
+                )
+            )
             stock = tg.create_task(
                 _timed(
                     "stock",
                     self.stock.read_one(
-                        stock_date=stock_date, on_date=on_date
+                        key="stock",
+                        stock_date=stock_date,
+                        on_date=on_date,
                     ),
                     timings,
                 )
@@ -84,10 +80,25 @@ class IsobarReporter:
                     timings,
                 )
             )
+        prev_values = previous.result()
+        stock_df = stock.result()
+        succeeded_df = succeeded.result()
+        failed_df = failed.result()
+
+        prev_keys = _previous_keys(prev_values)
+        keys = _test_keys(succeeded_df, failed_df)
+        async with asyncio.TaskGroup() as tg:
             prev_state = tg.create_task(
                 _timed(
                     "prev_state",
-                    self.tests.read_previous(rows),
+                    self.tests.read_previous(prev_keys),
+                    timings,
+                )
+            )
+            perfs = tg.create_task(
+                _timed(
+                    "perfs",
+                    self.stock.read_perfs(keys, previous_date),
                     timings,
                 )
             )
@@ -98,136 +109,55 @@ class IsobarReporter:
                 **timings,
             },
         )
-        prev_state_df = prev_state.result()
-        stock_df = stock.result()
-        succeeded_df = succeeded.result()
-        missing = _missing_keys(rows, prev_state_df)
-        if not missing.empty:
-            missing = missing.merge(
-                _previous_info(prev_values),
-                on=["field", "well", "end_date", "reservoir"],
-                how="left",
-                validate="many_to_one",
-            )
         return {
             "stock": stock_df,
             "succeeded": succeeded_df,
-            "failed": failed.result(),
-            "prev_state": prev_state_df,
-            "prev_missing": missing,
-            "prev_unmatched": _unmatched_previous(prev_values, stock_df),
-            "test_unmatched": _unmatched_tests(succeeded_df, stock_df),
+            "failed": failed_df,
+            "prev_state": prev_state.result(),
             "prev_values": prev_values,
+            "perfs": perfs.result(),
         }
 
 
-_LOST_COLUMNS = [
-    "field",
-    "well",
-    "reservoir",
-    "well_test",
-    "resp",
-    "end_date",
-]
+def _previous_keys(
+    prev_values: pd.DataFrame,
+) -> list[tuple[str, str, date, str]]:
+    """Замеры предыдущей сводной, для которых читаются тип и состояние.
 
-
-def _stock_keys(stock: pd.DataFrame) -> set[tuple[object, ...]]:
-    return set(zip(stock["field"], stock["well_name"], stock["cid"]))
-
-
-def _unmatched_previous(
-    prev_values: pd.DataFrame, stock: pd.DataFrame
-) -> pd.DataFrame:
-    """Строки предыдущей сводной с Рпл, которым нет пары в фонде."""
-    if prev_values.empty or stock.empty:
-        return pd.DataFrame(columns=_LOST_COLUMNS)
-    data = prev_values[prev_values["prev_resp"].notna()]
-    keys = _stock_keys(stock)
-    unmatched = data[
-        [
-            (field, well, reservoir) not in keys
-            for field, well, reservoir in zip(
-                data["field"], data["well"], data["reservoir"]
-            )
-        ]
-    ]
-    return (
-        pd.DataFrame(
-            {
-                "field": unmatched["field"],
-                "well": unmatched["well"],
-                "reservoir": unmatched["reservoir"],
-                "well_test": unmatched["prev_well_test"],
-                "resp": unmatched["prev_resp"].round(2),
-                "end_date": unmatched["prev_date"],
-            }
-        )
-        .sort_values(_LOST_COLUMNS)
-        .reset_index(drop=True)
-    )
-
-
-def _unmatched_tests(
-    succeeded: pd.DataFrame, stock: pd.DataFrame
-) -> pd.DataFrame:
-    """Текущие замеры welltest с Рпл, которым нет пары в фонде.
-
-    ``welltest.well`` хранится без ствола, а в фонде скважина может быть
-    со стволом, поэтому сверяем с ``parent`` (скважина без ствола) — по
-    нему же идёт склейка текущих замеров.
+    Ключ — месторождение, скважина без ствола, дата замера, объект.
     """
-    if succeeded.empty or stock.empty:
-        return pd.DataFrame(columns=_LOST_COLUMNS)
-    keys = set(zip(stock["field"], stock["parent"], stock["cid"]))
-    unmatched = succeeded[
-        [
-            (field, well, reservoir) not in keys
-            for field, well, reservoir in zip(
-                succeeded["field"],
-                succeeded["well"],
-                succeeded["reservoir"],
-            )
-        ]
-    ].rename(columns={"resp_owc": "resp"})
-    unmatched["resp"] = unmatched["resp"].round(2)
-    return (
-        unmatched[_LOST_COLUMNS]
-        .sort_values(_LOST_COLUMNS)
-        .reset_index(drop=True)
-    )
-
-
-def _previous_info(prev_values: pd.DataFrame) -> pd.DataFrame:
-    """Вид исследования и Рпл из строки предыдущей сводной."""
-    info = pd.DataFrame(
+    data = prev_values.dropna(subset=list(_PREV_KEY_COLUMNS))
+    return sorted(
         {
-            "field": prev_values["field"],
-            "well": prev_values["well_nb"],
-            "end_date": prev_values["prev_date"],
-            "reservoir": prev_values["reservoir"],
-            "well_test": prev_values["prev_well_test"],
-            "resp": prev_values["prev_resp"],
+            (
+                str(field),
+                str(well),
+                cast(date, prev_date),
+                str(reservoir),
+            )
+            for field, well, prev_date, reservoir in zip(
+                data["field"],
+                data["well_nb"],
+                data["prev_date"],
+                data["reservoir"],
+            )
         }
     )
-    return info.drop_duplicates(
-        subset=["field", "well", "end_date", "reservoir"], keep="first"
-    )
 
 
-def _missing_keys(
-    rows: list[tuple[str, str, date, str]], found: pd.DataFrame
-) -> pd.DataFrame:
-    """Ключи предыдущих замеров, для которых не нашлось записи в welltest."""
-    columns = ["field", "well", "end_date", "reservoir"]
-    if not rows:
-        return pd.DataFrame(columns=columns)
-    requested = set(rows)
-    matched = set(
-        zip(
-            found["field"],
-            found["well"],
-            found["end_date"],
-            found["reservoir"],
+def _test_keys(*frames: pd.DataFrame) -> list[tuple[str, str, str]]:
+    """Замеры квартала, для которых читаются перфорации.
+
+    Ключ — месторождение, скважина без ствола, объект.
+    """
+    keys: set[tuple[str, str, str]] = set()
+    for frame in frames:
+        if frame.empty:
+            continue
+        keys.update(
+            (str(field), str(well), str(reservoir))
+            for field, well, reservoir in zip(
+                frame["field"], frame["well"], frame["reservoir"]
+            )
         )
-    )
-    return pd.DataFrame(sorted(requested - matched), columns=columns)
+    return sorted(keys)

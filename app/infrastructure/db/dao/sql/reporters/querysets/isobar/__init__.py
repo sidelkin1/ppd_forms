@@ -1,3 +1,4 @@
+from .perfs import select_well_perfs
 from .stock import select_stock
 from .well_tests import (
     FAILED_CURATOR,

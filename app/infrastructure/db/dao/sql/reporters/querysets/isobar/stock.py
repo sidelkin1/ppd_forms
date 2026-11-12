@@ -1,9 +1,15 @@
+from typing import Any
+
 from sqlalchemy import (
+    Date,
+    Integer,
     and_,
     bindparam,
     case,
+    cast,
     func,
     literal,
+    null,
     select,
     union_all,
 )
@@ -11,6 +17,7 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.sql.expression import Select
 from sqlalchemy.sql.selectable import Subquery
 
+from app.core.models.enums import IsobarStatus
 from app.infrastructure.db.models.ofm.codes import DictG
 from app.infrastructure.db.models.ofm.udmurtneft_n import (
     Reservoir2,
@@ -18,12 +25,14 @@ from app.infrastructure.db.models.ofm.udmurtneft_n import (
     TmpWellNgOis2,
     TmpWellOpOis2,
     WellHdr,
+    WellPerforations,
     WellStockHist,
     WellStockHistExt,
 )
 
+from .common import base_reservoir_id, cid_column
+
 _SLOTS = ("1", "2", "3")
-_OLD_WELLBORE_STATUS = "стар. ствол"
 _STOCK_COLUMNS = (
     "field",
     "uwi",
@@ -38,12 +47,52 @@ _STOCK_COLUMNS = (
 )
 
 
+def _select_open_wellbores() -> Subquery:
+    """Стволы с открытой на дату отчёта перфорацией.
+
+    Берутся все такие тройки «скважина, базовый объект, ствол»: часть из
+    них уже есть в фонде (тогда даёт историю), остальные добавятся со
+    состоянием «открыт. перф.» — в фонде ОФМ их почему-то нет, хотя
+    перфорация открыта.
+    """
+    branch = aliased(WellHdr)
+    return (
+        select(
+            func.coalesce(branch.parent_uwi, branch.uwi).label("uwi"),
+            base_reservoir_id().label("reservoir_id"),
+            branch.uwi.label("bs_uwi"),
+        )
+        .select_from(WellPerforations)
+        .join(branch, branch.uwi == WellPerforations.uwi)
+        .join(DictG, DictG.id == WellPerforations.layer_id)
+        .where(
+            WellPerforations.comp_date <= bindparam("on_date"),
+            WellPerforations.close_date.is_(None)
+            | (WellPerforations.close_date >= bindparam("on_date")),
+        )
+        .distinct()
+        .subquery("open_wellbores")
+    )
+
+
 def _select_wellbores() -> Subquery:
-    """Стволы, работавшие на объектах, с последней датой на дату фонда.
+    """Стволы фонда: текущие, прежние и с открытой перфорацией.
 
     По каждой тройке «скважина, объект работы, ствол» берём последнюю
     дату: она равна дате фонда у текущего ствола и более ранняя у прежних.
+    Объект резолвится к базовому (``mr`` → id), иначе смена объекта на
+    ИЖВ и обратно давала бы лишние прежние стволы.
+
+    К истории добавляются стволы с открытой на дату отчёта перфорацией,
+    которых в фонде нет: у них нет последней даты, состояние
+    «открыт. перф.» (``open_perf = 1``). Дубли снимаются группировкой:
+    если ствол есть в истории, берётся её дата, а ``open_perf`` остаётся 1.
+
+    ``current_reservoir_id`` — исходный ``ora{n}`` на дату фонда: он нужен
+    только для склейки с техрежимом (там объект хранится текстом) и в
+    итоговый фонд не попадает.
     """
+    stock_date: Any = bindparam("stock_date")
     parts = []
     for slot in _SLOTS:
         reservoir = getattr(WellStockHistExt, f"ora{slot}")
@@ -51,24 +100,52 @@ def _select_wellbores() -> Subquery:
         parts.append(
             select(
                 WellStockHistExt.uwi.label("uwi"),
-                reservoir.label("reservoir_id"),
+                base_reservoir_id().label("reservoir_id"),
                 wellbore.label("bs_uwi"),
                 WellStockHistExt.status_date.label("status_date"),
-            ).where(
-                WellStockHistExt.status_date <= bindparam("stock_date"),
+                case(
+                    (WellStockHistExt.status_date == stock_date, reservoir)
+                ).label("current_reservoir_id"),
+            )
+            .select_from(WellStockHistExt)
+            .join(DictG, DictG.id == reservoir)
+            .where(
+                WellStockHistExt.status_date <= stock_date,
                 wellbore.is_not(None),
                 reservoir.is_not(None),
             )
         )
     history = union_all(*parts).subquery("history")
+    opened_wellbores = _select_open_wellbores()
+    grouped = select(
+        history.c.uwi,
+        history.c.reservoir_id,
+        history.c.bs_uwi,
+        func.max(history.c.status_date).label("last_date"),
+        func.max(history.c.current_reservoir_id).label("current_reservoir_id"),
+        literal(0).label("open_perf"),
+    ).group_by(history.c.uwi, history.c.reservoir_id, history.c.bs_uwi)
+    opened = select(
+        opened_wellbores.c.uwi,
+        opened_wellbores.c.reservoir_id,
+        opened_wellbores.c.bs_uwi,
+        cast(null(), Date).label("last_date"),
+        cast(null(), Integer).label("current_reservoir_id"),
+        literal(1).label("open_perf"),
+    ).select_from(opened_wellbores)
+    combined = union_all(grouped, opened).subquery("combined")
     return (
         select(
-            history.c.uwi,
-            history.c.reservoir_id,
-            history.c.bs_uwi,
-            func.max(history.c.status_date).label("last_date"),
+            combined.c.uwi,
+            combined.c.reservoir_id,
+            combined.c.bs_uwi,
+            func.max(combined.c.last_date).label("last_date"),
+            func.max(combined.c.current_reservoir_id).label(
+                "current_reservoir_id"
+            ),
+            func.max(combined.c.open_perf).label("open_perf"),
         )
-        .group_by(history.c.uwi, history.c.reservoir_id, history.c.bs_uwi)
+        .group_by(combined.c.uwi, combined.c.reservoir_id, combined.c.bs_uwi)
         .subquery("wellbores")
     )
 
@@ -82,7 +159,9 @@ def _select_stock() -> Select:
     """
     wellbores = _select_wellbores()
     reservoir = func.udmurtneft_n.dg_des(wellbores.c.reservoir_id)
+    # «открыт. перф.» — ствол, которого нет в фонде, но перфорация открыта
     is_current = wellbores.c.last_date == bindparam("stock_date")
+    has_open_perf = wellbores.c.open_perf == 1
     branch = aliased(WellHdr)
     parent = aliased(WellHdr)
     return (
@@ -92,18 +171,17 @@ def _select_stock() -> Select:
             branch.well_name.label("well_name"),
             parent.well_name.label("parent"),
             reservoir.label("reservoir"),
-            # суффикс "(Руд)" есть только в OFM: в локальной БД и в
-            # предыдущей сводной объект хранится без него
-            func.replace(
-                func.udmurtneft_n.dg_sdes(
-                    func.decode(DictG.mr, None, DictG.id, DictG.mr)
-                ),
-                "(Руд)",
-            ).label("cid"),
+            cid_column().label("cid"),
+            wellbores.c.reservoir_id.label("reservoir_id"),
+            wellbores.c.current_reservoir_id.label("current_reservoir_id"),
             func.udmurtneft_n.dg_sdes(WellStockHist.prod_class).label("type_"),
             case(
-                (is_current, func.udmurtneft_n.dg_sdes(WellStockHist.status)),
-                else_=literal(_OLD_WELLBORE_STATUS),
+                (
+                    is_current,
+                    func.udmurtneft_n.dg_sdes(WellStockHist.status),
+                ),
+                (has_open_perf, literal(IsobarStatus.open_perf.value)),
+                else_=literal(IsobarStatus.old_wellbore.value),
             ).label("status"),
             ResPty.initial_layer_pressure.label("p_init"),
             ResPty.bubble_point_pressure.label("p_bubble"),
@@ -119,7 +197,12 @@ def _select_stock() -> Select:
             WellStockHist,
             and_(
                 WellStockHist.uwi == wellbores.c.uwi,
-                WellStockHist.status_date == wellbores.c.last_date,
+                # у ствола с открытой перфорацией своей даты нет — берём
+                # характер работы из текущего состояния скважины
+                WellStockHist.status_date
+                == func.coalesce(
+                    wellbores.c.last_date, bindparam("stock_date")
+                ),
             ),
         )
         .outerjoin(
@@ -178,18 +261,24 @@ def _select_tmp_pressures() -> Subquery:
 def select_stock() -> Select:
     """Фонд со всеми стволами объектов, PVT-свойства и давления.
 
-    В фонд входят не только текущие стволы объектов, но и все прежние
-    стволы, которые на этих объектах были (состояние «стар. ствол»).
+    В фонд входят текущие стволы объектов, все прежние («стар. ствол») и
+    стволы с открытой перфорацией, которых в фонде нет («открыт. перф.»).
     """
     stock = _select_stock().subquery("stock")
     stock_keys = select(
         *(stock.c[column] for column in _STOCK_COLUMNS),
-        func.lower(stock.c.reservoir).label("reservoir_lower"),
+        func.lower(
+            func.udmurtneft_n.dg_des(stock.c.current_reservoir_id)
+        ).label("reservoir_lower"),
     ).subquery("stock_keys")
     pressures = _select_tmp_pressures()
-    # давления техрежима относятся только к текущим стволам: у прежних
-    # стволов ячейки остаются пустыми
-    is_current = func.coalesce(stock_keys.c.status, "") != _OLD_WELLBORE_STATUS
+    # техрежим склеивается только с текущими стволами: у прежних стволов
+    # и стволов с открытой перфорацией case ниже оставляет p_tr и p_bhp
+    # пустыми (NULL). Склейка идёт по исходному ora на дату фонда —
+    # техрежим хранит объект текстом, и это описание совпадает с ним.
+    is_current = ~func.coalesce(stock_keys.c.status, "").in_(
+        (IsobarStatus.old_wellbore.value, IsobarStatus.open_perf.value)
+    )
     return (
         select(
             *(stock_keys.c[column] for column in _STOCK_COLUMNS),

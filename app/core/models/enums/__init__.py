@@ -1,6 +1,7 @@
 from .exclude_gtm import ExcludeGTM
 from .file_extension import FileExtension
 from .interpolation import Interpolation
+from .isobar import IsobarStatus
 from .job_status import JobStatus
 from .load_mode import LoadMode
 from .loss_mode import LossMode

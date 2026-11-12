@@ -293,4 +293,7 @@ def select_stock() -> Select:
                 stock_keys.c.reservoir_lower == pressures.c.layer_id,
             ),
         )
+        # Reservoir2/ResPty подключаются через LEFT JOIN и при нескольких
+        # совпадениях дают дубли строк (как в pvt_props.py).
+        .distinct()
     )

@@ -10,7 +10,9 @@ async def save_upload_file(file: UploadFile, base_dir: Path):
     try:
         if file.filename is None:
             raise ValueError("filename must be set")
-        path = base_dir / file.filename
+        # Берём только имя файла: filename из multipart-запроса может
+        # содержать путь и вывести запись за пределы upload_dir.
+        path = base_dir / Path(file.filename).name
         async with aiofiles.open(path, "wb") as f:
             while contents := await file.read(COPY_BUFSIZE):
                 await f.write(contents)

@@ -4,7 +4,7 @@ import time
 from copy import copy
 from datetime import date
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import openpyxl
 import pandas as pd
@@ -66,11 +66,37 @@ def _is_empty(value: Any) -> bool:
         return False
 
 
-def _copy_styles(ws: Worksheet, row_number: int, styles: list[Any]) -> None:
+def _style_parts(cell: Any) -> dict[str, Any]:
+    """Оформление ячейки через публичное API openpyxl.
+
+    Прямое копирование ``cell._style`` опирается на приватный атрибут
+    ``StyleArray``, который не входит в публичный контракт библиотеки.
+    """
+    return {
+        "font": copy(cell.font),
+        "fill": copy(cell.fill),
+        "border": copy(cell.border),
+        "alignment": copy(cell.alignment),
+        "number_format": cell.number_format,
+        "protection": copy(cell.protection),
+    }
+
+
+def _apply_style(cell: Any, style: dict[str, Any]) -> None:
+    cell.font = style["font"]
+    cell.fill = style["fill"]
+    cell.border = style["border"]
+    cell.alignment = style["alignment"]
+    cell.number_format = style["number_format"]
+    cell.protection = style["protection"]
+
+
+def _copy_styles(
+    ws: Worksheet, row_number: int, styles: list[dict[str, Any]]
+) -> None:
     """Копирует оформление образцовой строки на новую строку."""
     for column in range(1, LAST_COLUMN + 1):
-        cell = cast(Any, ws.cell(row_number, column))
-        cell._style = styles[column - 1]
+        _apply_style(ws.cell(row_number, column), styles[column - 1])
 
 
 def _mark_synthetic_status(cell: Any, color: str) -> None:
@@ -139,7 +165,7 @@ def _fill_workbook(
             for column, formula in _template_formulas(ws).items()
         }
         styles = [
-            copy(cast(Any, ws.cell(FIRST_ROW, column))._style)
+            _style_parts(ws.cell(FIRST_ROW, column))
             for column in range(1, LAST_COLUMN + 1)
         ]
         last_template_row = ws.max_row

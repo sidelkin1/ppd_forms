@@ -1,10 +1,10 @@
 import csv
 import re
 from collections.abc import Callable
-from pathlib import Path
 
 import pytest
 
+from app.common.config.models.paths import Paths
 from app.infrastructure.db.mappers import (
     TRANSLATE_TO,
     BaseMapper,
@@ -13,8 +13,6 @@ from app.infrastructure.db.mappers import (
     SimpleMapper,
     WellMapper,
 )
-
-RESOURCES = Path(__file__).parent / "resources" / "data"
 
 
 class BaseMapperMock(BaseMapper):
@@ -76,11 +74,11 @@ def well_mapper_del_orzid() -> WellMapper:
 
 
 @pytest.fixture
-def replace_mapper() -> Callable[[str], RegexMapper]:
-    """Собирает RegexMapper из правил замен в tests/fixtures/resources/data."""
+def replace_mapper(paths: Paths) -> Callable[[str], RegexMapper]:
+    """Собирает RegexMapper из правил замен в каталоге данных тестов."""
 
     def build(name: str) -> RegexMapper:
-        with (RESOURCES / f"{name}_replace.csv").open(
+        with (paths.data_dir / f"{name}_replace.csv").open(
             encoding="utf-8"
         ) as file:
             rows = list(csv.DictReader(file))

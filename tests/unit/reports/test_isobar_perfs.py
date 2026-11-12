@@ -4,7 +4,10 @@ import pandas as pd
 import pytest
 
 from app.core.services.reports.isobar.diagnostics import _unmatched_tests
-from app.core.services.reports.isobar.preparation import _resolve_branches
+from app.core.services.reports.isobar.preparation import (
+    _resolve_branches,
+    prepare_dataframe,
+)
 
 
 def _tests(
@@ -83,6 +86,12 @@ def test_branch_without_perfs() -> None:
 
     assert resolved["branch"].tolist() == ["303"]
     assert fallback["well"].tolist() == ["303"]
+
+
+def test_prepare_dataframe_requires_stock() -> None:
+    """Пустой фонд — ошибка, а не пустой отчёт."""
+    with pytest.raises(ValueError, match="текущий фонд"):
+        prepare_dataframe({"stock": pd.DataFrame()})
 
 
 def test_unmatched_tests_use_branch() -> None:

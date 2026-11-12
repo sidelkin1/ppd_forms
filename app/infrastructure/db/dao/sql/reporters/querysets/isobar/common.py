@@ -1,12 +1,10 @@
-from typing import Any
-
 from sqlalchemy import func
 from sqlalchemy.sql.expression import ColumnElement
 
 from app.infrastructure.db.models.ofm.codes import DictG
 
 
-def base_reservoir_id(dict_g: Any = DictG) -> ColumnElement[int]:
+def base_reservoir_id() -> ColumnElement[int]:
     """id базового объекта разработки для строки справочника.
 
     У «ИЖВ»-объектов ``mr`` ссылается на базовый объект (например,
@@ -17,7 +15,7 @@ def base_reservoir_id(dict_g: Any = DictG) -> ColumnElement[int]:
     числу — ``mr`` у объектов фонда всегда NULL или числовой.
     """
     return func.to_number(
-        func.decode(dict_g.mr, None, func.to_char(dict_g.id), dict_g.mr)
+        func.decode(DictG.mr, None, func.to_char(DictG.id), DictG.mr)
     )
 
 

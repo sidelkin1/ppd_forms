@@ -11,6 +11,11 @@ FILE_SUFFIX = ".xlsm"
 
 def parse_previous_date(filename: str) -> date:
     """Дата предыдущей карты из имени файла ``СВОДНЫЙ_ИЗОБАРЫ_DD.MM.YYYY``."""
+    # filename приходит из тела запроса и используется воркером как путь
+    # относительно upload_dir. Принимаем только чистое имя файла: путь или
+    # обход директории (`../`) закрывает чтение произвольных файлов.
+    if Path(filename).name != filename:
+        raise ValueError("Имя файла не должно содержать путь")
     if not filename.lower().endswith(FILE_SUFFIX):
         raise ValueError("Ожидается файл предыдущей сводной в формате .xlsm")
     match = FILE_DATE_RE.search(Path(filename).stem)

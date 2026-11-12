@@ -6,7 +6,7 @@ from fastapi import HTTPException, UploadFile, status
 COPY_BUFSIZE = 1024 * 1024
 
 
-async def save_upload_file(file: UploadFile, base_dir: Path):
+async def save_upload_file(file: UploadFile, base_dir: Path) -> Path:
     try:
         if file.filename is None:
             raise ValueError("filename must be set")
@@ -16,6 +16,7 @@ async def save_upload_file(file: UploadFile, base_dir: Path):
         async with aiofiles.open(path, "wb") as f:
             while contents := await file.read(COPY_BUFSIZE):
                 await f.write(contents)
+        return path
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

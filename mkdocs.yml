@@ -34,6 +34,7 @@ nav:
     - 'ГДИС':
       - 'Отчет по ГДИС': 'app/reports/well_test.md'
       - 'Пересчет давления на ВНК': 'app/reports/owc_resp.md'
+      - 'Сводная таблица для карт изобар': 'app/reports/isobar.md'
     - 'Моделирование':
       - 'Шаблон для матбаланса (РН-КИН)': 'app/reports/matbal.md'
       - 'Выгрузка исходников для ММБ (Julia)': 'app/reports/mmb.md'

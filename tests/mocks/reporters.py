@@ -1,10 +1,13 @@
-from datetime import datetime
+from collections.abc import Sequence
+from datetime import date, datetime
+from typing import Any
 
 import pandas as pd
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters import (
     FnvReporter,
+    OfmIsobarReporter,
     OppPerYearReporter,
     OwcRespReporter,
 )
@@ -210,3 +213,45 @@ class OwcRespMock(OwcRespReporter):
                 }
             )
         return {"props": props, "depths": depths}
+
+
+class OfmIsobarMock(OfmIsobarReporter):
+    def __init__(self, pool: sessionmaker[Session] | None = None) -> None:
+        pass
+
+    async def read_one(
+        self, *, key: str | None = None, **params: Any
+    ) -> pd.DataFrame:
+        # W2B1 — прежний ствол W2: квартальный замер W2 должен попасть в него
+        return pd.DataFrame(
+            {
+                "field": ["F1", "F1", "F1", "F1"],
+                "well_name": ["W1", "W2", "W2B1", "W3"],
+                "parent": ["W1", "W2", "W2", "W3"],
+                "reservoir": ["R1", "R1", "R1", "R1"],
+                "cid": ["R1", "R1", "R1", "R1"],
+                "type_": ["неф", "наг", "наг", "неф"],
+                "status": ["раб.", "раб.", "стар. ствол", "раб."],
+                "p_init": [110.0, 120.0, 120.0, 130.0],
+                "p_bubble": [60.0, 70.0, 70.0, 80.0],
+                "p_tr": [101.0, 111.0, None, 121.0],
+                "p_bhp": [95.0, None, None, None],
+            }
+        )
+
+    async def read_perfs(
+        self,
+        rows: Sequence[tuple[str, str, str]],
+        previous_date: date,
+    ) -> pd.DataFrame:
+        # на дату квартального замера W2 работал ствол W2B1
+        return pd.DataFrame(
+            {
+                "field": ["F1"],
+                "well": ["W2"],
+                "reservoir": ["R1"],
+                "branch": ["W2B1"],
+                "comp_date": [date(2026, 1, 1)],
+                "close_date": [None],
+            }
+        )

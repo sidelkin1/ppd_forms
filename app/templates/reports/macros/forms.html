@@ -416,6 +416,23 @@
     {{ spinner_button(report.path, button_text, button_func) }}
 {%- endmacro %}
 
+{% macro form_isobar(report, button_text, button_func) -%}
+    <div class="mb-3">
+        <label class="form-check-label" for="{{ report.path }}File">{{ report.file.label }}</label>
+        <input
+            type="file"
+            class="form-control"
+            id="{{ report.path }}File"
+            name="file"
+            data-form="{{ report.path }}"
+            data-field="file"
+            data-label="{{ report.file.label }}"
+            {% if report.file.required %}data-required{% endif %}
+        >
+    </div>
+    {{ spinner_button(report.path, button_text, button_func) }}
+{%- endmacro %}
+
 {% macro form_owc_resp(report, button_text, button_func) -%}
     <select
         class="form-select mb-3"

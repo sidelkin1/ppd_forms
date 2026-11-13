@@ -373,6 +373,26 @@ class HolderDAO:
         )
 
     @property
+    def ofm_isobar_reporter(self) -> db_reporters.OfmIsobarReporter:
+        return db_reporters.OfmIsobarReporter(self.kwargs["ofm_pool"])
+
+    @property
+    def local_isobar_reporter(self) -> db_reporters.LocalIsobarReporter:
+        return db_reporters.LocalIsobarReporter(self.kwargs["local_pool"])
+
+    @property
+    def file_isobar_reporter(self) -> file_reporters.IsobarReporter:
+        return file_reporters.IsobarReporter(self.kwargs["path"])
+
+    @property
+    def isobar_reporter(self) -> complex_reporters.IsobarReporter:
+        return complex_reporters.IsobarReporter(
+            stock=self.ofm_isobar_reporter,
+            tests=self.local_isobar_reporter,
+            previous=self.file_isobar_reporter,
+        )
+
+    @property
     def compensation_reporter(self) -> db_reporters.CompensationReporter:
         return db_reporters.CompensationReporter(self.kwargs["ofm_pool"])
 

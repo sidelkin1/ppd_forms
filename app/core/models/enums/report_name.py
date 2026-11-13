@@ -14,3 +14,4 @@ class ReportName(str, Enum):
     compensation = "compensation"
     well_test = "well_test"
     owc_resp = "owc_resp"
+    isobar = "isobar"

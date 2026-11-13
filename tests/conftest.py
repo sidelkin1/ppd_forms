@@ -41,3 +41,8 @@ def paths(tmp_path_factory) -> Paths:
 @pytest.fixture(scope="session")
 def result_dir(paths: Paths) -> Path:
     return paths.base_dir / "tests" / "fixtures" / "resources" / "results"
+
+
+@pytest.fixture(scope="session")
+def templates_dir(paths: Paths) -> Path:
+    return paths.base_dir / "tests" / "fixtures" / "resources" / "templates"

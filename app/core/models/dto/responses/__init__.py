@@ -7,6 +7,7 @@ from .task import (
     FieldsResponse,
     FnvResponse,
     InjLossResponse,
+    IsobarResponse,
     MatbalResponse,
     MatrixResponse,
     MmbResponse,

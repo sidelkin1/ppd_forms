@@ -19,6 +19,8 @@ class WellTestDAO(MainTableDAO[WellTest, WellTestDB]):
         "prod_index",
         "frac_length",
         "reliability",
+        "curator",
+        "well_status",
     ]
 
     def __init__(self, session: AsyncSession) -> None:

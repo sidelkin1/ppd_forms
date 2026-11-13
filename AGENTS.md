@@ -122,7 +122,7 @@ app/
 
 ### Testing
 
-- `tests/unit/` — unit tests (mappers, no DB required)
+- `tests/unit/` — unit tests (mappers, reports, schemas — no DB required)
 - `tests/integration/` — integration tests using testcontainers (PostgreSQL + Redis containers)
 - `tests/mocks/` — mock DAOs and holders for integration tests
 - `tests/fixtures/` — test data and task fixtures

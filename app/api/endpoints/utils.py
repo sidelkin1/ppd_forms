@@ -14,8 +14,10 @@ router = APIRouter(prefix="/utils", tags=["utils"])
 
 @router.post("/", response_model=dict)
 async def upload_file(file: UploadFile, user: UserDep, path: PathDep):
-    await save_upload_file(file, path.upload_dir(user.username))
-    return {"filename": file.filename}
+    saved = await save_upload_file(file, path.upload_dir(user.username))
+    # Возвращаем фактически сохранённое имя (basename), чтобы отчёт искал
+    # файл ровно там, где save_upload_file его записал.
+    return {"filename": saved.name}
 
 
 @router.post(

@@ -25,6 +25,8 @@ class WellTest(date_stamp_factory("end_date"), Base):
     prod_index: Mapped[float | None]
     frac_length: Mapped[float | None]
     reliability: Mapped[str | None]
+    curator: Mapped[str | None]
+    well_status: Mapped[str | None]
 
     __table_args__ = (
         UniqueConstraint(

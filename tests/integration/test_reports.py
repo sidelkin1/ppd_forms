@@ -324,6 +324,7 @@ async def test_isobar_report(
     wb = load_workbook(book)
     ws = wb[ISOBAR_SHEET]
     assert ws.max_row == 5
+    assert ws.auto_filter.ref == "A1:BB5"
 
     # W1: старые значения в J-N, квартальный замер обновил O-Q и AC-AE
     assert ws["C2"].value == "F1"

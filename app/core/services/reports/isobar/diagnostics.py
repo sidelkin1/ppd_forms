@@ -174,10 +174,10 @@ def _previous_misses(
 
 
 def _write_misses(
-    path: Path, on_date: date, missed: pd.DataFrame | None
+    path: Path, on_date: date, missed: pd.DataFrame
 ) -> str | None:
     """Пишет объекты фонда, которых нет в предыдущей сводной."""
-    if missed is None or missed.empty:
+    if missed.empty:
         return None
     name = f"{OUTPUT_PREFIX}_{on_date:%d.%m.%Y}_нет_строки_в_сводной.csv"
     missed.rename(columns=MISS_HEADERS, errors="raise").to_csv(
@@ -190,14 +190,14 @@ def _write_misses(
 
 
 def _write_state_misses(
-    path: Path, on_date: date, missing: pd.DataFrame | None
+    path: Path, on_date: date, missing: pd.DataFrame
 ) -> str | None:
     """Пишет замеры предыдущей сводной, которых нет в welltest.
 
     Ключ замера — месторождение, скважина, дата замера, объект; по нему
     в welltest берутся тип и состояние скважины для колонок M/N.
     """
-    if missing is None or missing.empty:
+    if missing.empty:
         return None
     name = f"{OUTPUT_PREFIX}_{on_date:%d.%m.%Y}_нет_данных_гдис.csv"
     missing.rename(columns=STATE_HEADERS, errors="raise").to_csv(
@@ -213,7 +213,7 @@ def _write_state_misses(
 def _write_lost_values(
     path: Path,
     on_date: date,
-    missing: pd.DataFrame | None,
+    missing: pd.DataFrame,
     suffix: str,
     source: str,
     headers: dict[str, str],
@@ -225,7 +225,7 @@ def _write_lost_values(
     сводной», «текущих замеров»), ``suffix`` — часть имени файла,
     ``headers`` — русские заголовки колонок этого источника.
     """
-    if missing is None or missing.empty:
+    if missing.empty:
         return None
     name = f"{OUTPUT_PREFIX}_{on_date:%d.%m.%Y}_{suffix}.csv"
     missing.rename(columns=headers, errors="raise").to_csv(

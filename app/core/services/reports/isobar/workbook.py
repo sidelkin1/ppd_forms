@@ -182,6 +182,9 @@ def _fill_workbook(
             start = time.perf_counter()
             ws.delete_rows(FIRST_ROW + new_count, old_count - new_count)
             timings["time_delete"] = round(time.perf_counter() - start, 1)
+        # диапазон фильтра обновляется под итоговое число строк
+        last_row = FIRST_ROW + new_count - 1 if new_count else FIRST_ROW - 1
+        ws.auto_filter.ref = f"A1:{get_column_letter(LAST_COLUMN)}{last_row}"
         start = time.perf_counter()
         save_workbook(wb, target)
         timings["time_save"] = round(time.perf_counter() - start, 1)

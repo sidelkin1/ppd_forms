@@ -2,7 +2,6 @@ from typing import Any
 
 from sqlalchemy import (
     Date,
-    Integer,
     and_,
     bindparam,
     case,
@@ -61,6 +60,7 @@ def _select_open_wellbores() -> Subquery:
             func.coalesce(branch.parent_uwi, branch.uwi).label("uwi"),
             base_reservoir_id().label("reservoir_id"),
             branch.uwi.label("bs_uwi"),
+            WellPerforations.layer_id.label("raw_reservoir_id"),
         )
         .select_from(WellPerforations)
         .join(branch, branch.uwi == WellPerforations.uwi)
@@ -88,9 +88,13 @@ def _select_wellbores() -> Subquery:
     «открыт. перф.» (``open_perf = 1``). Дубли снимаются группировкой:
     если ствол есть в истории, берётся её дата, а ``open_perf`` остаётся 1.
 
-    ``current_reservoir_id`` — исходный ``ora{n}`` на дату фонда: он нужен
-    только для склейки с техрежимом (там объект хранится текстом) и в
-    итоговый фонд не попадает.
+    ``raw_reservoir_id`` — исходный ``ora{n}`` (для перфораций — ``layer_id``):
+    ключ склейки с ``reservoir2`` (PVT) и техрежимом, где объект хранится в
+    кодировке месторождения. Для текущего ствола (слот на дату фонда)
+    предпочитается базовый объект (``raw_reservoir_id == reservoir_id``):
+    у ИЖВ в ``reservoir2`` и техрежиме бывают отдельные записи с другими
+    значениями. Для прежнего ствола берётся ``ora`` последней записи по
+    дате — базовый или ИЖВ, без предпочтения.
     """
     stock_date: Any = bindparam("stock_date")
     parts = []
@@ -101,11 +105,9 @@ def _select_wellbores() -> Subquery:
             select(
                 WellStockHistExt.uwi.label("uwi"),
                 base_reservoir_id().label("reservoir_id"),
+                reservoir.label("raw_reservoir_id"),
                 wellbore.label("bs_uwi"),
                 WellStockHistExt.status_date.label("status_date"),
-                case(
-                    (WellStockHistExt.status_date == stock_date, reservoir)
-                ).label("current_reservoir_id"),
             )
             .select_from(WellStockHistExt)
             .join(DictG, DictG.id == reservoir)
@@ -117,20 +119,51 @@ def _select_wellbores() -> Subquery:
         )
     history = union_all(*parts).subquery("history")
     opened_wellbores = _select_open_wellbores()
-    grouped = select(
+    # Для каждой тройки берём последнюю запись по дате. Приоритет базового
+    # объекта действует только среди слотов на stock_date: техрежим хранит
+    # текущее имя, и при обоих слотах надо брать базовое, а не ИЖВ. Для
+    # прежних стволов берём raw последней записи — базовый или ИЖВ. Три
+    # уровня сортировки дают детерминированный выбор при равных датах.
+    on_stock = history.c.status_date == stock_date
+    base_flag = history.c.raw_reservoir_id == history.c.reservoir_id
+    grouped_ranked = select(
         history.c.uwi,
         history.c.reservoir_id,
+        history.c.raw_reservoir_id,
         history.c.bs_uwi,
-        func.max(history.c.status_date).label("last_date"),
-        func.max(history.c.current_reservoir_id).label("current_reservoir_id"),
+        history.c.status_date.label("last_date"),
         literal(0).label("open_perf"),
-    ).group_by(history.c.uwi, history.c.reservoir_id, history.c.bs_uwi)
+        func.row_number()
+        .over(
+            partition_by=(
+                history.c.uwi,
+                history.c.reservoir_id,
+                history.c.bs_uwi,
+            ),
+            order_by=(
+                history.c.status_date.desc(),
+                case((and_(on_stock, base_flag), 0), else_=1),
+                case((on_stock, 0), else_=1),
+                case((base_flag, 0), else_=1),
+                history.c.raw_reservoir_id.desc(),
+            ),
+        )
+        .label("rn"),
+    ).subquery("grouped_ranked")
+    grouped = select(
+        grouped_ranked.c.uwi,
+        grouped_ranked.c.reservoir_id,
+        grouped_ranked.c.raw_reservoir_id,
+        grouped_ranked.c.bs_uwi,
+        grouped_ranked.c.last_date,
+        grouped_ranked.c.open_perf,
+    ).where(grouped_ranked.c.rn == 1)
     opened = select(
         opened_wellbores.c.uwi,
         opened_wellbores.c.reservoir_id,
+        opened_wellbores.c.raw_reservoir_id,
         opened_wellbores.c.bs_uwi,
         cast(null(), Date).label("last_date"),
-        cast(null(), Integer).label("current_reservoir_id"),
         literal(1).label("open_perf"),
     ).select_from(opened_wellbores)
     combined = union_all(grouped, opened).subquery("combined")
@@ -140,9 +173,18 @@ def _select_wellbores() -> Subquery:
             combined.c.reservoir_id,
             combined.c.bs_uwi,
             func.max(combined.c.last_date).label("last_date"),
-            func.max(combined.c.current_reservoir_id).label(
-                "current_reservoir_id"
-            ),
+            # приоритет фонду (open_perf = 0) над открытой перфорацией
+            func.coalesce(
+                func.max(
+                    case(
+                        (
+                            combined.c.open_perf == 0,
+                            combined.c.raw_reservoir_id,
+                        )
+                    )
+                ),
+                func.max(combined.c.raw_reservoir_id),
+            ).label("raw_reservoir_id"),
             func.max(combined.c.open_perf).label("open_perf"),
         )
         .group_by(combined.c.uwi, combined.c.reservoir_id, combined.c.bs_uwi)
@@ -173,7 +215,7 @@ def _select_stock() -> Select:
             reservoir.label("reservoir"),
             cid_column().label("cid"),
             wellbores.c.reservoir_id.label("reservoir_id"),
-            wellbores.c.current_reservoir_id.label("current_reservoir_id"),
+            wellbores.c.raw_reservoir_id.label("raw_reservoir_id"),
             func.udmurtneft_n.dg_sdes(WellStockHist.prod_class).label("type_"),
             case(
                 (
@@ -208,7 +250,10 @@ def _select_stock() -> Select:
         .outerjoin(
             Reservoir2,
             and_(
-                Reservoir2.reservoir_id == wellbores.c.reservoir_id,
+                # reservoir2.reservoir_id — VARCHAR2 с сырым ora; джойн
+                # идёт в строковом домене по исходному ora{n}
+                Reservoir2.reservoir_id
+                == func.to_char(wellbores.c.raw_reservoir_id),
                 Reservoir2.field_code == WellHdr.field,
                 Reservoir2.district == WellHdr.district,
                 Reservoir2.existence_type == "ACTUAL",
@@ -267,9 +312,9 @@ def select_stock() -> Select:
     stock = _select_stock().subquery("stock")
     stock_keys = select(
         *(stock.c[column] for column in _STOCK_COLUMNS),
-        func.lower(
-            func.udmurtneft_n.dg_des(stock.c.current_reservoir_id)
-        ).label("reservoir_lower"),
+        func.lower(func.udmurtneft_n.dg_des(stock.c.raw_reservoir_id)).label(
+            "reservoir_lower"
+        ),
     ).subquery("stock_keys")
     pressures = _select_tmp_pressures()
     # техрежим склеивается только с текущими стволами: у прежних стволов

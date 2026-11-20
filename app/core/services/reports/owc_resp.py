@@ -177,6 +177,32 @@ def _calc_pressures(
     return props
 
 
+def _check_props(
+    props: pd.DataFrame,
+    field: UneftFieldDB,
+    reservoir: UneftReservoirDB,
+    well: str,
+    on_date: date,
+) -> None:
+    """Параметры пласта должны быть однозначны.
+
+    Дальше ``props`` читается построчно через ``Series.item()``, поэтому
+    пустая или неоднозначная выборка падает непонятной ошибкой pandas
+    («can only convert an array of size 1 to a Python scalar»).
+    """
+    if len(props) == 1:
+        return
+    where = (
+        f"скважине {well}, объекту «{reservoir.name}», "
+        f"месторождению «{field.name}» на {on_date:%d.%m.%Y}"
+    )
+    if props.empty:
+        raise ValueError(f"Нет данных по {where}")
+    raise ValueError(
+        f"Неоднозначные данные по {where}: найдено {len(props)} записей"
+    )
+
+
 async def owc_resp_report(
     path: Path,
     calculator_template: Path,
@@ -197,6 +223,7 @@ async def owc_resp_report(
         well=well,
         on_date=on_date,
     )
+    _check_props(dfs["props"], field, reservoir, well, on_date)
     dfs["props"] = await pool.run(
         _calc_pressures, dfs["props"], dfs["depths"], pressure, depth
     )

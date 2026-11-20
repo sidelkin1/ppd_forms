@@ -19,7 +19,7 @@ def _select_well_uwi() -> Select:
 def _select_well_uwi_with_open_perf() -> ScalarSelect:
     subq = _select_well_uwi().subquery()
     return (
-        select(func.min(WellPerforations.uwi).label("uwi"))
+        select(func.max(WellPerforations.uwi).label("uwi"))
         .where(
             WellPerforations.uwi.like(func.concat(subq.c.uwi, "%")),
             between(

@@ -12,6 +12,7 @@ from .density import select_water_density
 from .stock import select_well_stock_hist
 from .top_perf import select_top_perf
 from .watercut import select_watercut
+from .well_reservoir import select_well_reservoir_id
 
 
 def select_properties() -> Select:
@@ -39,7 +40,9 @@ def select_properties() -> Select:
         func.udmurtneft_n.dg_sdes(stock.c.status).label("well_status"),
     ).where(
         WellHdr.uwi.in_(select_well_branch()),
-        Reservoir2.reservoir_id == bindparam("reservoir_id"),
+        # пласт выбран по базовому id словаря, а в reservoir2 он записан
+        # в кодировке месторождения — той, что числится за стволом
+        Reservoir2.reservoir_id == select_well_reservoir_id(),
         Reservoir2.field_code == WellHdr.field,
         Reservoir2.district == WellHdr.district,
         Reservoir2.existence_type == "ACTUAL",

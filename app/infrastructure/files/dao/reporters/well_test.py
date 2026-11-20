@@ -19,7 +19,7 @@ from app.infrastructure.db.mappers import (
     field_mapper,
     multi_split_reservoir_mapper,
     reservoir_mapper,
-    well_mapper,
+    well_no_branch_mapper,
 )
 from app.infrastructure.utils.convert_to_xlsx import convert_to_xlsx
 
@@ -48,7 +48,7 @@ class WellTestReporter:
     }
     common_converters = {
         "field": lambda s: field_mapper[s],
-        "well": lambda s: well_mapper[s],
+        "well": lambda s: well_no_branch_mapper[s],
         "end_date": _date_format,
     }
     numeric_parameters = {

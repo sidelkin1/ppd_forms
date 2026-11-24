@@ -11,6 +11,7 @@ from openpyxl import load_workbook
 
 from app.common.config.models.paths import Paths
 from app.core.models.dto import UneftFieldDB
+from app.core.models.enums import WellTest
 from app.core.services.reports import (
     fnv_report,
     inj_loss_report,
@@ -30,6 +31,7 @@ from app.infrastructure.db.dao.sql.reporters.querysets import (
 )
 from app.infrastructure.holder import HolderDAO
 from tests.fixtures.task_fixtures import (  # noqa
+    task_owc_resp_complex,
     task_owc_resp_pressure,
     task_owc_resp_static,
 )
@@ -201,16 +203,20 @@ async def test_fnv_report(
     assert not errors
 
 
+_LIQUID_DENSITY = 0.8 * (1 - 20 / 100) + 1.1 * 20 / 100
+
+
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.parametrize(
     (
-        "task_fixture,expected_plan,expected_bl,expected_bm,"
+        "task_fixture,expected_plan,expected_goal,expected_bl,expected_bm,"
         "expected_bn,expected_bo,empty_depths"
     ),
     [
         (
             "task_owc_resp_static",
             "Pпл по Hст",
+            "Pпл",
             75,
             100,
             None,
@@ -220,6 +226,7 @@ async def test_fnv_report(
         (
             "task_owc_resp_pressure",
             "Pпл",
+            "Pпл",
             None,
             None,
             75,
@@ -228,12 +235,23 @@ async def test_fnv_report(
         ),
         (
             "task_owc_resp_pressure",
+            "Pпл",
             "Pпл",
             None,
             None,
             75,
             100,
             True,
+        ),
+        (
+            "task_owc_resp_complex",
+            None,
+            "Pпл + ФЕС пласта",
+            None,
+            None,
+            None,
+            None,
+            False,
         ),
     ],
 )
@@ -244,7 +262,8 @@ async def test_owc_resp_report(
     tmp_path: Path,
     request,
     task_fixture: str,
-    expected_plan: str,
+    expected_plan: str | None,
+    expected_goal: str,
     expected_bl: float | None,
     expected_bm: float | None,
     expected_bn: float | None,
@@ -282,6 +301,7 @@ async def test_owc_resp_report(
     calc_ws = calc["Пересчет"]
 
     assert analytics_ws["AW5"].value == expected_plan
+    assert analytics_ws["AX5"].value == expected_goal
     assert analytics_ws["BE5"].value == "20.10.2025"
     assert analytics_ws["BF5"].value == "20.10.2025"
     assert analytics_ws["BL5"].value == expected_bl
@@ -292,9 +312,53 @@ async def test_owc_resp_report(
         assert analytics_ws["BY5"].value is None
         assert analytics_ws["BZ5"].value is None
     else:
-        assert analytics_ws["BY5"].value == pytest.approx(102.5)
-        assert analytics_ws["BZ5"].value == pytest.approx(103.5)
-    assert calc_ws["B15"].value == pytest.approx(1.0)
+        # плотность жидкости посчитана по пластовой плотности нефти
+        assert analytics_ws["BY5"].value == pytest.approx(
+            100 + 25 * _LIQUID_DENSITY / 10
+        )
+        assert analytics_ws["BZ5"].value == pytest.approx(
+            100 + 35 * _LIQUID_DENSITY / 10
+        )
+    # во всех режимах в аналитике поверхностная плотность нефти
+    assert analytics_ws["AL5"].value == pytest.approx(0.85)
+
+    # калькулятор: пластовая плотность нефти в B12, формула B15 сохранена
+    assert calc_ws["B12"].value == pytest.approx(0.8)
+    assert calc_ws["B13"].value == pytest.approx(1.1)
+    assert calc_ws["B14"].value == pytest.approx(20.0)
+    assert calc_ws["B15"].value == "=B12*(1-B14/100)+B13*B14/100"
+
+    complex_only = (
+        "R5",
+        "S5",
+        "T5",
+        "AE5",
+        "AF5",
+        "AG5",
+        "AH5",
+        "AI5",
+        "AJ5",
+        "AK5",
+    )
+    if task.well_test is WellTest.complex:
+        assert analytics_ws["R5"].value == pytest.approx(95.0)
+        assert analytics_ws["S5"].value == pytest.approx(12.0)
+        assert analytics_ws["T5"].value == pytest.approx(30.0)
+        assert analytics_ws["AE5"].value == pytest.approx(250.0)
+        assert analytics_ws["AF5"].value == pytest.approx(150.0)
+        assert analytics_ws["AG5"].value == pytest.approx(60.0)
+        assert analytics_ws["AH5"].value == pytest.approx(2.5)
+        assert analytics_ws["AI5"].value == pytest.approx(0.7)
+        assert analytics_ws["AJ5"].value == "=AH5*(1-U5/100)+AI5*U5/100"
+        assert analytics_ws["AK5"].value == pytest.approx(1.2)
+        # ячейки static/pressure для complex остаются пустыми
+        assert analytics_ws["BL5"].value is None
+        assert analytics_ws["BM5"].value is None
+        assert analytics_ws["BN5"].value is None
+        assert analytics_ws["BO5"].value is None
+    else:
+        for cell in complex_only:
+            assert analytics_ws[cell].value is None, cell
 
 
 @pytest.mark.asyncio(scope="session")

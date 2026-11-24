@@ -25,10 +25,9 @@ _CALCULATOR_OWC_ABS_DEPTH = "B6"
 _CALCULATOR_TOP_PERF_DEPTH = "B7"
 _CALCULATOR_MEASURED_PRESSURE = "B8"
 _CALCULATOR_MEASURED_DEPTH = "B9"
-_CALCULATOR_OIL_DENSITY = "B12"
+_CALCULATOR_RESERVOIR_OIL_DENSITY = "B12"
 _CALCULATOR_WATER_DENSITY = "B13"
 _CALCULATOR_WATERCUT = "B14"
-_CALCULATOR_LIQUID_DENSITY = "B15"
 
 _ANALYTICS_REGION = "B5"
 _ANALYTICS_WORKSHOP = "C5"
@@ -41,11 +40,22 @@ _ANALYTICS_WELLBORE = "K5"
 _ANALYTICS_WELL_LIFT = "L5"
 _ANALYTICS_TOP_PERF_DEPTH = "M5"
 _ANALYTICS_TOP_PERF_OFFSET = "N5"
+_ANALYTICS_BHP = "R5"
+_ANALYTICS_OIL_RATE = "S5"
+_ANALYTICS_LIQ_RATE = "T5"
 _ANALYTICS_WATERCUT = "U5"
 _ANALYTICS_WELL_STATUS = "V5"
-_ANALYTICS_OIL_DENSITY = "AL5"
+_ANALYTICS_INIT_RESP = "AE5"
+_ANALYTICS_BUBBLE_RESP = "AF5"
+_ANALYTICS_GAS_FACTOR = "AG5"
+_ANALYTICS_OIL_VISCOSITY = "AH5"
+_ANALYTICS_WATER_VISCOSITY = "AI5"
+_ANALYTICS_LIQUID_VISCOSITY = "AJ5"
+_ANALYTICS_OIL_FVF = "AK5"
+_ANALYTICS_SURFACE_OIL_DENSITY = "AL5"
 _ANALYTICS_WATER_DENSITY = "AM5"
 _ANALYTICS_WELL_TEST_PLAN = "AW5"
+_ANALYTICS_WELL_TEST_GOAL = "AX5"
 _ANALYTICS_WELL_TEST_ACTUAL = "BD5"
 _ANALYTICS_WELL_TEST_START_DATE = "BE5"
 _ANALYTICS_WELL_TEST_END_DATE = "BF5"
@@ -67,10 +77,11 @@ def _fill_calculator(ws: Worksheet, props: pd.DataFrame) -> None:
     ws[_CALCULATOR_TOP_PERF_DEPTH].value = props["top_perf"].item()
     ws[_CALCULATOR_MEASURED_PRESSURE].value = props["pressure"].item()
     ws[_CALCULATOR_MEASURED_DEPTH].value = props["depth"].item()
-    ws[_CALCULATOR_OIL_DENSITY].value = props["oil_density"].item()
+    ws[_CALCULATOR_RESERVOIR_OIL_DENSITY].value = props[
+        "reservoir_oil_density"
+    ].item()
     ws[_CALCULATOR_WATER_DENSITY].value = props["water_density"].item()
     ws[_CALCULATOR_WATERCUT].value = props["watercut"].item()
-    ws[_CALCULATOR_LIQUID_DENSITY].value = props["liquid_density"].item()
 
 
 def _fill_depth(ws: Worksheet, depths: pd.DataFrame) -> None:
@@ -95,22 +106,41 @@ def _fill_analytics(
     ws[_ANALYTICS_TOP_PERF_OFFSET].value = props["top_perf_offset"].item()
     ws[_ANALYTICS_WATERCUT].value = props["watercut"].item()
     ws[_ANALYTICS_WELL_STATUS].value = props["well_status"].item()
-    ws[_ANALYTICS_OIL_DENSITY].value = props["oil_density"].item()
+    ws[_ANALYTICS_SURFACE_OIL_DENSITY].value = props[
+        "surface_oil_density"
+    ].item()
     ws[_ANALYTICS_WATER_DENSITY].value = props["water_density"].item()
     ws[_ANALYTICS_WELL_TEST_START_DATE].value = on_date
     ws[_ANALYTICS_WELL_TEST_END_DATE].value = on_date
     ws[_ANALYTICS_TOP_PERF_PRESSURE].value = props["top_perf_pressure"].item()
     ws[_ANALYTICS_OWC_PRESSURE].value = props["owc_pressure"].item()
     if well_test is WellTest.static_level:
+        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Pпл"
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл по Hст"
         ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Hст"
         ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = props["depth"].item()
         ws[_ANALYTICS_ANNULAR_PRESSURE].value = props["pressure"].item()
     elif well_test is WellTest.pressure:
+        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Pпл"
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл"
         ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Pпл"
         ws[_ANALYTICS_MEASURED_DEPTH].value = props["depth"].item()
         ws[_ANALYTICS_MEASURED_PRESSURE].value = props["pressure"].item()
+    elif well_test is WellTest.complex:
+        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Pпл + ФЕС пласта"
+        ws[_ANALYTICS_BHP].value = props["tr_bhp"].item()
+        ws[_ANALYTICS_OIL_RATE].value = props["oil_rate"].item()
+        ws[_ANALYTICS_LIQ_RATE].value = props["liq_rate"].item()
+        ws[_ANALYTICS_INIT_RESP].value = props["init_resp"].item()
+        ws[_ANALYTICS_BUBBLE_RESP].value = props["bubble_resp"].item()
+        ws[_ANALYTICS_GAS_FACTOR].value = props["gas_factor"].item()
+        ws[_ANALYTICS_OIL_VISCOSITY].value = props["oil_viscosity"].item()
+        ws[_ANALYTICS_WATER_VISCOSITY].value = props["water_viscosity"].item()
+        ws[_ANALYTICS_LIQUID_VISCOSITY].value = (
+            f"={_ANALYTICS_OIL_VISCOSITY}*(1-{_ANALYTICS_WATERCUT}/100)"
+            f"+{_ANALYTICS_WATER_VISCOSITY}*{_ANALYTICS_WATERCUT}/100"
+        )
+        ws[_ANALYTICS_OIL_FVF].value = props["oil_fvf"].item()
 
 
 def _process_calculator(
@@ -153,7 +183,7 @@ def _calc_pressures(
         else (np.nan, np.nan)
     )
     props["liquid_density"] = (
-        props["oil_density"] * (1 - props["watercut"] / 100)
+        props["reservoir_oil_density"] * (1 - props["watercut"] / 100)
         + props["water_density"] * props["watercut"] / 100
     )
     props["top_perf_pressure"] = (

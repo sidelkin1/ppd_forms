@@ -37,3 +37,16 @@ def select_well_branch() -> Select:
     subq1 = _select_well_uwi().scalar_subquery()
     subq2 = _select_well_uwi_with_open_perf()
     return select(func.coalesce(subq2, subq1).label("uwi"))
+
+
+def select_well_base_uwi() -> Select:
+    """Базовый UWI скважины: стволы сводятся к родительскому.
+
+    МЭР и техрежим хранят историю по базовой скважине без суффикса
+    ствола (``B1``/``B2``), поэтому фильтр идёт по
+    ``coalesce(WellHdr.parent_uwi, WellHdr.uwi)``.
+    """
+    return select(func.coalesce(WellHdr.parent_uwi, WellHdr.uwi)).where(
+        WellHdr.well_name == bindparam("well"),
+        WellHdr.field == bindparam("field_id"),
+    )

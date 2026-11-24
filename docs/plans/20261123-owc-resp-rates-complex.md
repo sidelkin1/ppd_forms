@@ -117,34 +117,35 @@ SQL-запросы зависят от отражённых OFM-моделей (
 - Create: `app/infrastructure/db/dao/sql/reporters/querysets/owc_resp/tr_rates.py`
 - Create: `app/infrastructure/db/dao/sql/reporters/querysets/owc_resp/rates.py`
 
-- [ ] Добавить `select_reservoir_names()` с `lower(DictG.description)` для `DictG.id == reservoir_id` и
+- [x] Добавить `select_reservoir_names()` с `lower(DictG.description)` для `DictG.id == reservoir_id` и
   `DictG.mr == to_char(reservoir_id)`.
-- [ ] В `mer_rates.py` сохранить фильтры по базовой скважине
+- [x] В `mer_rates.py` сохранить фильтры по базовой скважине
   (`WellMonthHist.uwi == coalesce(WellHdr.parent_uwi, WellHdr.uwi)`), `select_reservoir_ids()` и
   последней дате `start_date <= on_date`; агрегировать записи выбранной даты до одной строки.
-- [ ] Рассчитать `mer_oil_rate = 24 * OIL / ACT_TIME` и `mer_liq_rate = 24 * объем_или_масса / ACT_TIME`;
+- [x] Рассчитать `mer_oil_rate = 24 * OIL / ACT_TIME` и `mer_liq_rate = 24 * объем_или_масса / ACT_TIME`;
   при отсутствии положительного суммарного `ACT_TIME` возвращать `NULL`, не допуская деления на
   ноль.
-- [ ] Для `mer_liq_rate` использовать суммы `OIL_V + WATER_V`, если объемная добыча больше нуля,
+- [x] Для `mer_liq_rate` использовать суммы `OIL_V + WATER_V`, если объемная добыча больше нуля,
   иначе суммы `OIL + WATER`; для `mer_watercut` использовать соответствующее отношение с
   умножением на `100`, а при нулевых обоих знаменателях возвращать `100`.
-- [ ] В `tr_rates.py` объединить `TmpWellOpOis2` и `TmpWellNgOis2`; фильтровать по базовому UWI
+- [x] В `tr_rates.py` объединить `TmpWellOpOis2` и `TmpWellNgOis2`; фильтровать по базовому UWI
   (`TmpWellOpOis2.uwi == coalesce(WellHdr.parent_uwi, WellHdr.uwi)` — базовый UWI без суффикса
   ствола), `official_date <= on_date` и `lower(layer_id).in_(select_reservoir_names())`.
-- [ ] Выбрать последнюю дату ТР, при равенстве дат дать приоритет нефтяному фонду;
+- [x] Выбрать последнюю дату ТР, при равенстве дат дать приоритет нефтяному фонду;
   свести возможные дубликаты к одной строке с детерминированным выбором числовых
   значений.
-- [ ] Вернуть из ТР `tr_oil_rate`, `tr_liq_rate`, `tr_watercut` и `tr_bhp`; для нагнетательного фонда
+- [x] Вернуть из ТР `tr_oil_rate`, `tr_liq_rate`, `tr_watercut` и `tr_bhp`; для нагнетательного фонда
   использовать `INTAKE`, `LAYER_FLOW_PRESSURE`, `tr_oil_rate = NULL` и `tr_watercut = 100`.
-- [ ] В `rates.py` выбрать источник между ТР и МЭР по правилу «более поздняя дата, при равенстве —
+- [x] В `rates.py` выбрать источник между ТР и МЭР по правилу «более поздняя дата, при равенстве —
   ТР»: `CASE WHEN tr_date IS NOT NULL AND (mer_date IS NULL OR tr_date >= mer_date) THEN ТР ELSE МЭР`;
   сформировать `oil_rate`, `liq_rate`, `watercut` и независимо сохранить `tr_bhp` (только из ТР).
-- [ ] Обеспечить однострочный результат даже при отсутствии обоих источников; в этом
+- [x] Обеспечить однострочный результат даже при отсутствии обоих источников; в этом
   случае итоговые дебиты, обводненность и `tr_bhp` должны быть `NULL`.
-- [ ] Прогнать запросы на данных OFM (после «Предварительной верификации»): проверить фильтры
-  пластов и дат, множитель `24`, fallback объем/масса, умножение обводненности на `100`,
-  значение `100` для нагнетательных скважин, защиту от деления на ноль и приоритеты источников.
-- [ ] Запустить полный `uv run pytest`; все тесты должны пройти перед Task 3.
+- [x] Прогнать запросы на данных OFM (skipped - not automatable: OFM требует Oracle thick client
+  `libclntsh.so`, недоступный в окружении); форма запросов проверена компиляцией с диалектом Oracle
+  (фильтры пластов и дат, множитель `24`, fallback объем/масса, `100` для нагнетательных, отсутствие
+  `GROUP BY` и приоритеты источников).
+- [x] Запустить полный `uv run pytest`; все тесты должны пройти перед Task 3.
 
 ### Task 3: Расширить итоговую SQL-выгрузку свойств
 

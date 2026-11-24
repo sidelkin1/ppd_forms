@@ -13,3 +13,19 @@ def select_reservoir_ids() -> CompoundSelect:
             DictG.mr == func.to_char(bindparam("reservoir_id"))
         ),
     )
+
+
+def select_reservoir_names() -> CompoundSelect:
+    """Имена объекта в нижнем регистре: базовый id и его `mr`-псевдоним.
+
+    Техрежим хранит пласт текстом в кодировке месторождения, поэтому
+    сопоставление идёт не по числовому id, а по описанию из словаря.
+    """
+    return union(
+        select(func.lower(DictG.description).label("reservoir")).where(
+            DictG.id == bindparam("reservoir_id")
+        ),
+        select(func.lower(DictG.description).label("reservoir")).where(
+            DictG.mr == func.to_char(bindparam("reservoir_id"))
+        ),
+    )

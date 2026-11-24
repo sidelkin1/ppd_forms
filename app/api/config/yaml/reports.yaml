@@ -277,6 +277,9 @@ items:
     - text: "Pпл"
       value: pressure
       selected: false
+    - text: "Сложное"
+      value: complex
+      selected: false
   on_date: {required: true, label: "На дату"}
   description: Пересчет давления на глубину с учетом инклинометрии скважины
 - title: Сводная таблица для карт изобар

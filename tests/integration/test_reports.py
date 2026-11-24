@@ -217,7 +217,7 @@ _LIQUID_DENSITY = 0.8 * (1 - 20 / 100) + 1.1 * 20 / 100
         (
             "task_owc_resp_static",
             "Pпл по Hст",
-            "Pпл",
+            "Рпл",
             75,
             100,
             None,
@@ -227,7 +227,7 @@ _LIQUID_DENSITY = 0.8 * (1 - 20 / 100) + 1.1 * 20 / 100
         (
             "task_owc_resp_pressure",
             "Pпл",
-            "Pпл",
+            "Рпл",
             None,
             None,
             75,
@@ -237,7 +237,7 @@ _LIQUID_DENSITY = 0.8 * (1 - 20 / 100) + 1.1 * 20 / 100
         (
             "task_owc_resp_pressure",
             "Pпл",
-            "Pпл",
+            "Рпл",
             None,
             None,
             75,
@@ -247,7 +247,7 @@ _LIQUID_DENSITY = 0.8 * (1 - 20 / 100) + 1.1 * 20 / 100
         (
             "task_owc_resp_complex",
             None,
-            "Pпл + ФЕС пласта",
+            "Рпл + ФЕС пласта",
             None,
             None,
             None,
@@ -459,7 +459,7 @@ async def test_owc_resp_report_without_rates(
     )["Лист1"]
     # строка свойств сохранена, зависящие от дебитов ячейки пусты
     assert analytics_ws["F5"].value == task.well
-    assert analytics_ws["AX5"].value == "Pпл + ФЕС пласта"
+    assert analytics_ws["AX5"].value == "Рпл + ФЕС пласта"
     assert analytics_ws["U5"].value is None
     for cell in ("R5", "S5", "T5"):
         assert analytics_ws[cell].value is None, cell

@@ -33,5 +33,5 @@ def select_rates() -> Select:
         case((use_tr, tr.c.watercut), (use_mer, mer.c.watercut)).label(
             "watercut"
         ),
-        case((use_tr, tr.c.tr_bhp)).label("tr_bhp"),
+        tr.c.tr_bhp.label("tr_bhp"),
     ).select_from(mer.outerjoin(tr, true()))

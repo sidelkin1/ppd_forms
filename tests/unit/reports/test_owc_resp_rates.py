@@ -191,14 +191,15 @@ def test_rates_prefer_later_source_and_tr_on_tie() -> None:
     assert 'tr_rates."date" < mer_rates."date"' in outer
     # нет ELSE: при отсутствии обоих источников все значения NULL
     assert " ELSE " not in outer
-    for column in ("oil_rate", "liq_rate", "watercut", "tr_bhp"):
+    for column in ("oil_rate", "liq_rate", "watercut"):
         assert f"END AS {column}" in outer
+    # tr_bhp не выбирается по источнику — берётся напрямую из ТР
+    assert "tr_rates.tr_bhp AS tr_bhp" in outer
 
 
 def test_rates_keep_bhp_from_tr_only() -> None:
     sql = _sql(rates.select_rates())
     outer = sql.split("FROM (SELECT max(", 1)[0]
-    bhp = outer.split("END AS tr_bhp", 1)[0].rsplit("CASE", 1)[1]
 
-    assert "THEN tr_rates.tr_bhp" in bhp
+    assert "tr_rates.tr_bhp AS tr_bhp" in outer
     assert "mer_rates.tr_bhp" not in outer

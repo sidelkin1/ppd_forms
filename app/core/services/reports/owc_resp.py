@@ -155,19 +155,19 @@ def _fill_analytics(
     ws[_ANALYTICS_TOP_PERF_PRESSURE].value = props["top_perf_pressure"].item()
     ws[_ANALYTICS_OWC_PRESSURE].value = props["owc_pressure"].item()
     if well_test is WellTest.static_level:
-        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Pпл"
+        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Рпл"
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл по Hст"
         ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Hст"
         ws[_ANALYTICS_STATIC_LEVEL_DEPTH].value = props["depth"].item()
         ws[_ANALYTICS_ANNULAR_PRESSURE].value = props["pressure"].item()
     elif well_test is WellTest.pressure:
-        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Pпл"
+        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Рпл"
         ws[_ANALYTICS_WELL_TEST_PLAN].value = "Pпл"
         ws[_ANALYTICS_WELL_TEST_ACTUAL].value = "Pпл"
         ws[_ANALYTICS_MEASURED_DEPTH].value = props["depth"].item()
         ws[_ANALYTICS_MEASURED_PRESSURE].value = props["pressure"].item()
     elif well_test is WellTest.complex:
-        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Pпл + ФЕС пласта"
+        ws[_ANALYTICS_WELL_TEST_GOAL].value = "Рпл + ФЕС пласта"
         ws[_ANALYTICS_BHP].value = props["tr_bhp"].item()
         ws[_ANALYTICS_OIL_RATE].value = props["oil_rate"].item()
         ws[_ANALYTICS_LIQ_RATE].value = props["liq_rate"].item()
@@ -197,7 +197,8 @@ def _fill_rn_vega(ws: Worksheet, pressure_ws: Worksheet, props: pd.DataFrame):
     ws[_RN_VEGA_WELL_LIFT].value = props["well_lift"].item()
     ws[_RN_VEGA_WELL_RADIUS].value = props["well_radius"].item()
     ws[_RN_VEGA_DEPTH].value = props["depth"].item()
-    ws[_RN_VEGA_PERF_INTERVAL].value = f"{top_perf}-{bottom_perf}"
+    if not pd.isna(top_perf) and not pd.isna(bottom_perf):
+        ws[_RN_VEGA_PERF_INTERVAL].value = f"{top_perf}-{bottom_perf}"
     ws[_RN_VEGA_TOP_PERF].value = top_perf
     ws[_RN_VEGA_TOP_PERF_OFFSET].value = props["top_perf_offset"].item()
     ws[_RN_VEGA_ELEVATION].value = props["elevation"].item()
@@ -239,13 +240,15 @@ def _process_calculator(
     dfs: dict[str, pd.DataFrame], path: Path, template: Path
 ):
     result = path / template.name
+    wb = None
     try:
         wb = openpyxl.load_workbook(template)
         _fill_calculator(wb["Пересчет"], dfs["props"])
         _fill_depth(wb["Глубины"], dfs["depths"])
         save_workbook(wb, result)
     finally:
-        wb.close()
+        if wb is not None:
+            wb.close()
 
 
 def _process_analytics(
@@ -255,16 +258,19 @@ def _process_analytics(
     template: Path,
 ):
     result = path / template.name
+    wb = None
     try:
         wb = openpyxl.load_workbook(template)
         _fill_analytics(wb["Лист1"], dfs["props"], well_test)
         save_workbook(wb, result)
     finally:
-        wb.close()
+        if wb is not None:
+            wb.close()
 
 
 def _process_rn_vega(dfs: dict[str, pd.DataFrame], path: Path, template: Path):
     result = path / template.name
+    wb = None
     try:
         wb = openpyxl.load_workbook(template)
         _fill_rn_vega(
@@ -274,7 +280,8 @@ def _process_rn_vega(dfs: dict[str, pd.DataFrame], path: Path, template: Path):
         )
         save_workbook(wb, result)
     finally:
-        wb.close()
+        if wb is not None:
+            wb.close()
 
 
 def _calc_pressures(

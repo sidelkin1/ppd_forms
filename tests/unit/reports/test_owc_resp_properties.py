@@ -169,8 +169,9 @@ def _sql(query: Select | ScalarSelect) -> str:
 def test_properties_include_current_rates() -> None:
     sql = _sql(properties.select_properties())
 
-    for column in ("oil_rate", "liq_rate", "watercut", "tr_bhp"):
+    for column in ("oil_rate", "liq_rate", "watercut"):
         assert f"END AS {column}" in sql
+    assert "tr_rates.tr_bhp AS tr_bhp" in sql
     assert "rates.oil_rate" in sql
     assert "rates.liq_rate" in sql
     assert "rates.watercut" in sql
@@ -280,7 +281,6 @@ def test_top_and_bottom_perf_use_same_filters() -> None:
             "udmurtneft_n.well_hdr.uwi" in sql
         )
         assert "udmurtneft_n.well_perforations.layer_id IN" in sql
-        assert (
-            ":on_date BETWEEN udmurtneft_n.well_perforations.comp_date "
-            "AND udmurtneft_n.well_perforations.close_date" in sql
-        )
+        assert "udmurtneft_n.well_perforations.comp_date <= :on_date" in sql
+        assert "udmurtneft_n.well_perforations.close_date IS NULL" in sql
+        assert "udmurtneft_n.well_perforations.close_date >= :on_date" in sql

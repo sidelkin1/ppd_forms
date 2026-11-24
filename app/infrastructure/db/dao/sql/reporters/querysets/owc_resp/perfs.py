@@ -1,4 +1,4 @@
-from sqlalchemy import between, bindparam, func, select
+from sqlalchemy import bindparam, func, or_, select
 from sqlalchemy.sql.expression import ColumnElement, ScalarSelect
 
 from app.infrastructure.db.models.ofm.udmurtneft_n import (
@@ -10,14 +10,20 @@ from .reservoirs import select_reservoir_ids
 
 
 def _perf_where() -> tuple[ColumnElement[bool], ...]:
-    """Общие фильтры перфорации: ствол, пласт и активность на дату."""
+    """Общие фильтры перфорации: ствол, пласт и активность на дату.
+
+    Открытый интервал хранится с ``close_date IS NULL``, поэтому активность
+    проверяется как ``comp_date <= on_date AND (close_date IS NULL OR
+    close_date >= on_date)`` — ``BETWEEN`` здесь отбросил бы открытые
+    интервалы.
+    """
     return (
         WellPerforations.uwi == WellHdr.uwi,
         WellPerforations.layer_id.in_(select_reservoir_ids()),
-        between(
-            bindparam("on_date"),
-            WellPerforations.comp_date,
-            WellPerforations.close_date,
+        WellPerforations.comp_date <= bindparam("on_date"),
+        or_(
+            WellPerforations.close_date.is_(None),
+            WellPerforations.close_date >= bindparam("on_date"),
         ),
     )
 

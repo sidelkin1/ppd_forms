@@ -1,4 +1,5 @@
 import logging
+import zipfile
 from collections.abc import Awaitable, Callable
 from datetime import date
 from filecmp import cmpfiles
@@ -276,11 +277,13 @@ async def test_owc_resp_report(
     data_dir = paths.base_dir / "data"
     calculator_template = data_dir / "owc_resp_template.xlsx"
     analytics_template = data_dir / "analytics_template.xlsx"
+    rn_vega_template = data_dir / "rn_vega_template.xlsx"
     pool_holder.kwargs["empty_depths"] = empty_depths
     await owc_resp_report(
         path,
         calculator_template,
         analytics_template,
+        rn_vega_template,
         task.field,
         task.reservoir,
         task.well,
@@ -359,6 +362,66 @@ async def test_owc_resp_report(
     else:
         for cell in complex_only:
             assert analytics_ws[cell].value is None, cell
+
+    archive = Path(f"{path}.zip")
+    assert archive.exists()
+    with zipfile.ZipFile(archive) as zip_file:
+        names = set(zip_file.namelist())
+
+    rn_vega_path = path / rn_vega_template.name
+    assert ("rn_vega_template.xlsx" in names) is (
+        task.well_test is WellTest.complex
+    )
+    if task.well_test is WellTest.complex:
+        assert rn_vega_path.exists()
+        rn_vega = load_workbook(rn_vega_path, data_only=False)
+        interpretation = rn_vega["Интерпретация"]
+        assert interpretation["C6"].value == "Workshop"
+        assert interpretation["C7"].value == "FC1"
+        assert interpretation["C8"].value == "F1"
+        assert interpretation["C9"].value == "Pad 1"
+        assert interpretation["C10"].value == "R1"
+        assert interpretation["C11"].value == "W3"
+        assert interpretation["C13"].value == "Production"
+        assert interpretation["C14"].value == "Vertical"
+        assert interpretation["C15"].value == "ESP"
+        assert interpretation["C16"].value == pytest.approx(0.08)
+        assert interpretation["C17"].value == pytest.approx(75.0)
+        assert interpretation["C18"].value == "100.0-130.0"
+        assert interpretation["C19"].value == pytest.approx(100.0)
+        assert interpretation["C20"].value == pytest.approx(0.0)
+        assert interpretation["C23"].value == pytest.approx(10.0)
+        assert interpretation["C25"].value == "Working"
+        assert interpretation["C27"].value == pytest.approx(95.0)
+        assert interpretation["C28"].value == pytest.approx(30.0)
+        assert interpretation["C29"].value == pytest.approx(12.0)
+        assert interpretation["C30"].value == pytest.approx(20.0)
+        assert interpretation["C32"].value == pytest.approx(100.0)
+        assert interpretation["C35"].value == pytest.approx(0.00012)
+        assert interpretation["C36"].value == pytest.approx(0.00004)
+        assert interpretation["C38"].value == pytest.approx(250.0)
+        assert interpretation["C39"].value == pytest.approx(40.0)
+        assert interpretation["C41"].value == pytest.approx(150.0)
+        assert interpretation["C42"].value == pytest.approx(60.0)
+        assert interpretation["C43"].value == pytest.approx(2.5)
+        assert interpretation["C44"].value == pytest.approx(0.7)
+        assert interpretation["C46"].value == pytest.approx(1.2)
+        assert interpretation["C49"].value == pytest.approx(0.85)
+        assert interpretation["C50"].value == pytest.approx(1.1)
+        assert interpretation["C51"].value == pytest.approx(0.8)
+        assert interpretation["C61"].value == pytest.approx(75.0)
+        assert interpretation["C62"].value == pytest.approx(0.0)
+
+        pressures = rn_vega["Давление"]
+        assert pressures["A2"].value.date() == task.on_date
+        assert pressures["B2"].value == pytest.approx(100.0)
+        # лист «Дебит» не изменяется
+        rates = rn_vega["Дебит"]
+        assert rates.max_row == 1
+        assert rates["A1"].value == "Дата"
+        assert rates["B1"].value == "Qж, м3/сут"
+    else:
+        assert not rn_vega_path.exists()
 
 
 @pytest.mark.asyncio(scope="session")

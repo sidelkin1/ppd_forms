@@ -498,6 +498,7 @@ async def create_owc_resp_report(
             path_provider.dir_path(user_id, file_id),
             path_provider.data_dir / "owc_resp_template.xlsx",
             path_provider.data_dir / "analytics_template.xlsx",
+            path_provider.data_dir / "rn_vega_template.xlsx",
             response.task.field,
             response.task.reservoir,
             response.task.well,

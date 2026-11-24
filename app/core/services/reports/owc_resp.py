@@ -66,6 +66,46 @@ _ANALYTICS_MEASURED_PRESSURE = "BO5"
 _ANALYTICS_TOP_PERF_PRESSURE = "BY5"
 _ANALYTICS_OWC_PRESSURE = "BZ5"
 
+_RN_VEGA_INTERPRETATION = "Интерпретация"
+_RN_VEGA_PRESSURE_SHEET = "Давление"
+_RN_VEGA_WORKSHOP = "C6"
+_RN_VEGA_FIELD_CODE = "C7"
+_RN_VEGA_FIELD = "C8"
+_RN_VEGA_PAD = "C9"
+_RN_VEGA_RESERVOIR = "C10"
+_RN_VEGA_WELL = "C11"
+_RN_VEGA_WELL_MODE = "C13"
+_RN_VEGA_WELLBORE = "C14"
+_RN_VEGA_WELL_LIFT = "C15"
+_RN_VEGA_WELL_RADIUS = "C16"
+_RN_VEGA_DEPTH = "C17"
+_RN_VEGA_PERF_INTERVAL = "C18"
+_RN_VEGA_TOP_PERF = "C19"
+_RN_VEGA_TOP_PERF_OFFSET = "C20"
+_RN_VEGA_ELEVATION = "C23"
+_RN_VEGA_WELL_STATUS = "C25"
+_RN_VEGA_BHP = "C27"
+_RN_VEGA_LIQ_RATE = "C28"
+_RN_VEGA_OIL_RATE = "C29"
+_RN_VEGA_WATERCUT = "C30"
+_RN_VEGA_OWC_ABS_DEPTH = "C32"
+_RN_VEGA_OIL_COMPRESSIBILITY = "C35"
+_RN_VEGA_WATER_COMPRESSIBILITY = "C36"
+_RN_VEGA_INIT_RESP = "C38"
+_RN_VEGA_RESERVOIR_TEMPERATURE = "C39"
+_RN_VEGA_BUBBLE_RESP = "C41"
+_RN_VEGA_GAS_FACTOR = "C42"
+_RN_VEGA_OIL_VISCOSITY = "C43"
+_RN_VEGA_WATER_VISCOSITY = "C44"
+_RN_VEGA_OIL_FVF = "C46"
+_RN_VEGA_SURFACE_OIL_DENSITY = "C49"
+_RN_VEGA_WATER_DENSITY = "C50"
+_RN_VEGA_RESERVOIR_OIL_DENSITY = "C51"
+_RN_VEGA_MEASURED_DEPTH = "C61"
+_RN_VEGA_DEPTH_OFFSET = "C62"
+_RN_VEGA_ON_DATE = "A2"
+_RN_VEGA_PRESSURE_CELL = "B2"
+
 
 def _fill_calculator(ws: Worksheet, props: pd.DataFrame) -> None:
     ws[_CALCULATOR_FIELD].value = props["field"].item()
@@ -143,6 +183,58 @@ def _fill_analytics(
         ws[_ANALYTICS_OIL_FVF].value = props["oil_fvf"].item()
 
 
+def _fill_rn_vega(ws: Worksheet, pressure_ws: Worksheet, props: pd.DataFrame):
+    top_perf = props["top_perf"].item()
+    bottom_perf = props["bottom_perf"].item()
+    ws[_RN_VEGA_WORKSHOP].value = props["workshop"].item()
+    ws[_RN_VEGA_FIELD_CODE].value = props["field_code"].item()
+    ws[_RN_VEGA_FIELD].value = props["field"].item()
+    ws[_RN_VEGA_PAD].value = props["pad"].item()
+    ws[_RN_VEGA_RESERVOIR].value = props["reservoir"].item()
+    ws[_RN_VEGA_WELL].value = props["well"].item()
+    ws[_RN_VEGA_WELL_MODE].value = props["well_mode"].item()
+    ws[_RN_VEGA_WELLBORE].value = props["wellbore"].item()
+    ws[_RN_VEGA_WELL_LIFT].value = props["well_lift"].item()
+    ws[_RN_VEGA_WELL_RADIUS].value = props["well_radius"].item()
+    ws[_RN_VEGA_DEPTH].value = props["depth"].item()
+    ws[_RN_VEGA_PERF_INTERVAL].value = f"{top_perf}-{bottom_perf}"
+    ws[_RN_VEGA_TOP_PERF].value = top_perf
+    ws[_RN_VEGA_TOP_PERF_OFFSET].value = props["top_perf_offset"].item()
+    ws[_RN_VEGA_ELEVATION].value = props["elevation"].item()
+    ws[_RN_VEGA_WELL_STATUS].value = props["well_status"].item()
+    ws[_RN_VEGA_BHP].value = props["tr_bhp"].item()
+    ws[_RN_VEGA_LIQ_RATE].value = props["liq_rate"].item()
+    ws[_RN_VEGA_OIL_RATE].value = props["oil_rate"].item()
+    ws[_RN_VEGA_WATERCUT].value = props["watercut"].item()
+    ws[_RN_VEGA_OWC_ABS_DEPTH].value = props["abs_depth_owc"].item()
+    ws[_RN_VEGA_OIL_COMPRESSIBILITY].value = props[
+        "oil_compressibility"
+    ].item()
+    ws[_RN_VEGA_WATER_COMPRESSIBILITY].value = props[
+        "water_compressibility"
+    ].item()
+    ws[_RN_VEGA_INIT_RESP].value = props["init_resp"].item()
+    ws[_RN_VEGA_RESERVOIR_TEMPERATURE].value = props[
+        "reservoir_temperature"
+    ].item()
+    ws[_RN_VEGA_BUBBLE_RESP].value = props["bubble_resp"].item()
+    ws[_RN_VEGA_GAS_FACTOR].value = props["gas_factor"].item()
+    ws[_RN_VEGA_OIL_VISCOSITY].value = props["oil_viscosity"].item()
+    ws[_RN_VEGA_WATER_VISCOSITY].value = props["water_viscosity"].item()
+    ws[_RN_VEGA_OIL_FVF].value = props["oil_fvf"].item()
+    ws[_RN_VEGA_SURFACE_OIL_DENSITY].value = props[
+        "surface_oil_density"
+    ].item()
+    ws[_RN_VEGA_WATER_DENSITY].value = props["water_density"].item()
+    ws[_RN_VEGA_RESERVOIR_OIL_DENSITY].value = props[
+        "reservoir_oil_density"
+    ].item()
+    ws[_RN_VEGA_MEASURED_DEPTH].value = props["depth"].item()
+    ws[_RN_VEGA_DEPTH_OFFSET].value = props["depth_offset"].item()
+    pressure_ws[_RN_VEGA_ON_DATE].value = props["on_date"].dt.date.item()
+    pressure_ws[_RN_VEGA_PRESSURE_CELL].value = props["pressure"].item()
+
+
 def _process_calculator(
     dfs: dict[str, pd.DataFrame], path: Path, template: Path
 ):
@@ -166,6 +258,20 @@ def _process_analytics(
     try:
         wb = openpyxl.load_workbook(template)
         _fill_analytics(wb["Лист1"], dfs["props"], well_test)
+        save_workbook(wb, result)
+    finally:
+        wb.close()
+
+
+def _process_rn_vega(dfs: dict[str, pd.DataFrame], path: Path, template: Path):
+    result = path / template.name
+    try:
+        wb = openpyxl.load_workbook(template)
+        _fill_rn_vega(
+            wb[_RN_VEGA_INTERPRETATION],
+            wb[_RN_VEGA_PRESSURE_SHEET],
+            dfs["props"],
+        )
         save_workbook(wb, result)
     finally:
         wb.close()
@@ -237,6 +343,7 @@ async def owc_resp_report(
     path: Path,
     calculator_template: Path,
     analytics_template: Path,
+    rn_vega_template: Path,
     field: UneftFieldDB,
     reservoir: UneftReservoirDB,
     well: str,
@@ -266,4 +373,8 @@ async def owc_resp_report(
                 _process_analytics, dfs, well_test, path, analytics_template
             )
         )
+        if well_test is WellTest.complex:
+            tg.create_task(
+                pool.run(_process_rn_vega, dfs, path, rn_vega_template)
+            )
     make_archive(str(path), "zip", root_dir=path)

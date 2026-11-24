@@ -221,23 +221,23 @@ SQL-запросы зависят от отражённых OFM-моделей (
 - Modify: `tests/integration/api/conftest.py` при необходимости экспорта fixture
 - Modify: `tests/integration/test_reports.py`
 
-- [ ] Передать `data/rn_vega_template.xlsx` из worker entrypoint в `owc_resp_report` и добавить
+- [x] Передать `data/rn_vega_template.xlsx` из worker entrypoint в `owc_resp_report` и добавить
   обработчик заполнения RN Vega; выходной файл сохраняет имя шаблона `rn_vega_template.xlsx`.
-- [ ] Формировать и добавлять RN Vega в ZIP только для `WellTest.complex`; для static/pressure
+- [x] Формировать и добавлять RN Vega в ZIP только для `WellTest.complex`; для static/pressure
   сохранить прежний состав архива.
-- [ ] На листе `Интерпретация` заполнить `C6=workshop`, `C7=field_code`, `C8=field`, `C9=pad`, `C10=reservoir`,
+- [x] На листе `Интерпретация` заполнить `C6=workshop`, `C7=field_code`, `C8=field`, `C9=pad`, `C10=reservoir`,
   `C11=well`, `C13=well_mode`, `C14=wellbore`, `C15=well_lift`, `C16=well_radius`, `C17=depth`.
-- [ ] Заполнить `C18` строкой `f"{top_perf}-{bottom_perf}"`, `C19=top_perf`, `C20=top_perf_offset`, `C23=elevation`,
+- [x] Заполнить `C18` строкой `f"{top_perf}-{bottom_perf}"`, `C19=top_perf`, `C20=top_perf_offset`, `C23=elevation`,
   `C25=well_status`, `C27=tr_bhp`, `C28=liq_rate`, `C29=oil_rate`, `C30=watercut`, `C32=abs_depth_owc`.
-- [ ] Заполнить `C35=oil_compressibility`, `C36=water_compressibility`, `C38=init_resp`, `C39=reservoir_temperature`,
+- [x] Заполнить `C35=oil_compressibility`, `C36=water_compressibility`, `C38=init_resp`, `C39=reservoir_temperature`,
   `C41=bubble_resp`, `C42=gas_factor`, `C43=oil_viscosity`, `C44=water_viscosity`, `C46=oil_fvf`, `C49=surface_oil_density`,
   `C50=water_density`, `C51=reservoir_oil_density`, `C61=depth`, `C62=depth_offset`.
-- [ ] На листе `Давление` записать `A2=on_date` как дату Excel и `B2=pressure`; лист `Дебит` не
+- [x] На листе `Давление` записать `A2=on_date` как дату Excel и `B2=pressure`; лист `Дебит` не
   изменять.
-- [ ] Добавить complex task fixture и API-тест успешной постановки задания; расширить workbook
+- [x] Добавить complex task fixture и API-тест успешной постановки задания; расширить workbook
   integration-тест проверками всех перечисленных ячеек и наличия RN Vega только в complex ZIP.
-- [ ] Проверить отсутствие RN Vega в legacy-режимах и неизменность листа `Дебит`.
-- [ ] Запустить API/report integration-тесты и полный `uv run pytest`.
+- [x] Проверить отсутствие RN Vega в legacy-режимах и неизменность листа `Дебит`.
+- [x] Запустить API/report integration-тесты и полный `uv run pytest`.
 
 ### Task 6: Verify acceptance criteria
 

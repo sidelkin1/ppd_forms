@@ -155,25 +155,28 @@ SQL-запросы зависят от отражённых OFM-моделей (
 - Modify: `app/infrastructure/db/models/ofm/udmurtneft_n.py`
 - Delete: `app/infrastructure/db/dao/sql/reporters/querysets/owc_resp/watercut.py`
 
-- [ ] Сохранить `select_top_perf()` (перенести в `perfs.py`) и добавить `select_bottom_perf()` через
+- [x] Сохранить `select_top_perf()` (перенести в `perfs.py`) и добавить `select_bottom_perf()` через
   `MAX(WellPerforations.base)` с теми же фильтрами скважины, пласта и активности перфорации на
   `on_date`.
-- [ ] Подключить однострочный запрос `rates.py` к `properties` без потери строки при отсутствии
+- [x] Подключить однострочный запрос `rates.py` к `properties` без потери строки при отсутствии
   ТР/МЭР; добавить в результат `oil_rate`, `liq_rate`, `watercut`, `tr_bhp` и `bottom_perf`.
-- [ ] Заменить импорт `select_watercut` из `watercut.py` на `rates.py`, после чего удалить
+- [x] Заменить импорт `select_watercut` из `watercut.py` на `rates.py`, после чего удалить
   `watercut.py`.
-- [ ] Переименовать `oil_density` в `surface_oil_density`.
-- [ ] Добавить из `ResPty` поля `init_resp`, `bubble_resp`, `gas_factor`, `oil_viscosity`, `water_viscosity`,
+- [x] Переименовать `oil_density` в `surface_oil_density`.
+- [x] Добавить из `ResPty` поля `init_resp`, `bubble_resp`, `gas_factor`, `oil_viscosity`, `water_viscosity`,
   `oil_fvf`, `reservoir_oil_density`, `reservoir_temperature`, `oil_compressibility` и `water_compressibility`;
   два последних умножить на `0.00001`. Исходные колонки — см. «Предварительная верификация»
   (в т.ч. `oil_fvf` берётся из `oil_compressibility`, несмотря на название).
-- [ ] Добавить `field_code` через `DictG.id == WellHdr.field`.
-- [ ] Добавить отражаемую модель `WellHdrPty` для `udmurtneft_n.well_hdr_pty` и скалярный `well_radius` по
+- [x] Добавить `field_code` через `DictG.id == WellHdr.field`.
+- [x] Добавить отражаемую модель `WellHdrPty` для `udmurtneft_n.well_hdr_pty` и скалярный `well_radius` по
   `property_id == "1071381"`; агрегировать возможные дубликаты, чтобы не нарушать однострочность
   результата.
-- [ ] Прогнать запрос на данных OFM: проверить все новые labels, join кода месторождения, фильтр
-  радиуса, `MAX(base)` и сохранение строки при отсутствии дебитов.
-- [ ] Запустить полный `uv run pytest`; все тесты должны пройти перед Task 4.
+- [x] Прогнать запрос на данных OFM (skipped - not automatable: Oracle thick client
+  `libclntsh.so` недоступен); форма запроса проверена компиляцией с диалектом Oracle в
+  `tests/unit/reports/test_owc_resp_properties.py` (все новые labels, join кода месторождения,
+  фильтр радиуса, `MAX(base)`, множитель `0.00001`, cross join однострочной выгрузки дебитов без
+  потери строки).
+- [x] Запустить полный `uv run pytest`; все тесты должны пройти перед Task 4.
 
 ### Task 4: Обновить калькулятор и аналитический Excel-отчет
 

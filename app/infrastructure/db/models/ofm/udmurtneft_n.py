@@ -21,6 +21,11 @@ class WellHdr(Reflected, Base):
     class_ = synonym("class")
 
 
+class WellHdrPty(Reflected, Base):
+    __tablename__ = "well_hdr_pty"
+    __table_args__ = {"schema": "udmurtneft_n"}
+
+
 class WellStockHistExt(Reflected, Base):
     __tablename__ = "well_stock_hist_ext"
     __table_args__ = {"schema": "udmurtneft_n"}

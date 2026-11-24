@@ -175,11 +175,17 @@ class FnvMock(FnvReporter):
 
 class OwcRespMock(OwcRespReporter):
     def __init__(
-        self, pool: sessionmaker[Session], empty_depths: bool = False
+        self,
+        pool: sessionmaker[Session],
+        empty_depths: bool = False,
+        empty_rates: bool = False,
     ) -> None:
         self.empty_depths = empty_depths
+        self.empty_rates = empty_rates
 
     async def read_all(self, **params) -> dict[str, pd.DataFrame]:
+        # NULL из ТР/МЭР приходит как NaN числовой колонки read_sql_query
+        rate = float("nan") if self.empty_rates else None
         props = pd.DataFrame(
             {
                 "field": [f"F{params['field_id']}"],
@@ -193,7 +199,6 @@ class OwcRespMock(OwcRespReporter):
                 "surface_oil_density": [0.85],
                 "reservoir_oil_density": [0.8],
                 "water_density": [1.1],
-                "watercut": [20.0],
                 "init_resp": [250.0],
                 "bubble_resp": [150.0],
                 "gas_factor": [60.0],
@@ -206,9 +211,10 @@ class OwcRespMock(OwcRespReporter):
                 "top_perf": [100.0],
                 "bottom_perf": [130.0],
                 "well_radius": [0.08],
-                "oil_rate": [12.0],
-                "liq_rate": [30.0],
-                "tr_bhp": [95.0],
+                "oil_rate": [rate if self.empty_rates else 12.0],
+                "liq_rate": [rate if self.empty_rates else 30.0],
+                "watercut": [rate if self.empty_rates else 20.0],
+                "tr_bhp": [rate if self.empty_rates else 95.0],
                 "region": ["Region"],
                 "workshop": ["Workshop"],
                 "pad": ["Pad 1"],

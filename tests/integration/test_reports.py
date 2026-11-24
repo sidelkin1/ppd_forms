@@ -425,6 +425,65 @@ async def test_owc_resp_report(
 
 
 @pytest.mark.asyncio(scope="session")
+async def test_owc_resp_report_without_rates(
+    holder_factory: Callable[..., HolderDAO],
+    process_pool: ProcessPoolManager,
+    paths: Paths,
+    tmp_path: Path,
+    request,
+):
+    """NULL ТР/МЭР не удаляют строку свойств и оставляют ячейки пустыми."""
+    task = request.getfixturevalue("task_owc_resp_complex")
+    holder = holder_factory(empty_rates=True)
+    path = tmp_path / "owc_resp"
+    path.mkdir()
+    data_dir = paths.base_dir / "data"
+    await owc_resp_report(
+        path,
+        data_dir / "owc_resp_template.xlsx",
+        data_dir / "analytics_template.xlsx",
+        data_dir / "rn_vega_template.xlsx",
+        task.field,
+        task.reservoir,
+        task.well,
+        task.pressure,
+        task.depth,
+        task.well_test,
+        task.on_date,
+        holder.owc_resp_reporter,
+        process_pool,
+    )
+
+    analytics_ws = load_workbook(
+        path / "analytics_template.xlsx", data_only=False
+    )["Лист1"]
+    # строка свойств сохранена, зависящие от дебитов ячейки пусты
+    assert analytics_ws["F5"].value == task.well
+    assert analytics_ws["AX5"].value == "Pпл + ФЕС пласта"
+    assert analytics_ws["U5"].value is None
+    for cell in ("R5", "S5", "T5"):
+        assert analytics_ws[cell].value is None, cell
+
+    calc_ws = load_workbook(path / "owc_resp_template.xlsx", data_only=False)[
+        "Пересчет"
+    ]
+    assert calc_ws["B3"].value == f"{task.well}B1"
+    assert calc_ws["B14"].value is None
+
+    rn_vega = load_workbook(path / "rn_vega_template.xlsx", data_only=False)
+    interpretation = rn_vega["Интерпретация"]
+    for cell in ("C27", "C28", "C29", "C30"):
+        assert interpretation[cell].value is None, cell
+    # PVT-свойства не зависят от ТР/МЭР
+    assert interpretation["C49"].value == pytest.approx(0.85)
+
+    archive = Path(f"{path}.zip")
+    assert archive.exists()
+    with zipfile.ZipFile(archive) as zip_file:
+        assert "rn_vega_template.xlsx" in zip_file.namelist()
+
+
+@pytest.mark.asyncio(scope="session")
 async def test_isobar_report(
     tmp_path: Path,
     process_pool: ProcessPoolManager,

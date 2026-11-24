@@ -19,7 +19,7 @@ def setup(settings: OracleSettings) -> bool:
         setup_column_properties()
     except (
         oracle_exc.DatabaseError,
-        sqlalchemy_exc.DatabaseError,
+        sqlalchemy_exc.SQLAlchemyError,
     ) as error:
         logger.warning(str(error))
         return False

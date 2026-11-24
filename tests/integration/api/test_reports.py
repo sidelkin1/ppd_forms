@@ -55,6 +55,7 @@ async def test_generate_report_success(
     [
         ("task_owc_resp_static", "owc_resp_static"),
         ("task_owc_resp_pressure", "owc_resp_pressure"),
+        ("task_owc_resp_complex", "owc_resp_complex"),
     ],
 )
 @pytest.mark.asyncio(scope="session")

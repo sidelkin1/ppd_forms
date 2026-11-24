@@ -156,3 +156,12 @@ def test_report_yaml_enum_option_values(paths: Paths):
         _option_values(reports["owc_resp"], "well_test"),
         {test.value for test in WellTest},
     )
+
+
+def test_owc_resp_well_test_options_match_enum(paths: Paths):
+    reports = read_config_map(paths.report_config, "path")
+    options = reports["owc_resp"]["well_test"]["options"]
+    texts = {option["value"]: option["text"] for option in options}
+    values = set(texts) - {"--"}
+    assert values == {test.value for test in WellTest}
+    assert texts["complex"] == "Сложное"

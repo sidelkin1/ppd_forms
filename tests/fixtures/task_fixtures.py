@@ -286,6 +286,33 @@ def task_owc_resp_pressure() -> TaskOwcResp:
 
 
 @pytest.fixture
+def owc_resp_complex() -> OwcRespParams:
+    return OwcRespParams(
+        field=FIELD,
+        reservoir=RESERVOIR,
+        well="  w3  ",
+        pressure=100,
+        depth=75,
+        well_test=WellTest.complex,
+        on_date=date(2025, 10, 20),
+    )
+
+
+@pytest.fixture
+def task_owc_resp_complex() -> TaskOwcResp:
+    return TaskOwcResp(
+        name=ReportName.owc_resp,
+        field=FIELD,
+        reservoir=RESERVOIR,
+        well="W3",
+        pressure=100,
+        depth=75,
+        well_test=WellTest.complex,
+        on_date=date(2025, 10, 20),
+    )
+
+
+@pytest.fixture
 def isobar() -> IsobarParams:
     return IsobarParams(file="СВОДНЫЙ_ИЗОБАРЫ_01.07.2026.xlsm")
 

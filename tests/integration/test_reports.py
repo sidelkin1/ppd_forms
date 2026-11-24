@@ -1,4 +1,5 @@
 import logging
+import zipfile
 from collections.abc import Awaitable, Callable
 from datetime import date
 from filecmp import cmpfiles
@@ -11,6 +12,7 @@ from openpyxl import load_workbook
 
 from app.common.config.models.paths import Paths
 from app.core.models.dto import UneftFieldDB
+from app.core.models.enums import WellTest
 from app.core.services.reports import (
     fnv_report,
     inj_loss_report,
@@ -30,6 +32,7 @@ from app.infrastructure.db.dao.sql.reporters.querysets import (
 )
 from app.infrastructure.holder import HolderDAO
 from tests.fixtures.task_fixtures import (  # noqa
+    task_owc_resp_complex,
     task_owc_resp_pressure,
     task_owc_resp_static,
 )
@@ -201,16 +204,20 @@ async def test_fnv_report(
     assert not errors
 
 
+_LIQUID_DENSITY = 0.8 * (1 - 20 / 100) + 1.1 * 20 / 100
+
+
 @pytest.mark.asyncio(scope="session")
 @pytest.mark.parametrize(
     (
-        "task_fixture,expected_plan,expected_bl,expected_bm,"
+        "task_fixture,expected_plan,expected_goal,expected_bl,expected_bm,"
         "expected_bn,expected_bo,empty_depths"
     ),
     [
         (
             "task_owc_resp_static",
             "Pпл по Hст",
+            "Рпл",
             75,
             100,
             None,
@@ -220,6 +227,7 @@ async def test_fnv_report(
         (
             "task_owc_resp_pressure",
             "Pпл",
+            "Рпл",
             None,
             None,
             75,
@@ -229,11 +237,22 @@ async def test_fnv_report(
         (
             "task_owc_resp_pressure",
             "Pпл",
+            "Рпл",
             None,
             None,
             75,
             100,
             True,
+        ),
+        (
+            "task_owc_resp_complex",
+            None,
+            "Рпл + ФЕС пласта",
+            None,
+            None,
+            None,
+            None,
+            False,
         ),
     ],
 )
@@ -244,7 +263,8 @@ async def test_owc_resp_report(
     tmp_path: Path,
     request,
     task_fixture: str,
-    expected_plan: str,
+    expected_plan: str | None,
+    expected_goal: str,
     expected_bl: float | None,
     expected_bm: float | None,
     expected_bn: float | None,
@@ -257,11 +277,13 @@ async def test_owc_resp_report(
     data_dir = paths.base_dir / "data"
     calculator_template = data_dir / "owc_resp_template.xlsx"
     analytics_template = data_dir / "analytics_template.xlsx"
+    rn_vega_template = data_dir / "rn_vega_template.xlsx"
     pool_holder.kwargs["empty_depths"] = empty_depths
     await owc_resp_report(
         path,
         calculator_template,
         analytics_template,
+        rn_vega_template,
         task.field,
         task.reservoir,
         task.well,
@@ -282,6 +304,7 @@ async def test_owc_resp_report(
     calc_ws = calc["Пересчет"]
 
     assert analytics_ws["AW5"].value == expected_plan
+    assert analytics_ws["AX5"].value == expected_goal
     assert analytics_ws["BE5"].value == "20.10.2025"
     assert analytics_ws["BF5"].value == "20.10.2025"
     assert analytics_ws["BL5"].value == expected_bl
@@ -292,9 +315,172 @@ async def test_owc_resp_report(
         assert analytics_ws["BY5"].value is None
         assert analytics_ws["BZ5"].value is None
     else:
-        assert analytics_ws["BY5"].value == pytest.approx(102.5)
-        assert analytics_ws["BZ5"].value == pytest.approx(103.5)
-    assert calc_ws["B15"].value == pytest.approx(1.0)
+        # плотность жидкости посчитана по пластовой плотности нефти
+        assert analytics_ws["BY5"].value == pytest.approx(
+            100 + 25 * _LIQUID_DENSITY / 10
+        )
+        assert analytics_ws["BZ5"].value == pytest.approx(
+            100 + 35 * _LIQUID_DENSITY / 10
+        )
+    # во всех режимах в аналитике поверхностная плотность нефти
+    assert analytics_ws["AL5"].value == pytest.approx(0.85)
+
+    # калькулятор: пластовая плотность нефти в B12, формула B15 сохранена
+    assert calc_ws["B12"].value == pytest.approx(0.8)
+    assert calc_ws["B13"].value == pytest.approx(1.1)
+    assert calc_ws["B14"].value == pytest.approx(20.0)
+    assert calc_ws["B15"].value == "=B12*(1-B14/100)+B13*B14/100"
+
+    complex_only = (
+        "R5",
+        "S5",
+        "T5",
+        "AE5",
+        "AF5",
+        "AG5",
+        "AH5",
+        "AI5",
+        "AJ5",
+        "AK5",
+    )
+    if task.well_test is WellTest.complex:
+        assert analytics_ws["R5"].value == pytest.approx(95.0)
+        assert analytics_ws["S5"].value == pytest.approx(12.0)
+        assert analytics_ws["T5"].value == pytest.approx(30.0)
+        assert analytics_ws["AE5"].value == pytest.approx(250.0)
+        assert analytics_ws["AF5"].value == pytest.approx(150.0)
+        assert analytics_ws["AG5"].value == pytest.approx(60.0)
+        assert analytics_ws["AH5"].value == pytest.approx(2.5)
+        assert analytics_ws["AI5"].value == pytest.approx(0.7)
+        assert analytics_ws["AJ5"].value == "=AH5*(1-U5/100)+AI5*U5/100"
+        assert analytics_ws["AK5"].value == pytest.approx(1.2)
+        # ячейки static/pressure для complex остаются пустыми
+        assert analytics_ws["BL5"].value is None
+        assert analytics_ws["BM5"].value is None
+        assert analytics_ws["BN5"].value is None
+        assert analytics_ws["BO5"].value is None
+    else:
+        for cell in complex_only:
+            assert analytics_ws[cell].value is None, cell
+
+    archive = Path(f"{path}.zip")
+    assert archive.exists()
+    with zipfile.ZipFile(archive) as zip_file:
+        names = set(zip_file.namelist())
+
+    rn_vega_path = path / rn_vega_template.name
+    assert ("rn_vega_template.xlsx" in names) is (
+        task.well_test is WellTest.complex
+    )
+    if task.well_test is WellTest.complex:
+        assert rn_vega_path.exists()
+        rn_vega = load_workbook(rn_vega_path, data_only=False)
+        interpretation = rn_vega["Интерпретация"]
+        assert interpretation["C6"].value == "Workshop"
+        assert interpretation["C7"].value == "FC1"
+        assert interpretation["C8"].value == "F1"
+        assert interpretation["C9"].value == "Pad 1"
+        assert interpretation["C10"].value == "R1"
+        assert interpretation["C11"].value == "W3"
+        assert interpretation["C13"].value == "Production"
+        assert interpretation["C14"].value == "Vertical"
+        assert interpretation["C15"].value == "ESP"
+        assert interpretation["C16"].value == pytest.approx(0.08)
+        assert interpretation["C17"].value == pytest.approx(75.0)
+        assert interpretation["C18"].value == "100.0-130.0"
+        assert interpretation["C19"].value == pytest.approx(100.0)
+        assert interpretation["C20"].value == pytest.approx(0.0)
+        assert interpretation["C23"].value == pytest.approx(10.0)
+        assert interpretation["C25"].value == "Working"
+        assert interpretation["C27"].value == pytest.approx(95.0)
+        assert interpretation["C28"].value == pytest.approx(30.0)
+        assert interpretation["C29"].value == pytest.approx(12.0)
+        assert interpretation["C30"].value == pytest.approx(20.0)
+        assert interpretation["C32"].value == pytest.approx(100.0)
+        assert interpretation["C35"].value == pytest.approx(0.00012)
+        assert interpretation["C36"].value == pytest.approx(0.00004)
+        assert interpretation["C38"].value == pytest.approx(250.0)
+        assert interpretation["C39"].value == pytest.approx(40.0)
+        assert interpretation["C41"].value == pytest.approx(150.0)
+        assert interpretation["C42"].value == pytest.approx(60.0)
+        assert interpretation["C43"].value == pytest.approx(2.5)
+        assert interpretation["C44"].value == pytest.approx(0.7)
+        assert interpretation["C46"].value == pytest.approx(1.2)
+        assert interpretation["C49"].value == pytest.approx(0.85)
+        assert interpretation["C50"].value == pytest.approx(1.1)
+        assert interpretation["C51"].value == pytest.approx(0.8)
+        assert interpretation["C61"].value == pytest.approx(75.0)
+        assert interpretation["C62"].value == pytest.approx(0.0)
+
+        pressures = rn_vega["Давление"]
+        assert pressures["A2"].value.date() == task.on_date
+        assert pressures["B2"].value == pytest.approx(100.0)
+        # лист «Дебит» не изменяется
+        rates = rn_vega["Дебит"]
+        assert rates.max_row == 1
+        assert rates["A1"].value == "Дата"
+        assert rates["B1"].value == "Qж, м3/сут"
+    else:
+        assert not rn_vega_path.exists()
+
+
+@pytest.mark.asyncio(scope="session")
+async def test_owc_resp_report_without_rates(
+    holder_factory: Callable[..., HolderDAO],
+    process_pool: ProcessPoolManager,
+    paths: Paths,
+    tmp_path: Path,
+    request,
+):
+    """NULL ТР/МЭР не удаляют строку свойств и оставляют ячейки пустыми."""
+    task = request.getfixturevalue("task_owc_resp_complex")
+    holder = holder_factory(empty_rates=True)
+    path = tmp_path / "owc_resp"
+    path.mkdir()
+    data_dir = paths.base_dir / "data"
+    await owc_resp_report(
+        path,
+        data_dir / "owc_resp_template.xlsx",
+        data_dir / "analytics_template.xlsx",
+        data_dir / "rn_vega_template.xlsx",
+        task.field,
+        task.reservoir,
+        task.well,
+        task.pressure,
+        task.depth,
+        task.well_test,
+        task.on_date,
+        holder.owc_resp_reporter,
+        process_pool,
+    )
+
+    analytics_ws = load_workbook(
+        path / "analytics_template.xlsx", data_only=False
+    )["Лист1"]
+    # строка свойств сохранена, зависящие от дебитов ячейки пусты
+    assert analytics_ws["F5"].value == task.well
+    assert analytics_ws["AX5"].value == "Рпл + ФЕС пласта"
+    assert analytics_ws["U5"].value is None
+    for cell in ("R5", "S5", "T5"):
+        assert analytics_ws[cell].value is None, cell
+
+    calc_ws = load_workbook(path / "owc_resp_template.xlsx", data_only=False)[
+        "Пересчет"
+    ]
+    assert calc_ws["B3"].value == f"{task.well}B1"
+    assert calc_ws["B14"].value is None
+
+    rn_vega = load_workbook(path / "rn_vega_template.xlsx", data_only=False)
+    interpretation = rn_vega["Интерпретация"]
+    for cell in ("C27", "C28", "C29", "C30"):
+        assert interpretation[cell].value is None, cell
+    # PVT-свойства не зависят от ТР/МЭР
+    assert interpretation["C49"].value == pytest.approx(0.85)
+
+    archive = Path(f"{path}.zip")
+    assert archive.exists()
+    with zipfile.ZipFile(archive) as zip_file:
+        assert "rn_vega_template.xlsx" in zip_file.namelist()
 
 
 @pytest.mark.asyncio(scope="session")

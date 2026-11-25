@@ -180,12 +180,16 @@
 **Files:**
 - Modify: `tests/unit/reports/test_well_test.py` — только если проверка выявит непокрытый сценарий
 
-- [ ] Запустить полный набор `uv run pytest` и убедиться, что существующие отчеты и
-  integration-тесты не регрессировали.
-- [ ] Запустить `uv run ruff check app/ tests/`, `uv run ruff format --check app/ tests/` и `uv run mypy app/`.
-- [ ] По автоматическим тестам подтвердить, что `Лист1!A-L` содержит все ГДИС со стволом
+- [x] Запустить полный набор `uv run pytest` и убедиться, что существующие отчеты и
+  integration-тесты не регрессировали. — 238 passed, 1 skipped.
+- [x] Запустить `uv run ruff check app/ tests/`, `uv run ruff format --check app/ tests/` и `uv run mypy app/`.
+  — ruff check чист при игнорировании EXE002 (артефакт прав монтирования: в git нет ни одного
+  исполняемого файла, отслеживаемые режимы 644); ruff format — 477 files already formatted;
+  mypy — Success: no issues found in 430 source files.
+- [x] По автоматическим тестам подтвердить, что `Лист1!A-L` содержит все ГДИС со стволом
   в `B`, `отчет!B-J` содержит только текущий ствол с базовым номером в `B`, `M` не заполняется,
-  а график строится по `D-E`.
+  а график строится по `D-E`. — `test_process_data_writes_branches_and_filters_report_sheet`
+  и `test_process_data_without_perforations_uses_base_well` (реальный шаблон).
 
 ### Task 5: Update documentation
 

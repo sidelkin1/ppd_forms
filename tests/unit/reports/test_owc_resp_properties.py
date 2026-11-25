@@ -14,6 +14,7 @@ from sqlalchemy.dialects import oracle
 from sqlalchemy.sql.expression import ScalarSelect, Select
 
 from app.infrastructure.db.dao.sql.reporters.querysets.owc_resp import (
+    branches,
     perfs,
     properties,
 )
@@ -267,6 +268,19 @@ def test_properties_well_radius_by_property_id() -> None:
     assert "max(udmurtneft_n.well_hdr_pty.num_val)" in sql
     assert "AS well_radius" in sql
     assert "1071381" in compiled.params.values()
+
+
+def test_branch_query_keeps_open_perforations() -> None:
+    """Ствол ищется и по открытым интервалам (``close_date IS NULL``)."""
+    sql = _sql(branches.select_well_branch())
+
+    assert "max(udmurtneft_n.well_perforations.uwi)" in sql
+    assert "udmurtneft_n.well_perforations.comp_date <= :on_date" in sql
+    assert "udmurtneft_n.well_perforations.close_date IS NULL" in sql
+    assert "udmurtneft_n.well_perforations.close_date >= :on_date" in sql
+    assert "BETWEEN" not in sql.upper()
+    # при отсутствии открытой перфорации остаётся базовая скважина
+    assert sql.startswith("SELECT coalesce(")
 
 
 def test_top_and_bottom_perf_use_same_filters() -> None:

@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 from datetime import date
+from typing import cast
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
@@ -17,7 +18,33 @@ class WellTestReporter:
     ofm: db.OfmWellTestReporter
 
     async def get_results(self) -> list[WellTestResult]:
-        return await self.results.get_results()
+        results = await self.results.get_results()
+        async with asyncio.TaskGroup() as tg:
+            tasks = [
+                tg.create_task(self._get_branch(result)) for result in results
+            ]
+        return [
+            cast(WellTestResult, {**result, "branch": task.result()})
+            for result, task in zip(results, tasks)
+        ]
+
+    async def _get_branch(self, result: WellTestResult) -> str:
+        """Ствол с открытой на дату исследования перфорацией.
+
+        Запрос выполняется для каждой пары «месторождение, скважина,
+        объект, дата»: у одного исследования может быть несколько
+        объектов. Если ствол не найден, остаётся базовая скважина.
+        """
+        branches = await self.ofm.read_one(
+            key="branches",
+            fields=[result["field"]],
+            well=result["well"],
+            cids=[result["reservoir"]],
+            end_date=result["end_date"],
+        )
+        if branches.empty:
+            return result["well"]
+        return str(branches["branch"].iat[0])
 
     async def get_well_gtms(
         self, field: str, well: str, end_date: date, gtm_period: int

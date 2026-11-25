@@ -1,3 +1,4 @@
+import re
 from copy import copy, deepcopy
 from datetime import date
 from io import BytesIO
@@ -143,9 +144,85 @@ def _fill_template(
             cell.value = value
 
 
-def _concat_tests(
-    tests: pd.DataFrame, results: list[WellTestResult]
+_WELL_SUFFIX_PATTERN = re.compile(r"(\s*\([^()]*\))$")
+
+_HISTORY_TEMP_COLUMNS = ("_row", "_well", "_suffix", "_date")
+
+
+def _split_well_suffix(well: str) -> tuple[str, str]:
+    """Отделяет суффикс пласта: «303 (Вз)» → («303», « (Вз)»)."""
+    match = _WELL_SUFFIX_PATTERN.search(well)
+    if match is None:
+        return well, ""
+    return well[: match.start()], match.group(1)
+
+
+def _resolve_history_branches(
+    tests: pd.DataFrame, perfs: pd.DataFrame
 ) -> pd.DataFrame:
+    """Ствол, открытый на дату каждого предыдущего ГДИС.
+
+    Перфорации приходят по ключу (месторождение, базовая скважина,
+    объект) и содержат интервалы ``comp_date``–``close_date``. Для
+    замера берётся лексикографически максимальное имя ствола среди
+    открытых на его дату — то же правило, что ``max(uwi)`` в SQL Task 1.
+
+    Открытых стволов может не быть — тогда остаётся базовый номер
+    скважины, как он пришёл из истории (с суффиксом пласта). Найденный
+    ствол получает тот же суффикс. Строки не размножаются: на замер
+    ровно одна строка, порядок сохраняется.
+    """
+    if tests.empty:
+        return tests.assign(branch=pd.Series(dtype=object))
+    if perfs.empty:
+        return tests.assign(branch=tests["well"].astype(str))
+
+    base = tests.reset_index(drop=True).copy()
+    base["_row"] = range(len(base))
+    split = [_split_well_suffix(str(well)) for well in base["well"]]
+    base["_well"] = [part[0] for part in split]
+    base["_suffix"] = [part[1] for part in split]
+    base["_date"] = pd.to_datetime(base["end_date"], errors="coerce")
+
+    intervals = pd.DataFrame(
+        {
+            "field": perfs["field"].astype(str),
+            "well": perfs["well"].astype(str),
+            "reservoir": perfs["reservoir"].astype(str),
+            "branch": perfs["branch"].astype(str),
+            "_comp": pd.to_datetime(perfs["comp_date"], errors="coerce"),
+            "_close": pd.to_datetime(perfs["close_date"], errors="coerce"),
+        }
+    )
+    merged = base.merge(
+        intervals,
+        left_on=["field", "_well", "reservoir"],
+        right_on=["field", "well", "reservoir"],
+        how="left",
+        suffixes=("", "_perf"),
+    )
+    covered = merged[
+        merged["_comp"].notna()
+        & (merged["_comp"] <= merged["_date"])
+        & (merged["_close"].isna() | (merged["_close"] >= merged["_date"]))
+    ]
+    chosen = covered.groupby("_row")["branch"].max()
+    branch = base["_row"].map(chosen)
+    found = branch.notna()
+    base["branch"] = branch.where(found, base["well"].astype(str))
+    base.loc[found, "branch"] = (
+        base.loc[found, "branch"].astype(str) + base.loc[found, "_suffix"]
+    )
+    return base.drop(columns=list(_HISTORY_TEMP_COLUMNS))
+
+
+def _concat_tests(
+    tests: pd.DataFrame,
+    results: list[WellTestResult],
+    perfs: pd.DataFrame,
+) -> pd.DataFrame:
+    """История с рассчитанным стволом и текущие ГДИС со стволом Task 1."""
+    tests = _resolve_history_branches(tests, perfs)
     df = pd.DataFrame(results, columns=tests.columns)
     return df if tests.empty else pd.concat([tests, df], ignore_index=True)
 
@@ -407,7 +484,7 @@ def _process_data(
     arrow: Path,
 ) -> None:
     result = path / template.name
-    tests = _concat_tests(dfs["tests"], results)
+    tests = _concat_tests(dfs["tests"], results, dfs["perfs"])
     neighb_tests = _add_distance(dfs["neighb_tests"], dfs["neighbs"])
     try:
         wb = openpyxl.load_workbook(template)

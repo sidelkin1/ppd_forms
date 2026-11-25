@@ -15,17 +15,26 @@ from sqlalchemy.dialects import oracle
 from sqlalchemy.sql.expression import Select
 
 from app.core.models.dto import WellTestResult
+from app.core.services.reports.well_test import (
+    _concat_tests,
+    _resolve_history_branches,
+)
 from app.infrastructure.db.dao.complex.reporters.well_test import (
     WellTestReporter,
 )
+from app.infrastructure.db.dao.sql.reporters.ofm_well_test import (
+    PERF_COLUMNS,
+)
 from app.infrastructure.db.dao.sql.reporters.querysets.well_test import (
     branches,
+    perfs,
 )
 from app.infrastructure.db.models.ofm.codes import DictG
 from app.infrastructure.db.models.ofm.udmurtneft_n import (
     WellHdr,
     WellPerforations,
 )
+from tests.mocks.reporters import OfmWellTestMock
 
 _STRING_COLUMNS = ("uwi", "parent_uwi", "well_name", "field")
 
@@ -215,3 +224,292 @@ async def test_get_results_falls_back_to_base_well() -> None:
 
     assert filled[0]["branch"] == "303"
     assert filled[0]["well"] == "303"
+
+
+_HISTORY_COLUMNS = (
+    "field",
+    "well",
+    "reservoir",
+    "well_type",
+    "well_test",
+    "end_date",
+    "resp_owc",
+    "permeability",
+    "skin_factor",
+    "prod_index",
+    "frac_length",
+    "reliability",
+)
+
+_PERF_COLUMNS = (
+    "field",
+    "well",
+    "reservoir",
+    "branch",
+    "comp_date",
+    "close_date",
+)
+
+
+def _history_row(
+    *,
+    well: str = "303 (Вз)",
+    reservoir: str = "Вз",
+    end_date: date = date(2025, 6, 1),
+) -> dict[str, Any]:
+    return {
+        "field": "Котовское",
+        "well": well,
+        "reservoir": reservoir,
+        "well_type": "добывающая",
+        "well_test": "КВД",
+        "end_date": end_date,
+        "resp_owc": 100.0,
+        "permeability": 1.0,
+        "skin_factor": 0.0,
+        "prod_index": None,
+        "frac_length": None,
+        "reliability": "Хорошая",
+    }
+
+
+def _history(*rows: dict[str, Any]) -> pd.DataFrame:
+    return pd.DataFrame(list(rows), columns=list(_HISTORY_COLUMNS))
+
+
+def _perf(
+    *,
+    branch: str = "303B1",
+    comp_date: date = date(2020, 1, 1),
+    close_date: date | None = None,
+    well: str = "303",
+    reservoir: str = "Вз",
+) -> dict[str, Any]:
+    return {
+        "field": "Котовское",
+        "well": well,
+        "reservoir": reservoir,
+        "branch": branch,
+        "comp_date": comp_date,
+        "close_date": close_date,
+    }
+
+
+def _perfs(*rows: dict[str, Any]) -> pd.DataFrame:
+    return pd.DataFrame(list(rows), columns=list(_PERF_COLUMNS))
+
+
+def _current_result(branch: str = "303B2") -> WellTestResult:
+    return cast(WellTestResult, {**_file_result(), "branch": branch})
+
+
+def test_perfs_query_resolves_field_and_object() -> None:
+    sql = _sql(perfs.select_well_perfs())
+
+    assert "codes.dict_g.description IN" in sql
+    assert "udmurtneft_n.well_perforations.layer_id IN" in sql
+    assert "decode(" in sql
+    assert "replace(" in sql
+
+
+def test_perfs_query_joins_branch_to_base_well() -> None:
+    sql = _sql(perfs.select_well_perfs())
+
+    assert "coalesce(" in sql
+    assert "parent_uwi" in sql
+    # отображаемые колонки истории
+    for label in ("field", "well", "reservoir", "branch"):
+        assert f"AS {label}" in sql
+    assert "AS comp_date" in sql
+    assert "AS close_date" in sql
+
+
+def test_perfs_query_keeps_open_intervals() -> None:
+    sql = _sql(perfs.select_well_perfs())
+
+    assert "close_date IS NULL" in sql
+    assert "close_date >= :history_start" in sql
+    assert "BETWEEN" not in sql.upper()
+
+
+def test_perfs_query_parameter_set() -> None:
+    compiled = _compiled(perfs.select_well_perfs())
+
+    assert {"fields", "wells", "cids", "history_start"} <= set(compiled.params)
+    assert compiled.params["replace_1"] == "(Руд)"
+    assert compiled.params["replace_2"] == ""
+
+
+def test_history_branch_adds_layer_suffix() -> None:
+    resolved = _resolve_history_branches(
+        _history(_history_row()), _perfs(_perf(branch="303B1"))
+    )
+
+    assert resolved["branch"].to_list() == ["303B1 (Вз)"]
+    assert resolved["well"].to_list() == ["303 (Вз)"]
+
+
+def test_history_branch_respects_close_date() -> None:
+    resolved = _resolve_history_branches(
+        _history(_history_row(end_date=date(2021, 1, 1))),
+        _perfs(
+            _perf(
+                branch="303B1",
+                comp_date=date(2010, 1, 1),
+                close_date=date(2015, 1, 1),
+            ),
+            _perf(branch="303B2", comp_date=date(2016, 1, 1)),
+        ),
+    )
+
+    assert resolved["branch"].to_list() == ["303B2 (Вз)"]
+
+
+def test_history_branch_ignores_interval_after_test_date() -> None:
+    resolved = _resolve_history_branches(
+        _history(_history_row(end_date=date(2019, 1, 1))),
+        _perfs(_perf(branch="303B1", comp_date=date(2020, 1, 1))),
+    )
+
+    assert resolved["branch"].to_list() == ["303 (Вз)"]
+
+
+def test_history_branch_uses_open_interval() -> None:
+    resolved = _resolve_history_branches(
+        _history(_history_row(end_date=date(2025, 6, 1))),
+        _perfs(_perf(branch="303B3", close_date=None)),
+    )
+
+    assert resolved["branch"].to_list() == ["303B3 (Вз)"]
+
+
+def test_history_branch_picks_lexicographic_max() -> None:
+    resolved = _resolve_history_branches(
+        _history(_history_row()),
+        _perfs(
+            _perf(branch="303"),
+            _perf(branch="303B1"),
+            _perf(branch="303B2"),
+        ),
+    )
+
+    assert resolved["branch"].to_list() == ["303B2 (Вз)"]
+
+
+def test_history_branch_without_perf_falls_back_to_well() -> None:
+    resolved = _resolve_history_branches(_history(_history_row()), _perfs())
+
+    assert resolved["branch"].to_list() == ["303 (Вз)"]
+
+
+def test_history_branch_does_not_duplicate_rows() -> None:
+    history = _history(
+        _history_row(end_date=date(2021, 1, 1)),
+        _history_row(end_date=date(2025, 6, 1)),
+    )
+    resolved = _resolve_history_branches(
+        history,
+        _perfs(
+            _perf(branch="303B1", comp_date=date(2010, 1, 1)),
+            _perf(branch="303B1", comp_date=date(2011, 1, 1)),
+            _perf(branch="303B2", comp_date=date(2012, 1, 1)),
+        ),
+    )
+
+    assert resolved.shape[0] == 2
+    assert resolved["branch"].to_list() == ["303B2 (Вз)", "303B2 (Вз)"]
+    assert resolved["end_date"].to_list() == [
+        date(2021, 1, 1),
+        date(2025, 6, 1),
+    ]
+
+
+def test_history_branch_empty_frame_keeps_columns() -> None:
+    resolved = _resolve_history_branches(_history(), _perfs())
+
+    assert resolved.empty
+    assert list(resolved.columns) == [*_HISTORY_COLUMNS, "branch"]
+    assert resolved.shape == (0, len(_HISTORY_COLUMNS) + 1)
+
+
+def test_concat_tests_keeps_history_and_current_branch() -> None:
+    df = _concat_tests(
+        _history(_history_row()),
+        [_current_result()],
+        _perfs(_perf(branch="303B1")),
+    )
+
+    assert df["branch"].to_list() == ["303B1 (Вз)", "303B2"]
+    assert df["well"].to_list() == ["303 (Вз)", "303"]
+
+
+def test_concat_tests_empty_history_keeps_columns() -> None:
+    df = _concat_tests(_history(), [_current_result()], _perfs())
+
+    assert df.shape == (1, len(_HISTORY_COLUMNS) + 1)
+    assert df["branch"].iat[0] == "303B2"
+
+
+class _HistoryReadMock:
+    def __init__(self, tests: pd.DataFrame) -> None:
+        self.tests = tests
+        self.calls: list[dict[str, Any]] = []
+
+    async def read_one(
+        self, *, key: str | None = None, **params: Any
+    ) -> pd.DataFrame:
+        self.calls.append({"key": key, **params})
+        if key == "gdis":
+            return self.tests
+        return pd.DataFrame()
+
+
+@pytest.mark.asyncio
+async def test_read_all_loads_history_perforations() -> None:
+    history = _HistoryReadMock(
+        _history(
+            _history_row(end_date=date(2024, 3, 1)),
+            _history_row(end_date=date(2025, 9, 1)),
+        )
+    )
+    ofm = OfmWellTestMock()
+    reporter = WellTestReporter(
+        history=cast(Any, history),
+        results=cast(Any, None),
+        ofm=cast(Any, ofm),
+    )
+
+    dfs = await reporter.read_all(
+        results=[_current_result()],
+        gtm_period=12,
+        gdis_period=5,
+        radius=1.0,
+    )
+
+    assert len(dfs["perfs"]) == 2
+    perfs_call = next(call for call in ofm.calls if call["key"] == "perfs")
+    assert perfs_call["fields"] == ["Котовское"]
+    assert perfs_call["wells"] == ["303"]
+    assert perfs_call["cids"] == ["Вз"]
+    assert perfs_call["history_start"] == date(2024, 3, 1)
+
+
+@pytest.mark.asyncio
+async def test_read_all_skips_perfs_for_empty_history() -> None:
+    history = _HistoryReadMock(_history())
+    ofm = OfmWellTestMock()
+    reporter = WellTestReporter(
+        history=cast(Any, history),
+        results=cast(Any, None),
+        ofm=cast(Any, ofm),
+    )
+
+    dfs = await reporter.read_all(
+        results=[_current_result()],
+        gtm_period=12,
+        gdis_period=5,
+        radius=1.0,
+    )
+
+    assert list(dfs["perfs"].columns) == list(PERF_COLUMNS)
+    assert all(call["key"] != "perfs" for call in ofm.calls)

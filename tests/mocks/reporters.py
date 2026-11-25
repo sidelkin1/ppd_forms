@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.infrastructure.db.dao.sql.reporters import (
     FnvReporter,
     OfmIsobarReporter,
+    OfmWellTestReporter,
     OppPerYearReporter,
     OwcRespReporter,
 )
@@ -235,6 +236,39 @@ class OwcRespMock(OwcRespReporter):
                 }
             )
         return {"props": props, "depths": depths}
+
+
+class OfmWellTestMock(OfmWellTestReporter):
+    """Мок OFM-репортера ГДИС: запоминает параметры чтения перфораций."""
+
+    def __init__(self, pool: sessionmaker[Session] | None = None) -> None:
+        self.calls: list[dict[str, Any]] = []
+
+    async def read_one(
+        self, *, key: str | None = None, **params: Any
+    ) -> pd.DataFrame:
+        self.calls.append({"key": key, **params})
+        if key == "perfs":
+            # на дату истории работали два ствола, выбирается W1B2
+            return pd.DataFrame(
+                {
+                    "field": ["F1", "F1"],
+                    "well": ["W1", "W1"],
+                    "reservoir": ["R1", "R1"],
+                    "branch": ["W1B1", "W1B2"],
+                    "comp_date": [date(2026, 1, 1), date(2026, 1, 1)],
+                    "close_date": [None, None],
+                }
+            )
+        if key == "neighbs":
+            return pd.DataFrame(
+                {
+                    "field": ["F1"],
+                    "well": ["W1"],
+                    "reservoir": ["R1"],
+                }
+            )
+        return pd.DataFrame()
 
 
 class OfmIsobarMock(OfmIsobarReporter):

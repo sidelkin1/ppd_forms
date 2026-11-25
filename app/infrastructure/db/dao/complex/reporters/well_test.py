@@ -8,7 +8,23 @@ from dateutil.relativedelta import relativedelta
 
 from app.core.models.dto import WellTestResult
 from app.infrastructure.db.dao.sql import reporters as db
+from app.infrastructure.db.dao.sql.reporters.ofm_well_test import PERF_COLUMNS
 from app.infrastructure.files.dao import reporters as files
+
+
+def _history_start(tests: pd.DataFrame) -> date | None:
+    """Дата самого раннего предыдущего ГДИС.
+
+    Перфорации нужны с этого момента: интервалы, закрытые раньше, на
+    даты истории уже не открыты. Для пустой истории запрос в OFM не
+    выполняется.
+    """
+    if tests.empty or "end_date" not in tests.columns:
+        return None
+    dates = pd.to_datetime(tests["end_date"], errors="coerce").dropna()
+    if dates.empty:
+        return None
+    return dates.min().date()
 
 
 @dataclass
@@ -107,6 +123,25 @@ class WellTestReporter:
             reservoirs=reservoirs,
         )
 
+    async def get_perfs(
+        self,
+        *,
+        field: str,
+        well: str,
+        reservoirs: list[str],
+        tests: pd.DataFrame,
+    ) -> pd.DataFrame:
+        """Интервалы перфорации стволов на даты предыдущих ГДИС."""
+        history_start = _history_start(tests)
+        if history_start is None:
+            return pd.DataFrame(columns=list(PERF_COLUMNS))
+        return await self.ofm.read_perfs(
+            field=field,
+            well=well,
+            reservoirs=reservoirs,
+            history_start=history_start,
+        )
+
     async def read_all(
         self,
         *,
@@ -147,6 +182,13 @@ class WellTestReporter:
                 )
             )
         neighbs = neighbs_task.result()
+        tests = tests_task.result()
+        perfs = await self.get_perfs(
+            field=results[0]["field"],
+            well=results[0]["well"],
+            reservoirs=reservoirs,
+            tests=tests,
+        )
         neighb_tests = await self.get_neighb_tests(
             neighbs["field"].to_list(),
             neighbs["well"].to_list(),
@@ -156,7 +198,8 @@ class WellTestReporter:
         )
         return {
             "gtms": gtms_task.result(),
-            "tests": tests_task.result(),
+            "tests": tests,
+            "perfs": perfs,
             "neighbs": neighbs,
             "neighb_tests": neighb_tests,
             "pvt": pvt_task.result(),

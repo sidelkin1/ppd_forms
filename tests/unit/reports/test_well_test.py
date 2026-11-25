@@ -185,6 +185,8 @@ def test_branch_query_returns_max_well_name() -> None:
     # fallback к базовой скважине
     assert "coalesce(" in sql
     assert "coalesce(perf_branch.parent_uwi, perf_branch.uwi)" in sql
+    # открытый ствол выбирается в первую очередь, базовая скважина — fallback
+    assert "branch.uwi = coalesce((SELECT max(perf_branch.uwi)" in sql
 
 
 @pytest.mark.asyncio
@@ -321,6 +323,12 @@ def test_perfs_query_joins_branch_to_base_well() -> None:
 
     assert "coalesce(" in sql
     assert "parent_uwi" in sql
+    # фильтр скважины привязан к базовой скважине, ствол сводится к ней
+    assert "perf_base.well_name IN" in sql
+    assert (
+        "perf_base.uwi = "
+        "coalesce(perf_branch.parent_uwi, perf_branch.uwi)" in sql
+    )
     # отображаемые колонки истории
     for label in ("field", "well", "reservoir", "branch"):
         assert f"AS {label}" in sql
@@ -354,19 +362,21 @@ def test_history_branch_adds_layer_suffix() -> None:
 
 
 def test_history_branch_respects_close_date() -> None:
+    # Закрытый ствол лексикографически больше открытого: без фильтра
+    # по close_date был бы выбран 303B2, поэтому проверка отличима.
     resolved = _resolve_history_branches(
         _history(_history_row(end_date=date(2021, 1, 1))),
         _perfs(
             _perf(
-                branch="303B1",
+                branch="303B2",
                 comp_date=date(2010, 1, 1),
                 close_date=date(2015, 1, 1),
             ),
-            _perf(branch="303B2", comp_date=date(2016, 1, 1)),
+            _perf(branch="303B1", comp_date=date(2016, 1, 1)),
         ),
     )
 
-    assert resolved["branch"].to_list() == ["303B2 (Вз)"]
+    assert resolved["branch"].to_list() == ["303B1 (Вз)"]
 
 
 def test_history_branch_ignores_interval_after_test_date() -> None:
@@ -404,6 +414,21 @@ def test_history_branch_without_perf_falls_back_to_well() -> None:
     resolved = _resolve_history_branches(_history(_history_row()), _perfs())
 
     assert resolved["branch"].to_list() == ["303 (Вз)"]
+
+
+def test_history_branch_resolves_per_reservoir_and_falls_back() -> None:
+    # Ствол подбирается по ключу (месторождение, скважина, объект):
+    # перфорация есть только для «Вз», поэтому «Тур» откатывается
+    # на базовую скважину, а не подхватывает ствол другого объекта.
+    resolved = _resolve_history_branches(
+        _history(
+            _history_row(well="303 (Вз)", reservoir="Вз"),
+            _history_row(well="303 (Тур)", reservoir="Тур"),
+        ),
+        _perfs(_perf(branch="303B1", reservoir="Вз")),
+    )
+
+    assert resolved["branch"].to_list() == ["303B1 (Вз)", "303 (Тур)"]
 
 
 def test_history_branch_does_not_duplicate_rows() -> None:
@@ -491,6 +516,8 @@ async def test_read_all_loads_history_perforations() -> None:
     )
 
     assert len(dfs["perfs"]) == 2
+    assert list(dfs["perfs"].columns) == list(PERF_COLUMNS)
+    assert set(dfs["perfs"]["branch"]) == {"W1B1", "W1B2"}
     perfs_call = next(call for call in ofm.calls if call["key"] == "perfs")
     assert perfs_call["fields"] == ["Котовское"]
     assert perfs_call["wells"] == ["303"]

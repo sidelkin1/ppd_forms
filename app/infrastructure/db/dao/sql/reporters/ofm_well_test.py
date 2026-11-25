@@ -1,6 +1,3 @@
-from datetime import date
-
-import pandas as pd
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.infrastructure.db.dao.sql.reporters.ofm import OfmBaseDAO
@@ -26,27 +23,4 @@ class OfmWellTestReporter(OfmBaseDAO):
                 "pvt": well_test.select_pvt_props(),
             },
             pool,
-        )
-
-    async def read_perfs(
-        self,
-        *,
-        field: str,
-        well: str,
-        reservoirs: list[str],
-        history_start: date,
-    ) -> pd.DataFrame:
-        """Интервалы перфорации стволов для истории ГДИС.
-
-        ``history_start`` — дата самого раннего предыдущего исследования:
-        интервалы, закрытые раньше, на даты истории уже не открыты.
-        """
-        if not reservoirs:
-            return pd.DataFrame(columns=list(PERF_COLUMNS))
-        return await self.read_one(
-            key="perfs",
-            fields=[field],
-            wells=[well],
-            cids=reservoirs,
-            history_start=history_start,
         )

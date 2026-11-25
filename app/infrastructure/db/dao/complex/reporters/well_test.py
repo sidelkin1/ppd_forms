@@ -131,14 +131,19 @@ class WellTestReporter:
         reservoirs: list[str],
         tests: pd.DataFrame,
     ) -> pd.DataFrame:
-        """Интервалы перфорации стволов на даты предыдущих ГДИС."""
+        """Интервалы перфорации стволов на даты предыдущих ГДИС.
+
+        ``history_start`` — дата самого раннего предыдущего исследования:
+        интервалы, закрытые раньше, на даты истории уже не открыты.
+        """
         history_start = _history_start(tests)
         if history_start is None:
             return pd.DataFrame(columns=list(PERF_COLUMNS))
-        return await self.ofm.read_perfs(
-            field=field,
-            well=well,
-            reservoirs=reservoirs,
+        return await self.ofm.read_one(
+            key="perfs",
+            fields=[field],
+            wells=[well],
+            cids=reservoirs,
             history_start=history_start,
         )
 

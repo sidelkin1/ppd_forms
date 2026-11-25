@@ -6,10 +6,13 @@
 """
 
 from datetime import date
+from pathlib import Path
 from typing import Any, cast
 
+import openpyxl
 import pandas as pd
 import pytest
+from openpyxl.worksheet.worksheet import Worksheet
 from sqlalchemy import Column, Date, Integer, String
 from sqlalchemy.dialects import oracle
 from sqlalchemy.sql.expression import Select
@@ -17,6 +20,7 @@ from sqlalchemy.sql.expression import Select
 from app.core.models.dto import WellTestResult
 from app.core.services.reports.well_test import (
     _concat_tests,
+    _process_data,
     _resolve_history_branches,
 )
 from app.infrastructure.db.dao.complex.reporters.well_test import (
@@ -513,3 +517,187 @@ async def test_read_all_skips_perfs_for_empty_history() -> None:
 
     assert list(dfs["perfs"].columns) == list(PERF_COLUMNS)
     assert all(call["key"] != "perfs" for call in ofm.calls)
+
+
+_DATA_DIR = Path(__file__).resolve().parents[3] / "data"
+_WELL_TEST_TEMPLATE = _DATA_DIR / "well_test_template.xlsx"
+_WELL_TEST_ARROW = _DATA_DIR / "well_test_arrow.png"
+
+_GTM_COLUMNS = (
+    "field",
+    "well",
+    "reservoir",
+    "well_type",
+    "gtm_date",
+    "gtm_name",
+    "gtm_description",
+)
+
+_NEIGHB_COLUMNS = (
+    "field",
+    "well",
+    "reservoir",
+    "distance",
+    "well_layer",
+)
+
+
+def _gtm_row(
+    *,
+    gtm_date: date = date(2025, 12, 1),
+    reservoir: str = "Вз",
+) -> dict[str, Any]:
+    return {
+        "field": "Котовское",
+        "well": "303",
+        "reservoir": reservoir,
+        "well_type": "добывающая",
+        "gtm_date": gtm_date,
+        "gtm_name": "ГРП",
+        "gtm_description": "Гидроразрыв пласта",
+    }
+
+
+def _gtms(*rows: dict[str, Any]) -> pd.DataFrame:
+    return pd.DataFrame(list(rows), columns=list(_GTM_COLUMNS))
+
+
+def _empty_neighbs() -> tuple[pd.DataFrame, pd.DataFrame]:
+    return (
+        pd.DataFrame(columns=["field", "well", "reservoir"]),
+        pd.DataFrame(columns=list(_NEIGHB_COLUMNS)),
+    )
+
+
+def _report_dfs(
+    tests: pd.DataFrame,
+    perfs: pd.DataFrame,
+    gtms: pd.DataFrame,
+) -> dict[str, pd.DataFrame]:
+    neighb_tests, neighbs = _empty_neighbs()
+    return {
+        "tests": tests,
+        "perfs": perfs,
+        "gtms": gtms,
+        "pvt": pd.DataFrame(
+            {"reservoir": ["Вз"], "p_init": [150.0], "p_bubble": [100.0]}
+        ),
+        "neighb_tests": neighb_tests,
+        "neighbs": neighbs,
+    }
+
+
+def _run_report(
+    tmp_path: Path,
+    dfs: dict[str, pd.DataFrame],
+    results: list[WellTestResult],
+) -> tuple[openpyxl.Workbook, pd.DataFrame]:
+    history = dfs["tests"].copy()
+    _process_data(
+        results, dfs, tmp_path, _WELL_TEST_TEMPLATE, _WELL_TEST_ARROW
+    )
+    wb = openpyxl.load_workbook(tmp_path / _WELL_TEST_TEMPLATE.name)
+    return wb, history
+
+
+def _assert_column_m_empty(ws: Worksheet, rows: range) -> None:
+    for row in rows:
+        cell = ws[f"M{row}"]
+        assert cell.value is None
+        assert cell.border.left.style is None
+        assert cell.fill.fgColor.rgb in (None, "00000000")
+
+
+def test_process_data_writes_branches_and_filters_report_sheet(
+    tmp_path: Path,
+) -> None:
+    history = _history(
+        _history_row(end_date=date(2024, 3, 1)),
+        _history_row(end_date=date(2025, 9, 1)),
+    )
+    perfs = _perfs(
+        _perf(
+            branch="303B1",
+            comp_date=date(2010, 1, 1),
+            close_date=date(2024, 6, 1),
+        ),
+        _perf(branch="303B2", comp_date=date(2024, 6, 2)),
+    )
+    dfs = _report_dfs(history, perfs, _gtms(_gtm_row()))
+
+    wb, source_history = _run_report(
+        tmp_path, dfs, [_current_result(branch="303B2")]
+    )
+
+    # «Лист1»: все ГДИС со стволом в столбце B
+    ws = wb["Лист1"]
+    assert [ws[f"B{row}"].value for row in range(2, 5)] == [
+        "303B1 (Вз)",
+        "303B2 (Вз)",
+        "303B2",
+    ]
+    assert [ws[f"C{row}"].value for row in range(2, 5)] == ["Вз"] * 3
+    assert ws["B5"].value in (None, " ")
+    # исходный набор и отображаемый well не изменяются
+    assert source_history["well"].to_list() == ["303 (Вз)", "303 (Вз)"]
+
+    # «отчет»: только история текущего ствола с базовым номером в B
+    ws = wb["отчет"]
+    assert ws["B10"].value == "303 (Вз)"
+    assert ws["C10"].value == "КВД"
+    assert ws["D10"].value.date() == date(2025, 9, 1)
+    # строки другого ствола (2024-03-01) на листе нет
+    assert ws["D11"].value.date() == date(2025, 12, 1)
+    assert ws["B11"].value == 303
+    assert ws["C11"].value == "ГТМ"
+    assert ws["D12"].value.date() == date(2026, 8, 1)
+    assert ws["B12"].value == 303
+    assert ws["C12"].value == "КВД"
+
+    # столбец M больше не заполняется и не оформляется
+    _assert_column_m_empty(ws, range(10, 13))
+
+    # график по-прежнему строится по датам и давлениям из D-E
+    plot = next(
+        series
+        for series in ws._charts[0].series  # type: ignore[attr-defined]
+        if series.title.value == "Pпл"
+    )
+    assert plot.xVal.numRef.f == "'отчет'!$D$10:$D$55"
+    assert plot.yVal.numRef.f == "'отчет'!$E$10:$E$55"
+
+
+def test_process_data_without_perforations_uses_base_well(
+    tmp_path: Path,
+) -> None:
+    history = _history(
+        _history_row(end_date=date(2024, 3, 1)),
+        _history_row(end_date=date(2025, 9, 1)),
+    )
+    dfs = _report_dfs(history, _perfs(), _gtms(_gtm_row()))
+
+    wb, _ = _run_report(tmp_path, dfs, [_current_result(branch="303")])
+
+    # «Лист1»: базовая скважина, история с суффиксом пласта
+    ws = wb["Лист1"]
+    assert [ws[f"B{row}"].value for row in range(2, 5)] == [
+        "303 (Вз)",
+        "303 (Вз)",
+        "303",
+    ]
+    assert ws["B5"].value in (None, " ")
+
+    # «отчет»: история не исчезает, базовый номер в B, ГТМ добавляются
+    ws = wb["отчет"]
+    assert ws["B10"].value == "303 (Вз)"
+    assert ws["D10"].value.date() == date(2024, 3, 1)
+    assert ws["B11"].value == "303 (Вз)"
+    assert ws["D11"].value.date() == date(2025, 9, 1)
+    assert ws["B12"].value == 303
+    assert ws["C12"].value == "ГТМ"
+    assert ws["D12"].value.date() == date(2025, 12, 1)
+    assert ws["B13"].value == 303
+    assert ws["C13"].value == "КВД"
+    assert ws["D13"].value.date() == date(2026, 8, 1)
+
+    _assert_column_m_empty(ws, range(10, 14))

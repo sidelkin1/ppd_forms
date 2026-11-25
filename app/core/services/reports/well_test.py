@@ -61,7 +61,6 @@ _REPORT_CELL_TEST_WELL = "B9"
 _REPORT_CELL_TEST_NAME = "C9"
 _REPORT_CELL_TEST_DATE = "D9"
 _REPORT_CELL_TEST_PRESSURE = "E9"
-_REPORT_CELL_TEST_PRESSURE_PLOT = "M9"
 _REPORT_CELL_TEST_PERMEABILITY = "F9"
 _REPORT_CELL_TEST_SKIN_FACTOR = "G9"
 _REPORT_CELL_TEST_PROD_INDEX = "H9"
@@ -94,7 +93,6 @@ _REPORT_TABLE_ROW_CELLS = (
     {"cell": _REPORT_CELL_TEST_NAME, "value": "well_test"},
     {"cell": _REPORT_CELL_TEST_DATE, "value": "end_date"},
     {"cell": _REPORT_CELL_TEST_PRESSURE, "value": "resp_owc"},
-    {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "value": "resp_owc"},
     {"cell": _REPORT_CELL_TEST_PERMEABILITY, "value": "permeability"},
     {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "value": "skin_factor"},
     {"cell": _REPORT_CELL_TEST_PROD_INDEX, "value": "prod_index"},
@@ -106,7 +104,6 @@ _REPORT_TABLE_ROW_CELLS_GTM = (
     {"cell": _REPORT_CELL_TEST_NAME, "value": "well_test"},
     {"cell": _REPORT_CELL_TEST_DATE, "value": "end_date"},
     {"cell": _REPORT_CELL_TEST_PRESSURE, "value": "reliability"},
-    {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "value": None},
     {"cell": _REPORT_CELL_TEST_PERMEABILITY, "value": None},
     {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "value": None},
     {"cell": _REPORT_CELL_TEST_PROD_INDEX, "value": None},
@@ -155,6 +152,11 @@ def _split_well_suffix(well: str) -> tuple[str, str]:
     if match is None:
         return well, ""
     return well[: match.start()], match.group(1)
+
+
+def _branch_base(branch: object) -> str:
+    """Имя ствола без суффикса пласта для сравнения листов."""
+    return _split_well_suffix(str(branch))[0]
 
 
 def _resolve_history_branches(
@@ -258,8 +260,10 @@ def _fill_data_sheet(
     neighb_tests: pd.DataFrame,
 ) -> None:
     ws = wb["Лист1"]
+    # Ствол в столбце B, исходный набор не меняем
+    display_tests = tests.assign(well=tests["branch"])
     start_row = _EXCEL_GDIS_START_ROW
-    for _, df in tests.groupby("reservoir"):
+    for _, df in display_tests.groupby("reservoir"):
         _fill_template(
             ws,
             df,
@@ -454,7 +458,15 @@ def _fill_report_sheet(
     for result in results:
         reservoir = result["reservoir"]
         ws = sheets[reservoir]
-        test_group = tests[tests["reservoir"] == reservoir]
+        # На лист «отчет» попадает только история текущего ствола.
+        # Суффикс пласта у branch нужен для «Лист1», здесь его отбрасываем.
+        test_group = tests[
+            (tests["reservoir"] == reservoir)
+            & (
+                tests["branch"].map(_branch_base)
+                == _branch_base(result["branch"])
+            )
+        ]
         pvt_group = pvt[pvt["reservoir"] == reservoir]
         gtm_group = gtms[
             gtms["reservoir"].str.contains(reservoir, regex=False)

@@ -546,9 +546,15 @@ async def test_read_all_skips_perfs_for_empty_history() -> None:
     assert all(call["key"] != "perfs" for call in ofm.calls)
 
 
-_DATA_DIR = Path(__file__).resolve().parents[3] / "data"
-_WELL_TEST_TEMPLATE = _DATA_DIR / "well_test_template.xlsx"
-_WELL_TEST_ARROW = _DATA_DIR / "well_test_arrow.png"
+_TEMPLATES_DIR = (
+    Path(__file__).resolve().parents[3]
+    / "tests"
+    / "fixtures"
+    / "resources"
+    / "templates"
+)
+_WELL_TEST_TEMPLATE = _TEMPLATES_DIR / "well_test_template.xlsx"
+_WELL_TEST_ARROW = _TEMPLATES_DIR / "well_test_arrow.png"
 
 _GTM_COLUMNS = (
     "field",

@@ -5,12 +5,17 @@ from typing import Any
 import pandas as pd
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.models.dto import WellTestResult
 from app.infrastructure.db.dao.sql.reporters import (
     FnvReporter,
+    LocalWellTestReporter,
     OfmIsobarReporter,
     OfmWellTestReporter,
     OppPerYearReporter,
     OwcRespReporter,
+)
+from app.infrastructure.files.dao.reporters import (
+    WellTestReporter as FileWellTestReporter,
 )
 
 
@@ -238,16 +243,51 @@ class OwcRespMock(OwcRespReporter):
         return {"props": props, "depths": depths}
 
 
-class OfmWellTestMock(OfmWellTestReporter):
-    """Мок OFM-репортера ГДИС: запоминает параметры чтения перфораций."""
+class FileWellTestMock(FileWellTestReporter):
+    def __init__(self, results: list[WellTestResult]) -> None:
+        self.results = results
 
-    def __init__(self, pool: sessionmaker[Session] | None = None) -> None:
+    async def get_results(self) -> list[WellTestResult]:
+        return self.results
+
+
+class LocalWellTestMock(LocalWellTestReporter):
+    def __init__(self, tests: pd.DataFrame) -> None:
+        self.tests = tests
         self.calls: list[dict[str, Any]] = []
 
     async def read_one(
         self, *, key: str | None = None, **params: Any
     ) -> pd.DataFrame:
         self.calls.append({"key": key, **params})
+        if key == "gdis":
+            return self.tests
+        return pd.DataFrame()
+
+
+class OfmWellTestMock(OfmWellTestReporter):
+    """Мок OFM-репортера ГДИС с управляемыми стволами и перфорациями."""
+
+    def __init__(
+        self,
+        pool: sessionmaker[Session] | None = None,
+        *,
+        found: dict[tuple[str, str, date], str] | None = None,
+    ) -> None:
+        self.calls: list[dict[str, Any]] = []
+        self.found = found or {}
+
+    async def read_one(
+        self, *, key: str | None = None, **params: Any
+    ) -> pd.DataFrame:
+        self.calls.append({"key": key, **params})
+        if key == "branches":
+            branch = self.found.get(
+                (params["well"], params["cids"][0], params["end_date"])
+            )
+            if branch is None:
+                return pd.DataFrame(columns=["branch"])
+            return pd.DataFrame({"branch": [branch]})
         if key == "perfs":
             # на дату истории работали два ствола, выбирается W1B2
             return pd.DataFrame(

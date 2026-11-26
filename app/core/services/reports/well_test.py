@@ -1,4 +1,3 @@
-import re
 from copy import copy, deepcopy
 from datetime import date
 from io import BytesIO
@@ -61,6 +60,7 @@ _REPORT_CELL_TEST_WELL = "B9"
 _REPORT_CELL_TEST_NAME = "C9"
 _REPORT_CELL_TEST_DATE = "D9"
 _REPORT_CELL_TEST_PRESSURE = "E9"
+_REPORT_CELL_TEST_PRESSURE_PLOT = "M9"
 _REPORT_CELL_TEST_PERMEABILITY = "F9"
 _REPORT_CELL_TEST_SKIN_FACTOR = "G9"
 _REPORT_CELL_TEST_PROD_INDEX = "H9"
@@ -93,6 +93,7 @@ _REPORT_TABLE_ROW_CELLS = (
     {"cell": _REPORT_CELL_TEST_NAME, "value": "well_test"},
     {"cell": _REPORT_CELL_TEST_DATE, "value": "end_date"},
     {"cell": _REPORT_CELL_TEST_PRESSURE, "value": "resp_owc"},
+    {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "value": "resp_owc"},
     {"cell": _REPORT_CELL_TEST_PERMEABILITY, "value": "permeability"},
     {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "value": "skin_factor"},
     {"cell": _REPORT_CELL_TEST_PROD_INDEX, "value": "prod_index"},
@@ -104,12 +105,15 @@ _REPORT_TABLE_ROW_CELLS_GTM = (
     {"cell": _REPORT_CELL_TEST_NAME, "value": "well_test"},
     {"cell": _REPORT_CELL_TEST_DATE, "value": "end_date"},
     {"cell": _REPORT_CELL_TEST_PRESSURE, "value": "reliability"},
+    {"cell": _REPORT_CELL_TEST_PRESSURE_PLOT, "value": None},
     {"cell": _REPORT_CELL_TEST_PERMEABILITY, "value": None},
     {"cell": _REPORT_CELL_TEST_SKIN_FACTOR, "value": None},
     {"cell": _REPORT_CELL_TEST_PROD_INDEX, "value": None},
     {"cell": _REPORT_CELL_TEST_FRAC_LENGTH, "value": None},
     {"cell": _REPORT_CELL_TEST_RELIABILITY, "value": None},
 )
+
+_HISTORY_TEMP_COLUMNS = ("_row", "_date")
 
 
 class _ReportTableRow(NamedTuple):
@@ -141,22 +145,20 @@ def _fill_template(
             cell.value = value
 
 
-_WELL_SUFFIX_PATTERN = re.compile(r"(\s*\([^()]*\))$")
-
-_HISTORY_TEMP_COLUMNS = ("_row", "_well", "_suffix", "_date")
-
-
-def _split_well_suffix(well: str) -> tuple[str, str]:
-    """Отделяет суффикс пласта: «303 (Вз)» → («303», « (Вз)»)."""
-    match = _WELL_SUFFIX_PATTERN.search(well)
-    if match is None:
-        return well, ""
-    return well[: match.start()], match.group(1)
+def _well_with_layer(well: object, layer: object) -> str:
+    """Номер скважины с пластом для отображения в Excel."""
+    if not isinstance(layer, str) or not layer.strip():
+        return str(well)
+    return f"{well} ({layer})"
 
 
-def _branch_base(branch: object) -> str:
-    """Имя ствола без суффикса пласта для сравнения листов."""
-    return _split_well_suffix(str(branch))[0]
+def _display_wells(tests: pd.DataFrame) -> pd.DataFrame:
+    return tests.assign(
+        well=[
+            _well_with_layer(well, layer)
+            for well, layer in zip(tests["well"], tests["layer"])
+        ]
+    ).drop(columns="layer")
 
 
 def _resolve_history_branches(
@@ -167,12 +169,8 @@ def _resolve_history_branches(
     Перфорации приходят по ключу (месторождение, базовая скважина,
     объект) и содержат интервалы ``comp_date``–``close_date``. Для
     замера берётся лексикографически максимальное имя ствола среди
-    открытых на его дату — то же правило, что ``max(uwi)`` в SQL Task 1.
-
-    Открытых стволов может не быть — тогда остаётся базовый номер
-    скважины, как он пришёл из истории (с суффиксом пласта). Найденный
-    ствол получает тот же суффикс. Строки не размножаются: на замер
-    ровно одна строка, порядок сохраняется.
+    открытых на его дату. Если открытых стволов нет, остаётся базовый
+    номер скважины. Строки не размножаются, порядок сохраняется.
     """
     if tests.empty:
         return tests.assign(branch=pd.Series(dtype=object))
@@ -181,9 +179,6 @@ def _resolve_history_branches(
 
     base = tests.reset_index(drop=True).copy()
     base["_row"] = range(len(base))
-    split = [_split_well_suffix(str(well)) for well in base["well"]]
-    base["_well"] = [part[0] for part in split]
-    base["_suffix"] = [part[1] for part in split]
     base["_date"] = pd.to_datetime(base["end_date"], errors="coerce")
 
     intervals = pd.DataFrame(
@@ -198,10 +193,8 @@ def _resolve_history_branches(
     )
     merged = base.merge(
         intervals,
-        left_on=["field", "_well", "reservoir"],
-        right_on=["field", "well", "reservoir"],
+        on=["field", "well", "reservoir"],
         how="left",
-        suffixes=("", "_perf"),
     )
     covered = merged[
         merged["_comp"].notna()
@@ -210,11 +203,7 @@ def _resolve_history_branches(
     ]
     chosen = covered.groupby("_row")["branch"].max()
     branch = base["_row"].map(chosen)
-    found = branch.notna()
-    base["branch"] = branch.where(found, base["well"].astype(str))
-    base.loc[found, "branch"] = (
-        base.loc[found, "branch"].astype(str) + base.loc[found, "_suffix"]
-    )
+    base["branch"] = branch.where(branch.notna(), base["well"].astype(str))
     return base.drop(columns=list(_HISTORY_TEMP_COLUMNS))
 
 
@@ -223,7 +212,7 @@ def _concat_tests(
     results: list[WellTestResult],
     perfs: pd.DataFrame,
 ) -> pd.DataFrame:
-    """История с рассчитанным стволом и текущие ГДИС со стволом Task 1."""
+    """История с рассчитанным стволом и текущие ГДИС."""
     tests = _resolve_history_branches(tests, perfs)
     df = pd.DataFrame(results, columns=tests.columns)
     return df if tests.empty else pd.concat([tests, df], ignore_index=True)
@@ -260,8 +249,7 @@ def _fill_data_sheet(
     neighb_tests: pd.DataFrame,
 ) -> None:
     ws = wb["Лист1"]
-    # Ствол в столбце B, исходный набор не меняем
-    display_tests = tests.assign(well=tests["branch"])
+    display_tests = _display_wells(tests.assign(well=tests["branch"]))
     start_row = _EXCEL_GDIS_START_ROW
     for _, df in display_tests.groupby("reservoir"):
         _fill_template(
@@ -459,14 +447,11 @@ def _fill_report_sheet(
         reservoir = result["reservoir"]
         ws = sheets[reservoir]
         # На лист «отчет» попадает только история текущего ствола.
-        # Суффикс пласта у branch нужен для «Лист1», здесь его отбрасываем.
         test_group = tests[
             (tests["reservoir"] == reservoir)
-            & (
-                tests["branch"].map(_branch_base)
-                == _branch_base(result["branch"])
-            )
+            & (tests["branch"] == result["branch"])
         ]
+        test_group = _display_wells(test_group)
         pvt_group = pvt[pvt["reservoir"] == reservoir]
         gtm_group = gtms[
             gtms["reservoir"].str.contains(reservoir, regex=False)

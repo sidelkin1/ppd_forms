@@ -33,17 +33,6 @@ class WellTestReporter:
     results: files.WellTestReporter
     ofm: db.OfmWellTestReporter
 
-    async def get_results(self) -> list[WellTestResult]:
-        results = await self.results.get_results()
-        async with asyncio.TaskGroup() as tg:
-            tasks = [
-                tg.create_task(self._get_branch(result)) for result in results
-            ]
-        return [
-            cast(WellTestResult, {**result, "branch": task.result()})
-            for result, task in zip(results, tasks)
-        ]
-
     async def _get_branch(self, result: WellTestResult) -> str:
         """Ствол с открытой на дату исследования перфорацией.
 
@@ -61,6 +50,17 @@ class WellTestReporter:
         if branches.empty:
             return result["well"]
         return str(branches["branch"].iat[0])
+
+    async def get_results(self) -> list[WellTestResult]:
+        results = await self.results.get_results()
+        async with asyncio.TaskGroup() as tg:
+            tasks = [
+                tg.create_task(self._get_branch(result)) for result in results
+            ]
+        return [
+            cast(WellTestResult, {**result, "branch": task.result()})
+            for result, task in zip(results, tasks)
+        ]
 
     async def get_well_gtms(
         self, field: str, well: str, end_date: date, gtm_period: int
@@ -188,24 +188,31 @@ class WellTestReporter:
             )
         neighbs = neighbs_task.result()
         tests = tests_task.result()
-        perfs = await self.get_perfs(
-            field=results[0]["field"],
-            well=results[0]["well"],
-            reservoirs=reservoirs,
-            tests=tests,
-        )
-        neighb_tests = await self.get_neighb_tests(
-            neighbs["field"].to_list(),
-            neighbs["well"].to_list(),
-            neighbs["reservoir"].to_list(),
-            results[0]["end_date"],
-            gdis_period,
-        )
+        # Перфорации и соседние ГДИС зависят от уже загруженных tests и
+        # neighbs, но друг от друга не зависят — грузим их параллельно.
+        async with asyncio.TaskGroup() as tg:
+            perfs_task = tg.create_task(
+                self.get_perfs(
+                    field=results[0]["field"],
+                    well=results[0]["well"],
+                    reservoirs=reservoirs,
+                    tests=tests,
+                )
+            )
+            neighb_tests_task = tg.create_task(
+                self.get_neighb_tests(
+                    neighbs["field"].to_list(),
+                    neighbs["well"].to_list(),
+                    neighbs["reservoir"].to_list(),
+                    results[0]["end_date"],
+                    gdis_period,
+                )
+            )
         return {
             "gtms": gtms_task.result(),
             "tests": tests,
-            "perfs": perfs,
+            "perfs": perfs_task.result(),
             "neighbs": neighbs,
-            "neighb_tests": neighb_tests,
+            "neighb_tests": neighb_tests_task.result(),
             "pvt": pvt_task.result(),
         }

@@ -26,7 +26,7 @@ def _select_field_code():
         select(func.max(DictG.code))
         .where(DictG.id == WellHdr.field)
         .scalar_subquery()
-        .correlate(WellHdr.__table__)
+        .correlate(WellHdr)
     )
 
 
@@ -39,7 +39,7 @@ def _select_well_radius():
             WellHdrPty.property_id == _WELL_RADIUS_PROPERTY_ID,
         )
         .scalar_subquery()
-        .correlate(WellHdr.__table__)
+        .correlate(WellHdr)
     )
 
 

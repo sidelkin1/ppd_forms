@@ -34,7 +34,7 @@ def select_top_perf() -> ScalarSelect:
         select(func.min(WellPerforations.top))
         .where(*_perf_where())
         .scalar_subquery()
-        .correlate(WellHdr.__table__)
+        .correlate(WellHdr)
     )
 
 
@@ -44,5 +44,5 @@ def select_bottom_perf() -> ScalarSelect:
         select(func.max(WellPerforations.base))
         .where(*_perf_where())
         .scalar_subquery()
-        .correlate(WellHdr.__table__)
+        .correlate(WellHdr)
     )

@@ -113,6 +113,8 @@ _REPORT_TABLE_ROW_CELLS_GTM = (
     {"cell": _REPORT_CELL_TEST_RELIABILITY, "value": None},
 )
 
+_HISTORY_TEMP_COLUMNS = ("_row", "_date")
+
 
 class _ReportTableRow(NamedTuple):
     well: str
@@ -143,9 +145,75 @@ def _fill_template(
             cell.value = value
 
 
-def _concat_tests(
-    tests: pd.DataFrame, results: list[WellTestResult]
+def _well_with_layer(well: object, layer: object) -> str:
+    """Номер скважины с пластом для отображения в Excel."""
+    if not isinstance(layer, str) or not layer.strip():
+        return str(well)
+    return f"{well} ({layer})"
+
+
+def _display_wells(tests: pd.DataFrame) -> pd.DataFrame:
+    return tests.assign(
+        well=[
+            _well_with_layer(well, layer)
+            for well, layer in zip(tests["well"], tests["layer"])
+        ]
+    ).drop(columns="layer")
+
+
+def _resolve_history_branches(
+    tests: pd.DataFrame, perfs: pd.DataFrame
 ) -> pd.DataFrame:
+    """Ствол, открытый на дату каждого предыдущего ГДИС.
+
+    Перфорации приходят по ключу (месторождение, базовая скважина,
+    объект) и содержат интервалы ``comp_date``–``close_date``. Для
+    замера берётся лексикографически максимальное имя ствола среди
+    открытых на его дату. Если открытых стволов нет, остаётся базовый
+    номер скважины. Строки не размножаются, порядок сохраняется.
+    """
+    if tests.empty:
+        return tests.assign(branch=pd.Series(dtype=object))
+    if perfs.empty:
+        return tests.assign(branch=tests["well"].astype(str))
+
+    base = tests.reset_index(drop=True).copy()
+    base["_row"] = range(len(base))
+    base["_date"] = pd.to_datetime(base["end_date"], errors="coerce")
+
+    intervals = pd.DataFrame(
+        {
+            "field": perfs["field"].astype(str),
+            "well": perfs["well"].astype(str),
+            "reservoir": perfs["reservoir"].astype(str),
+            "branch": perfs["branch"].astype(str),
+            "_comp": pd.to_datetime(perfs["comp_date"], errors="coerce"),
+            "_close": pd.to_datetime(perfs["close_date"], errors="coerce"),
+        }
+    )
+    merged = base.merge(
+        intervals,
+        on=["field", "well", "reservoir"],
+        how="left",
+    )
+    covered = merged[
+        merged["_comp"].notna()
+        & (merged["_comp"] <= merged["_date"])
+        & (merged["_close"].isna() | (merged["_close"] >= merged["_date"]))
+    ]
+    chosen = covered.groupby("_row")["branch"].max()
+    branch = base["_row"].map(chosen)
+    base["branch"] = branch.where(branch.notna(), base["well"].astype(str))
+    return base.drop(columns=list(_HISTORY_TEMP_COLUMNS))
+
+
+def _concat_tests(
+    tests: pd.DataFrame,
+    results: list[WellTestResult],
+    perfs: pd.DataFrame,
+) -> pd.DataFrame:
+    """История с рассчитанным стволом и текущие ГДИС."""
+    tests = _resolve_history_branches(tests, perfs)
     df = pd.DataFrame(results, columns=tests.columns)
     return df if tests.empty else pd.concat([tests, df], ignore_index=True)
 
@@ -181,8 +249,9 @@ def _fill_data_sheet(
     neighb_tests: pd.DataFrame,
 ) -> None:
     ws = wb["Лист1"]
+    display_tests = _display_wells(tests.assign(well=tests["branch"]))
     start_row = _EXCEL_GDIS_START_ROW
-    for _, df in tests.groupby("reservoir"):
+    for _, df in display_tests.groupby("reservoir"):
         _fill_template(
             ws,
             df,
@@ -377,7 +446,12 @@ def _fill_report_sheet(
     for result in results:
         reservoir = result["reservoir"]
         ws = sheets[reservoir]
-        test_group = tests[tests["reservoir"] == reservoir]
+        # На лист «отчет» попадает только история текущего ствола.
+        test_group = tests[
+            (tests["reservoir"] == reservoir)
+            & (tests["branch"] == result["branch"])
+        ]
+        test_group = _display_wells(test_group)
         pvt_group = pvt[pvt["reservoir"] == reservoir]
         gtm_group = gtms[
             gtms["reservoir"].str.contains(reservoir, regex=False)
@@ -407,7 +481,7 @@ def _process_data(
     arrow: Path,
 ) -> None:
     result = path / template.name
-    tests = _concat_tests(dfs["tests"], results)
+    tests = _concat_tests(dfs["tests"], results, dfs["perfs"])
     neighb_tests = _add_distance(dfs["neighb_tests"], dfs["neighbs"])
     try:
         wb = openpyxl.load_workbook(template)

@@ -1,13 +1,30 @@
 import asyncio
 from dataclasses import dataclass
 from datetime import date
+from typing import cast
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
 from app.core.models.dto import WellTestResult
 from app.infrastructure.db.dao.sql import reporters as db
+from app.infrastructure.db.dao.sql.reporters.ofm_well_test import PERF_COLUMNS
 from app.infrastructure.files.dao import reporters as files
+
+
+def _history_start(tests: pd.DataFrame) -> date | None:
+    """Дата самого раннего предыдущего ГДИС.
+
+    Перфорации нужны с этого момента: интервалы, закрытые раньше, на
+    даты истории уже не открыты. Для пустой истории запрос в OFM не
+    выполняется.
+    """
+    if tests.empty or "end_date" not in tests.columns:
+        return None
+    dates = pd.to_datetime(tests["end_date"], errors="coerce").dropna()
+    if dates.empty:
+        return None
+    return dates.min().date()
 
 
 @dataclass
@@ -16,8 +33,34 @@ class WellTestReporter:
     results: files.WellTestReporter
     ofm: db.OfmWellTestReporter
 
+    async def _get_branch(self, result: WellTestResult) -> str:
+        """Ствол с открытой на дату исследования перфорацией.
+
+        Запрос выполняется для каждой пары «месторождение, скважина,
+        объект, дата»: у одного исследования может быть несколько
+        объектов. Если ствол не найден, остаётся базовая скважина.
+        """
+        branches = await self.ofm.read_one(
+            key="branches",
+            fields=[result["field"]],
+            well=result["well"],
+            cids=[result["reservoir"]],
+            end_date=result["end_date"],
+        )
+        if branches.empty:
+            return result["well"]
+        return str(branches["branch"].iat[0])
+
     async def get_results(self) -> list[WellTestResult]:
-        return await self.results.get_results()
+        results = await self.results.get_results()
+        async with asyncio.TaskGroup() as tg:
+            tasks = [
+                tg.create_task(self._get_branch(result)) for result in results
+            ]
+        return [
+            cast(WellTestResult, {**result, "branch": task.result()})
+            for result, task in zip(results, tasks)
+        ]
 
     async def get_well_gtms(
         self, field: str, well: str, end_date: date, gtm_period: int
@@ -80,6 +123,30 @@ class WellTestReporter:
             reservoirs=reservoirs,
         )
 
+    async def get_perfs(
+        self,
+        *,
+        field: str,
+        well: str,
+        reservoirs: list[str],
+        tests: pd.DataFrame,
+    ) -> pd.DataFrame:
+        """Интервалы перфорации стволов на даты предыдущих ГДИС.
+
+        ``history_start`` — дата самого раннего предыдущего исследования:
+        интервалы, закрытые раньше, на даты истории уже не открыты.
+        """
+        history_start = _history_start(tests)
+        if history_start is None:
+            return pd.DataFrame(columns=list(PERF_COLUMNS))
+        return await self.ofm.read_one(
+            key="perfs",
+            fields=[field],
+            wells=[well],
+            cids=reservoirs,
+            history_start=history_start,
+        )
+
     async def read_all(
         self,
         *,
@@ -120,17 +187,32 @@ class WellTestReporter:
                 )
             )
         neighbs = neighbs_task.result()
-        neighb_tests = await self.get_neighb_tests(
-            neighbs["field"].to_list(),
-            neighbs["well"].to_list(),
-            neighbs["reservoir"].to_list(),
-            results[0]["end_date"],
-            gdis_period,
-        )
+        tests = tests_task.result()
+        # Перфорации и соседние ГДИС зависят от уже загруженных tests и
+        # neighbs, но друг от друга не зависят — грузим их параллельно.
+        async with asyncio.TaskGroup() as tg:
+            perfs_task = tg.create_task(
+                self.get_perfs(
+                    field=results[0]["field"],
+                    well=results[0]["well"],
+                    reservoirs=reservoirs,
+                    tests=tests,
+                )
+            )
+            neighb_tests_task = tg.create_task(
+                self.get_neighb_tests(
+                    neighbs["field"].to_list(),
+                    neighbs["well"].to_list(),
+                    neighbs["reservoir"].to_list(),
+                    results[0]["end_date"],
+                    gdis_period,
+                )
+            )
         return {
             "gtms": gtms_task.result(),
-            "tests": tests_task.result(),
+            "tests": tests,
+            "perfs": perfs_task.result(),
             "neighbs": neighbs,
-            "neighb_tests": neighb_tests,
+            "neighb_tests": neighb_tests_task.result(),
             "pvt": pvt_task.result(),
         }

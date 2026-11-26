@@ -15,6 +15,18 @@ from app.core.services.reports.isobar.diagnostics import (
 )
 
 
+def _lost_frame(**extra: object) -> pd.DataFrame:
+    data: dict[str, object] = {
+        "field": ["F1"],
+        "well": ["W1"],
+        "reservoir": ["Тур"],
+        "well_test": ["КВД"],
+        "resp": [150.0],
+        "end_date": [date(2026, 6, 1)],
+    }
+    return pd.DataFrame({**data, **extra})
+
+
 def test_previous_misses(tmp_path: Path) -> None:
     stock = pd.DataFrame(
         {
@@ -56,18 +68,6 @@ def test_previous_misses_empty() -> None:
         "cid",
         "file_reservoir",
     ]
-
-
-def _lost_frame(**extra: object) -> pd.DataFrame:
-    data: dict[str, object] = {
-        "field": ["F1"],
-        "well": ["W1"],
-        "reservoir": ["Тур"],
-        "well_test": ["КВД"],
-        "resp": [150.0],
-        "end_date": [date(2026, 6, 1)],
-    }
-    return pd.DataFrame({**data, **extra})
 
 
 def test_write_lost_values_previous_headers(tmp_path: Path) -> None:

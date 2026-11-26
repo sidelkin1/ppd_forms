@@ -9,6 +9,7 @@ class WellTestResult(TypedDict):
     reservoir: str
     report_reservoir: str
     well: str
+    branch: str
     well_type: str
     well_test: str
     end_date: date

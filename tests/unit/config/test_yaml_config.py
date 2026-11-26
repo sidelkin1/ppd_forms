@@ -21,6 +21,11 @@ def _assert_enum_coverage(
     assert values <= allowed, f"не enum-значения: {values - allowed}"
 
 
+def _option_values(report: dict[str, Any], field: str) -> set[str]:
+    options = report.get(field, {}).get("options", [])
+    return {option["value"] for option in options}
+
+
 def test_report_yaml_groups_valid(paths: Paths):
     config = read_config(paths.report_config)
     orders: list[int] = []
@@ -125,11 +130,6 @@ def test_report_yaml_paths_match_report_name(paths: Paths):
     reports = read_config(paths.report_config)["items"]
     report_paths = {report["path"] for report in reports}
     assert report_paths == {name.value for name in ReportName}
-
-
-def _option_values(report: dict[str, Any], field: str) -> set[str]:
-    options = report.get(field, {}).get("options", [])
-    return {option["value"] for option in options}
 
 
 def test_report_yaml_enum_option_values(paths: Paths):

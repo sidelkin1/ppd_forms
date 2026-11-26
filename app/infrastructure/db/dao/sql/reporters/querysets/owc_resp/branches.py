@@ -1,4 +1,4 @@
-from sqlalchemy import between, bindparam, func, select
+from sqlalchemy import bindparam, func, or_, select
 from sqlalchemy.sql.expression import ScalarSelect, Select
 
 from app.infrastructure.db.models.ofm.udmurtneft_n import (
@@ -17,15 +17,18 @@ def _select_well_uwi() -> Select:
 
 
 def _select_well_uwi_with_open_perf() -> ScalarSelect:
+    # BETWEEN отбросил бы открытые интервалы (close_date IS NULL),
+    # поэтому активность на дату проверяется явным условием —
+    # как в owc_resp/perfs.py (_perf_where).
     subq = _select_well_uwi().subquery()
     return (
         select(func.max(WellPerforations.uwi).label("uwi"))
         .where(
             WellPerforations.uwi.like(func.concat(subq.c.uwi, "%")),
-            between(
-                bindparam("on_date"),
-                WellPerforations.comp_date,
-                WellPerforations.close_date,
+            WellPerforations.comp_date <= bindparam("on_date"),
+            or_(
+                WellPerforations.close_date.is_(None),
+                WellPerforations.close_date >= bindparam("on_date"),
             ),
             WellPerforations.layer_id.in_(select_reservoir_ids()),
         )

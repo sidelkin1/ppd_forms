@@ -46,3 +46,25 @@ def result_dir(paths: Paths) -> Path:
 @pytest.fixture(scope="session")
 def templates_dir(paths: Paths) -> Path:
     return paths.base_dir / "tests" / "fixtures" / "resources" / "templates"
+
+
+@pytest.fixture(scope="session")
+def well_test_template(paths: Paths) -> Path:
+    """Шаблон отчёта из рабочего каталога data.
+
+    Каталог data не хранится в репозитории, поэтому без него тесты,
+    которым нужен шаблон, пропускаются.
+    """
+    template = paths.base_dir / "data" / "well_test_template.xlsx"
+    if not template.is_file():
+        pytest.skip(f"нет шаблона {template}")
+    return template
+
+
+@pytest.fixture(scope="session")
+def well_test_arrow(paths: Paths) -> Path:
+    """Указатель скважины для карты изобар из рабочего каталога data."""
+    arrow = paths.base_dir / "data" / "well_test_arrow.png"
+    if not arrow.is_file():
+        pytest.skip(f"нет изображения {arrow}")
+    return arrow

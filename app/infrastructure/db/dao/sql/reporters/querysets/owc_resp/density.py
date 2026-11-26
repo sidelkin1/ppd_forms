@@ -24,7 +24,7 @@ def _select_max_rec_id() -> ScalarSelect:
             WellMonthHistPty.parameter_id.in_(_WATER_DENSITY_IDS),
         )
         .scalar_subquery()
-        .correlate(WellHdr.__table__)
+        .correlate(WellHdr)
     )
 
 
@@ -36,5 +36,5 @@ def select_water_density() -> ScalarSelect:
             WellMonthHistPty.parameter_id.in_(_WATER_DENSITY_IDS),
         )
         .scalar_subquery()
-        .correlate(WellHdr.__table__)
+        .correlate(WellHdr)
     )

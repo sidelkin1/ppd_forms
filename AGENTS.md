@@ -131,3 +131,19 @@ app/
 ### Pre-commit Hooks
 
 Runs ruff (lint: line-length=79, max-complexity=10) and ruff-format, plus trailing-whitespace, end-of-file-fixer, check-yaml and check-added-large-files. Migrations directory is excluded from formatting.
+
+## Code Style
+
+### Module layout
+
+Order modules top-to-bottom, and never interleave the layers:
+
+1. imports — stdlib, third-party, first-party, separated by blank lines;
+2. module constants;
+3. exception classes;
+4. private functions (`_name`);
+5. public functions.
+
+Within the constants block, public names go before private ones. Keep constants at the top of the file even when they are only used near the bottom — do not declare them next to their first use.
+
+Classes follow the same rule internally: private methods before public ones.

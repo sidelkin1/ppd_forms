@@ -8,18 +8,7 @@ def select_well_tests() -> Select:
     return (
         select(
             WellTest.field,
-            case(
-                (
-                    WellTest.layer.is_(None),
-                    WellTest.well,
-                ),
-                else_=func.concat(
-                    WellTest.well,
-                    " (",
-                    WellTest.layer,
-                    ")",
-                ),
-            ).label("well"),
+            WellTest.well,
             WellTest.reservoir,
             WellTest.well_type,
             WellTest.well_test,
@@ -41,6 +30,7 @@ def select_well_tests() -> Select:
                 (WellTest.reliability == "НЕИЗВЕСТНО", "-"),
                 else_=WellTest.reliability,
             ).label("reliability"),
+            WellTest.layer,
         )
         .where(
             WellTest.field == bindparam("field"),
